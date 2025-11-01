@@ -1,0 +1,36 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}MotofinAI · Financing & Inventory{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-4xl px-6 py-16">
+    <div class="rounded-3xl bg-white p-10 shadow-lg ring-1 ring-slate-200">
+      <h1 class="text-3xl font-semibold tracking-tight text-slate-900">
+        Welcome to MotofinAI
+      </h1>
+      <p class="mt-4 text-base leading-7 text-slate-600">
+        The financing and inventory management platform is ready for module development.
+        Authentication, role-based access, and loan workflows will be layered on in subsequent phases.
+      </p>
+      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+        <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Apps scaffolding
+          </h2>
+          <p class="mt-2 text-sm text-slate-600">
+            Core domain apps for users, inventory, loans, payments, risk, repossession, audit, and archive are ready.
+          </p>
+        </article>
+        <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Tailwind pipeline
+          </h2>
+          <p class="mt-2 text-sm text-slate-600">
+            Tailwind CSS is configured through django-tailwind. Compile assets via
+            <code class="rounded bg-slate-200 px-1 py-0.5 text-xs">python manage.py tailwind build</code>.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+{% endblock content %}
