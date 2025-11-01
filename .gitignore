@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+*.log
+
+# Django
+staticfiles/
+media/
+*.sqlite3
+
+# Environment
+.env
+.venv/
+
+# Tailwind / Node
+node_modules/
+theme/node_modules/
+theme/static_src/.turbo/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store

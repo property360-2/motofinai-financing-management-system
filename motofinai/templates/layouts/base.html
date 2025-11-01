@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}MotofinAI{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}" />
+    {% block head_extras %}{% endblock head_extras %}
+  </head>
+  <body class="min-h-full font-sans text-slate-900">
+    <div class="min-h-screen flex flex-col">
+      {% include 'components/atoms/skip_link.html' %}
+      <main id="main-content" class="flex-1">
+        {% block content %}{% endblock content %}
+      </main>
+      <footer class="py-6 text-center text-xs text-slate-500">
+        {% block footer %}
+        &copy; {% now 'Y' %} MotofinAI. All rights reserved.
+        {% endblock footer %}
+      </footer>
+    </div>
+    {% block scripts %}{% endblock scripts %}
+  </body>
+</html>
