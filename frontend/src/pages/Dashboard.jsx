@@ -6,13 +6,15 @@ export default function Dashboard() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    if (!token) return;
+
     axios
       .get("http://localhost:5000/api/users", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setData(res.data))
       .catch(() => {});
-  }, []);
+  }, [token]);
 
   return (
     <div style={{ padding: "2rem" }}>

@@ -4,9 +4,10 @@ import roleMiddleware from "../../middlewares/roleMiddleware.js";
 import * as UserController from "./user.controller.js";
 
 const router = express.Router();
-router.use(authMiddleware);
+router.use(authMiddleware, roleMiddleware(["admin"]));
 
-router.get("/", roleMiddleware(["admin"]), UserController.getUsers);
-router.patch("/:id/status", roleMiddleware(["admin"]), UserController.changeStatus);
+router.get("/", UserController.getUsers);
+router.post("/", UserController.createUser);
+router.patch("/:id/status", UserController.changeStatus);
 
 export default router;

@@ -20,7 +20,22 @@ export const UserProvider = ({ children }) => {
     setUser(userData);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        await fetch("http://localhost:5000/api/auth/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (error) {
+        console.error("Logout audit failed", error);
+      }
+    }
+
     localStorage.clear();
     setUser(null);
     window.location.href = "/login";
