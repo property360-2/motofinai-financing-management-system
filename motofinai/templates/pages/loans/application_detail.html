@@ -1,0 +1,216 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Application #{{ application.pk }} · {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="mx-auto max-w-5xl px-4 py-10 space-y-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <a href="{% url 'loans:list' %}" class="text-sm text-slate-500 transition hover:text-sky-600">&larr; Back to applications</a>
+        <h1 class="mt-2 text-2xl font-semibold text-slate-900">{{ application.applicant_full_name }}</h1>
+        <p class="text-sm text-slate-600">Submitted {{ application.submitted_at|date:"M d, Y" }} · Status: {{ application.get_status_display }}</p>
+      </div>
+      <span class="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
+        ₱{{ application.monthly_payment }} / month
+      </span>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <section class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-lg font-semibold text-slate-900">Applicant details</h2>
+        <dl class="mt-4 grid grid-cols-1 gap-4 text-sm text-slate-600">
+          <div>
+            <dt class="font-medium text-slate-700">Contact</dt>
+            <dd>{{ application.applicant_email }} · {{ application.applicant_phone }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-slate-700">Date of birth</dt>
+            <dd>{{ application.date_of_birth|default:"—" }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-slate-700">Employment</dt>
+            <dd>{{ application.get_employment_status_display }}{% if application.employer_name %} · {{ application.employer_name }}{% endif %}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-slate-700">Monthly income</dt>
+            <dd>₱{{ application.monthly_income }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-slate-700">Supporting documents</dt>
+            <dd>
+              {% if application.has_valid_id %}<span class="mr-2 inline-flex items-center rounded bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Valid ID</span>{% endif %}
+              {% if application.has_proof_of_income %}<span class="inline-flex items-center rounded bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700">Proof of income</span>{% endif %}
+              {% if not application.has_valid_id and not application.has_proof_of_income %}Pending{% endif %}
+              <a
+                href="{% url 'loans:documents' application.pk %}"
+                class="ml-3 inline-flex items-center text-xs font-semibold text-sky-600 hover:text-sky-700"
+              >Manage uploads &rarr;</a>
+            </dd>
+          </div>
+          {% if application.notes %}
+            <div>
+              <dt class="font-medium text-slate-700">Notes</dt>
+              <dd>{{ application.notes }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+      </section>
+
+      <section class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-lg font-semibold text-slate-900">Motorcycle &amp; terms</h2>
+        <dl class="mt-4 grid grid-cols-1 gap-4 text-sm text-slate-600">
+          <div>
+            <dt class="font-medium text-slate-700">Motorcycle</dt>
+            <dd>{{ application.motor.display_name }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-slate-700">Loan amount</dt>
+            <dd>₱{{ application.loan_amount }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-slate-700">Down payment</dt>
+            <dd>₱{{ application.down_payment }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-slate-700">Principal</dt>
+            <dd>₱{{ application.principal_amount }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-slate-700">Term</dt>
+            <dd>{{ application.financing_term }}</dd>
+          </div>
+        </dl>
+
+        <div class="mt-6 flex flex-wrap gap-2 text-sm">
+          {% if application.status == 'pending' %}
+            <form method="post" action="{% url 'loans:approve' application.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="rounded-md bg-sky-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-700">Approve &amp; build schedule</button>
+            </form>
+          {% elif application.status == 'approved' %}
+            <form method="post" action="{% url 'loans:activate' application.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="rounded-md bg-sky-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-700">Mark as active</button>
+            </form>
+          {% elif application.status == 'active' %}
+            <form method="post" action="{% url 'loans:complete' application.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="rounded-md bg-emerald-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-emerald-700">Mark as completed</button>
+            </form>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
+        <div class="flex items-start justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-900">Risk profile</h2>
+            <p class="mt-1 text-sm text-slate-600">
+              Score uses missed payments, debt-to-income, credit, and employment factors.
+            </p>
+          </div>
+          <a
+            href="{% url 'risk:detail' risk_assessment.pk %}"
+            class="inline-flex items-center rounded-md border border-slate-200 px-3 py-1.5 text-sm font-medium text-sky-600 transition hover:border-sky-200 hover:text-sky-700"
+          >View breakdown &rarr;</a>
+        </div>
+
+        <div class="mt-6 grid gap-4 md:grid-cols-4">
+          <div class="rounded-lg border border-slate-100 bg-slate-50 p-4">
+            <p class="text-xs uppercase tracking-wide text-slate-500">Score</p>
+            <p class="mt-1 text-2xl font-semibold text-slate-900">{{ risk_assessment.score }}</p>
+          </div>
+          <div class="rounded-lg border border-slate-100 bg-slate-50 p-4">
+            <p class="text-xs uppercase tracking-wide text-slate-500">Level</p>
+            <p class="mt-1 text-base font-semibold text-slate-900">{{ risk_assessment.get_risk_level_display }}</p>
+          </div>
+          <div class="rounded-lg border border-slate-100 bg-slate-50 p-4">
+            <p class="text-xs uppercase tracking-wide text-slate-500">Missed payments</p>
+            <p class="mt-1 text-base font-semibold text-slate-900">{{ risk_assessment.missed_payments }}</p>
+          </div>
+          <div class="rounded-lg border border-slate-100 bg-slate-50 p-4">
+            <p class="text-xs uppercase tracking-wide text-slate-500">Debt-to-income</p>
+            <p class="mt-1 text-base font-semibold text-slate-900">{{ risk_assessment.debt_to_income_ratio }}%</p>
+          </div>
+        </div>
+      </section>
+
+      {% if repossession_case %}
+        <section class="rounded-lg border border-rose-200 bg-white p-6 shadow-sm lg:col-span-2">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-semibold text-rose-700">Repossession monitoring</h2>
+              <p class="mt-1 text-sm text-slate-600">
+                Loan has {{ repossession_case.overdue_installments }} overdue installment{{ repossession_case.overdue_installments|pluralize }} totaling ₱{{ repossession_case.total_overdue_amount }}.
+              </p>
+            </div>
+            <span class="inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
+              {{ repossession_case.get_status_display }}
+            </span>
+          </div>
+          <dl class="mt-4 grid gap-4 text-sm text-slate-600 md:grid-cols-3">
+            <div>
+              <dt class="font-medium text-slate-700">Last reminder</dt>
+              <dd>{{ repossession_case.last_reminder_sent_at|date:"M d, Y"|default:"—" }}</dd>
+            </div>
+            <div>
+              <dt class="font-medium text-slate-700">Case opened</dt>
+              <dd>{{ repossession_case.created_at|date:"M d, Y" }}</dd>
+            </div>
+            <div>
+              <dt class="font-medium text-slate-700">Updated</dt>
+              <dd>{{ repossession_case.updated_at|date:"M d, Y" }}</dd>
+            </div>
+          </dl>
+          <div class="mt-4 flex flex-wrap gap-3 text-sm">
+            <a
+              href="{% url 'repossession:case-detail' repossession_case.pk %}"
+              class="inline-flex items-center rounded-md bg-rose-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-rose-700"
+            >Review case</a>
+            <a
+              href="{% url 'payments:schedule-list' %}?loan={{ application.pk }}"
+              class="inline-flex items-center rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-700"
+            >View schedules</a>
+          </div>
+        </section>
+      {% endif %}
+    </div>
+
+    <section class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 px-4 py-4">
+        <h2 class="text-lg font-semibold text-slate-900">Payment schedule</h2>
+        <p class="mt-1 text-sm text-slate-600">Generated after approval to outline due dates and amortization.</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-4 py-3 text-left">#</th>
+              <th class="px-4 py-3 text-left">Due date</th>
+              <th class="px-4 py-3 text-left">Principal</th>
+              <th class="px-4 py-3 text-left">Interest</th>
+              <th class="px-4 py-3 text-left">Total due</th>
+              <th class="px-4 py-3 text-left">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            {% for schedule in schedules %}
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium text-slate-700">{{ schedule.sequence }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ schedule.due_date|date:"M d, Y" }}</td>
+                <td class="px-4 py-3 text-slate-600">₱{{ schedule.principal_amount }}</td>
+                <td class="px-4 py-3 text-slate-600">₱{{ schedule.interest_amount }}</td>
+                <td class="px-4 py-3 font-medium text-slate-700">₱{{ schedule.total_amount }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ schedule.get_status_display }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="px-4 py-6 text-center text-sm text-slate-500">No payment schedule yet. Approve the application to generate installments.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+{% endblock content %}

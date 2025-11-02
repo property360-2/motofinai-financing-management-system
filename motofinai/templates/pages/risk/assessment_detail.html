@@ -1,0 +1,122 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Risk assessment · Application #{{ loan.pk }} · {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="mx-auto max-w-5xl space-y-8 px-4 py-10">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <a href="{% url 'risk:dashboard' %}" class="text-sm text-slate-500 transition hover:text-sky-600">&larr; Back to risk dashboard</a>
+        <h1 class="mt-2 text-2xl font-semibold text-slate-900">Application #{{ loan.pk }} risk assessment</h1>
+        <p class="text-sm text-slate-600">Updated {{ assessment.updated_at|date:"M d, Y" }}.</p>
+      </div>
+      <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+        {{ assessment.get_risk_level_display }} risk
+      </span>
+    </div>
+
+    <section class="grid gap-4 md:grid-cols-3">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Overall score</p>
+        <p class="mt-2 text-3xl font-semibold text-slate-900">{{ assessment.score }}</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Missed payments</p>
+        <p class="mt-2 text-2xl font-semibold text-slate-900">{{ assessment.missed_payments }}</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Debt-to-income ratio</p>
+        <p class="mt-2 text-2xl font-semibold text-slate-900">{{ assessment.debt_to_income_ratio }}%</p>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 class="text-lg font-semibold text-slate-900">Factor breakdown</h2>
+      <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">Base score</dt>
+          <dd class="mt-1 text-base font-semibold text-slate-900">{{ assessment.base_score }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">Credit score deduction</dt>
+          <dd class="mt-1 text-base font-semibold text-slate-900">-{{ assessment.credit_factor }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">Income pressure</dt>
+          <dd class="mt-1 text-base font-semibold text-slate-900">+{{ assessment.income_factor }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs uppercase tracking-wide text-slate-500">Employment penalty</dt>
+          <dd class="mt-1 text-base font-semibold text-slate-900">+{{ assessment.employment_penalty }}</dd>
+        </div>
+        <div class="sm:col-span-2">
+          <dt class="text-xs uppercase tracking-wide text-slate-500">Analyst notes</dt>
+          <dd class="mt-1 whitespace-pre-wrap text-sm text-slate-600">{{ assessment.notes|default:"—" }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="grid gap-6 lg:grid-cols-2">
+      <form
+        method="post"
+        action="{% url 'risk:recalculate' assessment.pk %}"
+        class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+      >
+        {% csrf_token %}
+        <h2 class="text-lg font-semibold text-slate-900">Recalculate</h2>
+        <p class="mt-1 text-sm text-slate-600">Adjust bureau results or underwriting notes, then recompute the score.</p>
+        <div class="mt-4 space-y-4">
+          {% for field in form %}
+            <div>
+              <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
+              {{ field }}
+              {% if field.help_text %}
+                <p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>
+              {% endif %}
+              {% for error in field.errors %}
+                <p class="mt-1 text-xs text-rose-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+          {% endfor %}
+          {% if form.non_field_errors %}
+            <div class="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+              {{ form.non_field_errors|join:", " }}
+            </div>
+          {% endif %}
+        </div>
+        <button
+          type="submit"
+          class="mt-6 inline-flex items-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
+        >
+          Recalculate risk score
+        </button>
+      </form>
+
+      <section class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-lg font-semibold text-slate-900">Payment schedule snapshot</h2>
+        <p class="mt-1 text-sm text-slate-600">Overdue installments raise the risk score automatically.</p>
+        <div class="mt-4 space-y-3">
+          {% for schedule in schedules|slice:":6" %}
+            <div class="flex items-center justify-between rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-sm">
+              <div>
+                <p class="font-medium text-slate-900">Installment {{ schedule.sequence }}</p>
+                <p class="text-xs text-slate-500">Due {{ schedule.due_date|date:"M d, Y" }}</p>
+              </div>
+              <span class="rounded-full px-3 py-1 text-xs font-semibold {% if schedule.status == 'overdue' %}bg-rose-100 text-rose-700{% elif schedule.status == 'paid' %}bg-emerald-100 text-emerald-700{% else %}bg-slate-200 text-slate-700{% endif %}">
+                {{ schedule.get_status_display }}
+              </span>
+            </div>
+          {% empty %}
+            <p class="text-sm text-slate-500">No schedule available yet. Approve the application to generate installments.</p>
+          {% endfor %}
+        </div>
+        <a
+          href="{% url 'loans:detail' loan.pk %}"
+          class="mt-4 inline-flex items-center text-sm font-semibold text-sky-600 hover:text-sky-700"
+        >
+          View full loan details &rarr;
+        </a>
+      </section>
+    </section>
+  </div>
+{% endblock content %}

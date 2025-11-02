@@ -1,0 +1,113 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Payment Schedules · {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="mx-auto max-w-5xl px-4 py-10">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-900">Payment schedules</h1>
+        <p class="mt-1 text-sm text-slate-600">
+          Monitor installments, flag overdue items, and record successful collections.
+        </p>
+      </div>
+    </div>
+
+    <dl class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Pending amount</dt>
+        <dd class="mt-2 text-2xl font-semibold text-slate-900">₱{{ summary.pending_amount }}</dd>
+        <p class="mt-1 text-xs text-slate-500">Due + overdue installments awaiting payment.</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Overdue</dt>
+        <dd class="mt-2 text-2xl font-semibold text-rose-600">₱{{ summary.overdue_total }}</dd>
+        <p class="mt-1 text-xs text-slate-500">{{ summary.overdue_count }} installment{{ summary.overdue_count|pluralize }} past due.</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Collected</dt>
+        <dd class="mt-2 text-2xl font-semibold text-emerald-600">₱{{ summary.paid_total }}</dd>
+        <p class="mt-1 text-xs text-slate-500">{{ summary.paid_count }} installment{{ summary.paid_count|pluralize }} settled.</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Collection rate</dt>
+        <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ summary.collection_rate }}%</dd>
+        <p class="mt-1 text-xs text-slate-500">Percentage of generated schedule already collected.</p>
+      </div>
+    </dl>
+
+    <div class="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th scope="col" class="px-4 py-3">Loan</th>
+            <th scope="col" class="px-4 py-3">Applicant</th>
+            <th scope="col" class="px-4 py-3">Due date</th>
+            <th scope="col" class="px-4 py-3">Amount</th>
+            <th scope="col" class="px-4 py-3">Status</th>
+            <th scope="col" class="px-4 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 text-slate-700">
+          {% for schedule in schedules %}
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3">
+                <div class="font-medium text-slate-900">{{ schedule.loan_application.motor.display_name }}</div>
+                <div class="text-xs text-slate-500">#{{ schedule.loan_application_id }} · Term {{ schedule.sequence }}</div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="font-medium text-slate-900">{{ schedule.loan_application.applicant_full_name }}</div>
+                <div class="text-xs text-slate-500">₱{{ schedule.loan_application.monthly_payment }} / month</div>
+              </td>
+              <td class="px-4 py-3 text-slate-600">{{ schedule.due_date|date:"M d, Y" }}</td>
+              <td class="px-4 py-3 font-medium text-slate-700">₱{{ schedule.total_amount }}</td>
+              <td class="px-4 py-3">
+                {% if schedule.status == 'paid' %}
+                  <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    {{ schedule.get_status_display }}
+                  </span>
+                {% elif schedule.status == 'overdue' %}
+                  <span class="inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
+                    {{ schedule.get_status_display }}
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                    {{ schedule.get_status_display }}
+                  </span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3 text-right text-sm">
+                <div class="inline-flex items-center gap-3">
+                  <a
+                    href="{% url 'loans:detail' schedule.loan_application_id %}"
+                    class="font-medium text-slate-600 transition hover:text-sky-700"
+                  >
+                    View loan
+                  </a>
+                  {% if schedule.status != 'paid' %}
+                    <a
+                      href="{% url 'payments:record-payment' schedule.pk %}"
+                      class="inline-flex items-center rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-700"
+                    >
+                      Record payment
+                    </a>
+                  {% else %}
+                    <span class="text-xs text-slate-500">
+                      Paid {{ schedule.paid_at|date:"M d, Y"|default:"recently" }}
+                    </span>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="px-4 py-6 text-center text-sm text-slate-500">
+                No payment schedules available yet. Approve loan applications to generate installments.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock content %}

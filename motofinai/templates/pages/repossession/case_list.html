@@ -1,0 +1,109 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Repossession cases · {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="mx-auto max-w-5xl px-4 py-10">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-900">Repossession cases</h1>
+        <p class="mt-1 text-sm text-slate-600">
+          Monitor delinquent loans, review escalation status, and coordinate recovery actions.
+        </p>
+      </div>
+    </div>
+
+    <dl class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Open cases</dt>
+        <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ summary.open_count }}</dd>
+        <p class="mt-1 text-xs text-slate-500">Active, warning, and reminder cases still in progress.</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Active cases</dt>
+        <dd class="mt-2 text-2xl font-semibold text-rose-600">{{ summary.active_count }}</dd>
+        <p class="mt-1 text-xs text-slate-500">Loans requiring ongoing recovery coordination.</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Reminders sent</dt>
+        <dd class="mt-2 text-2xl font-semibold text-amber-600">{{ summary.reminder_count }}</dd>
+        <p class="mt-1 text-xs text-slate-500">Cases awaiting response after the latest reminder.</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
+        <dt class="text-xs uppercase tracking-wide text-slate-500">Overdue exposure</dt>
+        <dd class="mt-2 text-2xl font-semibold text-slate-900">₱{{ summary.overdue_total }}</dd>
+        <p class="mt-1 text-xs text-slate-500">Combined overdue balance across open cases.</p>
+      </div>
+    </dl>
+
+    <div class="mt-8 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+      <span class="font-semibold text-slate-700">Filter:</span>
+      <a
+        href="{% url 'repossession:case-list' %}"
+        class="rounded-full px-3 py-1 {% if not request.GET.status %}bg-sky-100 text-sky-700{% else %}hover:bg-slate-100{% endif %}"
+      >All</a>
+      {% for value, label in status_choices %}
+        <a
+          href="{% url 'repossession:case-list' %}?status={{ value }}"
+          class="rounded-full px-3 py-1 {% if request.GET.status == value %}bg-sky-100 text-sky-700{% else %}hover:bg-slate-100{% endif %}"
+        >{{ label }}</a>
+      {% endfor %}
+    </div>
+
+    <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
+            <th scope="col" class="px-4 py-3">Loan</th>
+            <th scope="col" class="px-4 py-3">Applicant</th>
+            <th scope="col" class="px-4 py-3">Status</th>
+            <th scope="col" class="px-4 py-3">Overdue installments</th>
+            <th scope="col" class="px-4 py-3">Exposure</th>
+            <th scope="col" class="px-4 py-3">Updated</th>
+            <th scope="col" class="px-4 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200 text-slate-700">
+          {% for case in cases %}
+            <tr class="hover:bg-slate-50">
+              <td class="px-4 py-3">
+                <div class="font-medium text-slate-900">{{ case.loan_application.motor.display_name }}</div>
+                <div class="text-xs text-slate-500">Application #{{ case.loan_application_id }}</div>
+              </td>
+              <td class="px-4 py-3">
+                <div class="font-medium text-slate-900">{{ case.loan_application.applicant_full_name }}</div>
+                <div class="text-xs text-slate-500">₱{{ case.loan_application.monthly_payment }} / month</div>
+              </td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  {{ case.get_status_display }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-slate-600">{{ case.overdue_installments }}</td>
+              <td class="px-4 py-3 font-medium text-slate-700">₱{{ case.total_overdue_amount }}</td>
+              <td class="px-4 py-3 text-slate-600">{{ case.updated_at|date:"M d, Y" }}</td>
+              <td class="px-4 py-3 text-right">
+                <div class="inline-flex items-center gap-3">
+                  <a
+                    href="{% url 'repossession:case-detail' case.pk %}"
+                    class="font-medium text-sky-600 transition hover:text-sky-700"
+                  >View</a>
+                  <a
+                    href="{% url 'loans:detail' case.loan_application_id %}"
+                    class="text-xs text-slate-500 transition hover:text-slate-700"
+                  >Loan</a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="px-4 py-6 text-center text-sm text-slate-500">
+                No repossession cases at the moment. Overdue payment detection will open cases automatically.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock content %}
