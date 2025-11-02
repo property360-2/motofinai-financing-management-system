@@ -16,6 +16,22 @@
           <a href="{% url 'home' %}" class="text-lg font-semibold text-slate-900">MotofinAI</a>
           <nav class="flex items-center gap-4 text-sm">
             {% if request.user.is_authenticated %}
+              <div class="hidden items-center gap-4 text-slate-600 sm:flex">
+                {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "finance" %}
+                  <a
+                    href="{% url 'inventory:motor-list' %}"
+                    class="font-medium text-slate-600 transition hover:text-sky-700"
+                  >
+                    Inventory
+                  </a>
+                  <a
+                    href="{% url 'terms:list' %}"
+                    class="font-medium text-slate-600 transition hover:text-sky-700"
+                  >
+                    Financing terms
+                  </a>
+                {% endif %}
+              </div>
               <span class="hidden text-slate-500 sm:inline-flex">
                 Signed in as {{ request.user.get_full_name|default:request.user.username }}
               </span>

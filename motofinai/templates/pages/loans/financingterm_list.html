@@ -1,0 +1,101 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Financing Terms{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-sky-600">Financing</p>
+        <h1 class="text-3xl font-semibold text-slate-900">Financing terms</h1>
+        <p class="mt-2 text-sm text-slate-600">
+          Defined terms feed into loan calculations. Admins can adjust them; finance officers can review the current catalogue.
+        </p>
+      </div>
+      {% if can_manage_terms %}
+        <a
+          href="{% url 'terms:create' %}"
+          class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+        >
+          Add term
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {% if terms %}
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr>
+              <th scope="col" class="px-6 py-3">Duration</th>
+              <th scope="col" class="px-6 py-3">Interest</th>
+              <th scope="col" class="px-6 py-3">Active</th>
+              <th scope="col" class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            {% for term in terms %}
+              <tr class="hover:bg-slate-50">
+                <td class="px-6 py-4">
+                  <p class="font-medium text-slate-900">{{ term.term_years }} years</p>
+                  <p class="mt-1 text-xs text-slate-500">{{ term.total_months }} months</p>
+                </td>
+                <td class="px-6 py-4 text-slate-700">{{ term.interest_rate|floatformat:2 }}&nbsp;%</td>
+                <td class="px-6 py-4">
+                  {% if term.is_active %}
+                    <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Active</span>
+                  {% else %}
+                    <span class="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">Inactive</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 text-right">
+                  {% if can_manage_terms %}
+                    <a
+                      href="{% url 'terms:edit' term.pk %}"
+                      class="text-sm font-semibold text-sky-600 transition hover:text-sky-700"
+                    >
+                      Edit
+                    </a>
+                    <span class="mx-1 text-slate-300">•</span>
+                    <a
+                      href="{% url 'terms:delete' term.pk %}"
+                      class="text-sm font-semibold text-rose-600 transition hover:text-rose-700"
+                    >
+                      Delete
+                    </a>
+                  {% else %}
+                    <span class="text-xs uppercase tracking-wide text-slate-400">View only</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="px-6 py-16 text-center">
+          <p class="text-sm font-medium text-slate-600">No financing terms have been configured yet.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if is_paginated %}
+      <nav class="mt-6 flex items-center justify-between text-sm text-slate-600" aria-label="Pagination">
+        <div>
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </div>
+        <div class="flex items-center gap-2">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="rounded-md px-3 py-2 text-sky-600 hover:bg-slate-100">
+              Previous
+            </a>
+          {% endif %}
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="rounded-md px-3 py-2 text-sky-600 hover:bg-slate-100">
+              Next
+            </a>
+          {% endif %}
+        </div>
+      </nav>
+    {% endif %}
+  </section>
+{% endblock content %}

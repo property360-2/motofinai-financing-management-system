@@ -11,12 +11,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+RUNNING_TESTS = "test" in sys.argv
 
 
 # Load environment variables from a .env file when present.
@@ -60,6 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "tailwind",
+    "storages",
     "motofinai.apps.users",
     "motofinai.apps.inventory",
     "motofinai.apps.loans",
@@ -162,17 +165,68 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Static & media files
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "motofinai" / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+use_whitenoise = os.getenv("USE_WHITENOISE", "true").lower() == "true"
+if RUNNING_TESTS:
+    use_whitenoise = False
+
+staticfiles_backend = (
+    "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    if use_whitenoise
+    else "django.contrib.staticfiles.storage.StaticFilesStorage"
+)
+
+STORAGES = {
+    "default": {
+        "BACKEND": os.getenv(
+            "DEFAULT_FILE_STORAGE",
+            "django.core.files.storage.FileSystemStorage",
+        ),
+    },
+    "staticfiles": {
+        "BACKEND": staticfiles_backend,
+    },
+}
+
+STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
+
+default_storage_backend = STORAGES["default"]["BACKEND"]
+if default_storage_backend.endswith("FileSystemStorage"):
+    MEDIA_ROOT = BASE_DIR / "motofinai" / "media"
+    MEDIA_URL = "media/"
+else:
+    MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
+    MEDIA_ROOT = os.getenv("MEDIA_ROOT", "")
+
+if use_whitenoise:
+    WHITENOISE_USE_FINDERS = True
+    WHITENOISE_MANIFEST_STRICT = False
+
+# Optional S3-compatible CDN configuration
+if default_storage_backend == "storages.backends.s3boto3.S3Boto3Storage":
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME", "")
+    AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
+    AWS_S3_ENDPOINT_URL = os.getenv("AWS_S3_ENDPOINT_URL")
+    AWS_S3_CUSTOM_DOMAIN = os.getenv("AWS_S3_CUSTOM_DOMAIN")
+    AWS_QUERYSTRING_AUTH = os.getenv("AWS_QUERYSTRING_AUTH", "false").lower() == "true"
 
 TAILWIND_APP_NAME = "theme"
 
 INTERNAL_IPS = ["127.0.0.1"]
+
+# Ensure django-tailwind can find npm on Windows hosts.
+NPM_BIN_PATH = os.getenv(
+    "NPM_BIN_PATH",
+    "npm.cmd" if os.name == "nt" else "npm",
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

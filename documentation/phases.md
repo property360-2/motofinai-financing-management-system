@@ -49,6 +49,8 @@
 * Finance: read-only access
 * Use atomic templates (cards, tables)
 
+**Status:** Core inventory CRUD and financing term management shipped in Django (Nov 2025).
+
 **Deliverables:**
 
 * `/inventory/` views and templates

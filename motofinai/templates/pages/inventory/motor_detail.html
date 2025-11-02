@@ -1,0 +1,103 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ motor.display_name }} · Inventory{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-slate-500">Inventory record</p>
+        <h1 class="mt-2 text-3xl font-semibold text-slate-900">{{ motor.display_name }}</h1>
+        <p class="mt-2 text-sm text-slate-600">
+          Added {{ motor.created_at|date:"F j, Y" }} · Last updated {{ motor.updated_at|date:"F j, Y" }}
+        </p>
+      </div>
+      {% if can_manage_inventory %}
+        <div class="flex items-center gap-2">
+          <a
+            href="{% url 'inventory:motor-update' motor.pk %}"
+            class="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+          >
+            Edit
+          </a>
+          <a
+            href="{% url 'inventory:motor-delete' motor.pk %}"
+            class="inline-flex items-center rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700"
+          >
+            Delete
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="mt-8 grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <dl class="divide-y divide-slate-200 text-sm">
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Type</dt>
+            <dd class="col-span-2 text-slate-700">{{ motor.type }}</dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</dt>
+            <dd class="col-span-2">
+              {% if motor.status == "available" %}
+                <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Available</span>
+              {% elif motor.status == "reserved" %}
+                <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Reserved</span>
+              {% elif motor.status == "sold" %}
+                <span class="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">Sold</span>
+              {% else %}
+                <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">Repossessed</span>
+              {% endif %}
+            </dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Purchase price</dt>
+            <dd class="col-span-2 font-medium text-slate-900">&#8369;{{ motor.purchase_price|floatformat:2 }}</dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Colour</dt>
+            <dd class="col-span-2 text-slate-700">
+              {% if motor.color %}{{ motor.color }}{% else %}<span class="text-slate-400">Not specified</span>{% endif %}
+            </dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Chassis number</dt>
+            <dd class="col-span-2 text-slate-700">
+              {% if motor.chassis_number %}{{ motor.chassis_number }}{% else %}<span class="text-slate-400">Not captured</span>{% endif %}
+            </dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Notes</dt>
+            <dd class="col-span-2 text-slate-700">
+              {% if motor.notes %}{{ motor.notes|linebreaksbr }}{% else %}<span class="text-slate-400">No additional notes</span>{% endif %}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <aside class="space-y-4">
+        {% if motor.image %}
+          <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <img
+              src="{{ motor.image.url }}"
+              alt="Motor image"
+              class="h-64 w-full object-cover"
+            />
+          </div>
+        {% else %}
+          <div class="flex h-64 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-center text-sm text-slate-500">
+            No image uploaded for this motor.
+          </div>
+        {% endif %}
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm text-sm text-slate-600">
+          <h2 class="text-sm font-semibold text-slate-900">Financing readiness</h2>
+          <p class="mt-2">
+            Details captured here flow into loan applications once Phase 4 is active. Ensure purchase prices and statuses remain up to date for accurate financing terms.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </section>
+{% endblock content %}

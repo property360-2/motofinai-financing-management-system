@@ -335,6 +335,7 @@ motofinai/
 
 * Central archive table ensures full traceability.
 * Risk scoring and thresholds adjustable via Admin.
-* All uploads (motors, docs) stored in CDN (no downloads).
+* Media storage defaults to local filesystem for development; set `DEFAULT_FILE_STORAGE=storages.backends.s3boto3.S3Boto3Storage` with the provided AWS keys for CDN-backed uploads (no direct downloads).
+* `USE_WHITENOISE=true` enables compressed static serving in production while tests override it for faster execution.
 * Atomic template structure ensures scalability and design consistency.
 
