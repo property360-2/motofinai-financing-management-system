@@ -40,6 +40,9 @@ ALLOWED_HOSTS = [host for host in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",
 if not ALLOWED_HOSTS and DEBUG:
     ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
+if "testserver" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("testserver")
+
 CSRF_TRUSTED_ORIGINS = [
     origin
     for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
@@ -77,6 +80,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "motofinai.apps.users.middleware.RoleRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -174,3 +178,9 @@ INTERNAL_IPS = ["127.0.0.1"]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = "users.User"
+
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
