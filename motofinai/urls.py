@@ -25,4 +25,8 @@ urlpatterns = [
     path("", include("motofinai.apps.users.urls")),
     path("inventory/", include("motofinai.apps.inventory.urls")),
     path("terms/", include("motofinai.apps.loans.urls")),
+    path("loans/", include("motofinai.apps.loans.urls_applications")),
+    path("payments/", include("motofinai.apps.payments.urls")),
+    path("risk/", include("motofinai.apps.risk.urls")),
+    path("repos/", include("motofinai.apps.repossession.urls")),
 ]

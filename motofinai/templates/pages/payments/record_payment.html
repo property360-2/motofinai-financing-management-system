@@ -1,0 +1,114 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Record Payment · {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="mx-auto max-w-3xl px-4 py-10">
+    <nav class="text-xs text-slate-500">
+      <a href="{% url 'payments:schedule-list' %}" class="text-slate-500 hover:text-slate-700">Payments</a>
+      <span class="mx-2">/</span>
+      <span>Record installment</span>
+    </nav>
+
+    <div class="mt-6 rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 px-6 py-5">
+        <h1 class="text-xl font-semibold text-slate-900">Record installment payment</h1>
+        <p class="mt-1 text-sm text-slate-600">
+          Logging this payment will mark the schedule as paid and update the loan’s progress.
+        </p>
+      </div>
+      <div class="px-6 py-6">
+        <dl class="grid gap-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-600 sm:grid-cols-2">
+          <div>
+            <dt class="text-xs uppercase tracking-wide text-slate-500">Loan</dt>
+            <dd class="mt-1 font-medium text-slate-900">
+              <a href="{% url 'loans:detail' loan.pk %}" class="text-sky-600 hover:text-sky-700">
+                #{{ loan.pk }} · {{ loan.motor.display_name }}
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wide text-slate-500">Applicant</dt>
+            <dd class="mt-1 font-medium text-slate-900">{{ loan.applicant_full_name }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wide text-slate-500">Due date</dt>
+            <dd class="mt-1">{{ schedule.due_date|date:"M d, Y" }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs uppercase tracking-wide text-slate-500">Installment amount</dt>
+            <dd class="mt-1 font-semibold text-slate-900">₱{{ schedule.total_amount }}</dd>
+          </div>
+        </dl>
+
+        <form method="post" class="mt-6 space-y-5">
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {{ form.non_field_errors|join:', ' }}
+            </div>
+          {% endif %}
+
+          <div>
+            <label for="id_amount" class="block text-sm font-medium text-slate-700">Amount collected</label>
+            {{ form.amount }}
+            {% if form.amount.help_text %}
+              <p class="mt-1 text-xs text-slate-500">{{ form.amount.help_text }}</p>
+            {% endif %}
+            {% if form.amount.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.amount.errors|join:', ' }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label for="id_payment_date" class="block text-sm font-medium text-slate-700">Payment date</label>
+            {{ form.payment_date }}
+            {% if form.payment_date.help_text %}
+              <p class="mt-1 text-xs text-slate-500">{{ form.payment_date.help_text }}</p>
+            {% endif %}
+            {% if form.payment_date.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.payment_date.errors|join:', ' }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label for="id_reference" class="block text-sm font-medium text-slate-700">Receipt / reference</label>
+            {{ form.reference }}
+            {% if form.reference.help_text %}
+              <p class="mt-1 text-xs text-slate-500">{{ form.reference.help_text }}</p>
+            {% endif %}
+            {% if form.reference.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.reference.errors|join:', ' }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label for="id_notes" class="block text-sm font-medium text-slate-700">Notes</label>
+            {{ form.notes }}
+            {% if form.notes.help_text %}
+              <p class="mt-1 text-xs text-slate-500">{{ form.notes.help_text }}</p>
+            {% endif %}
+            {% if form.notes.errors %}
+              <p class="mt-1 text-xs text-rose-600">{{ form.notes.errors|join:', ' }}</p>
+            {% endif %}
+          </div>
+
+          <div class="flex items-center justify-end gap-3">
+            <a
+              href="{% url 'payments:schedule-list' %}"
+              class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+            >
+              Cancel
+            </a>
+            <button
+              type="submit"
+              class="inline-flex items-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
+            >
+              Save payment
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

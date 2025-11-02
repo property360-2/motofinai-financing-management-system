@@ -25,6 +25,30 @@
                     Inventory
                   </a>
                   <a
+                    href="{% url 'loans:list' %}"
+                    class="font-medium text-slate-600 transition hover:text-sky-700"
+                  >
+                    Loan applications
+                  </a>
+                  <a
+                    href="{% url 'payments:schedule-list' %}"
+                    class="font-medium text-slate-600 transition hover:text-sky-700"
+                  >
+                    Payments
+                  </a>
+                  <a
+                    href="{% url 'risk:dashboard' %}"
+                    class="font-medium text-slate-600 transition hover:text-sky-700"
+                  >
+                    Risk scoring
+                  </a>
+                  <a
+                    href="{% url 'repossession:case-list' %}"
+                    class="font-medium text-slate-600 transition hover:text-sky-700"
+                  >
+                    Repossession
+                  </a>
+                  <a
                     href="{% url 'terms:list' %}"
                     class="font-medium text-slate-600 transition hover:text-sky-700"
                   >

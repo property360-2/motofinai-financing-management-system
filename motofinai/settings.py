@@ -112,6 +112,8 @@ WSGI_APPLICATION = "motofinai.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DEFAULT_DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.mysql")
+if RUNNING_TESTS:
+    DEFAULT_DB_ENGINE = "django.db.backends.sqlite3"
 
 if DEFAULT_DB_ENGINE == "django.db.backends.sqlite3":
     DATABASES = {

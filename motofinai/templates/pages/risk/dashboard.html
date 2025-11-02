@@ -1,0 +1,94 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Risk assessments · {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="mx-auto max-w-6xl space-y-8 px-4 py-10">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-900">Risk assessments</h1>
+        <p class="text-sm text-slate-600">Track underwriting risk across active and pending loans.</p>
+      </div>
+      <a
+        href="{% url 'loans:list' %}"
+        class="inline-flex items-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
+      >Review loan pipeline &rarr;</a>
+    </div>
+
+    <section class="grid gap-4 md:grid-cols-4">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Total assessed</p>
+        <p class="mt-2 text-2xl font-semibold text-slate-900">{{ total_assessments }}</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs uppercase tracking-wide text-slate-500">High risk</p>
+        <p class="mt-2 text-2xl font-semibold text-rose-600">{{ high_risk_count }}</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Medium risk</p>
+        <p class="mt-2 text-2xl font-semibold text-amber-600">{{ medium_risk_count }}</p>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="text-xs uppercase tracking-wide text-slate-500">Average score</p>
+        <p class="mt-2 text-2xl font-semibold text-slate-900">
+          {% if average_score %}
+            {{ average_score|floatformat:1 }}
+          {% else %}
+            —
+          {% endif %}
+        </p>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 px-4 py-4">
+        <h2 class="text-lg font-semibold text-slate-900">Latest evaluations</h2>
+        <p class="mt-1 text-sm text-slate-600">Includes both pending and active loans with computed risk scores.</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th scope="col" class="px-4 py-3 text-left">Loan</th>
+              <th scope="col" class="px-4 py-3 text-left">Applicant</th>
+              <th scope="col" class="px-4 py-3 text-left">Score</th>
+              <th scope="col" class="px-4 py-3 text-left">Level</th>
+              <th scope="col" class="px-4 py-3 text-left">Missed</th>
+              <th scope="col" class="px-4 py-3 text-left">Debt-to-income</th>
+              <th scope="col" class="px-4 py-3 text-left">Updated</th>
+              <th scope="col" class="px-4 py-3 text-left"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white">
+            {% for assessment in assessments %}
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-slate-700">
+                  <a href="{% url 'loans:detail' assessment.loan_application.pk %}" class="font-medium text-sky-600 hover:text-sky-700">
+                    Application #{{ assessment.loan_application.pk }}
+                  </a>
+                </td>
+                <td class="px-4 py-3 text-slate-600">
+                  {{ assessment.loan_application.applicant_full_name }}
+                </td>
+                <td class="px-4 py-3 font-semibold text-slate-900">{{ assessment.score }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ assessment.get_risk_level_display }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ assessment.missed_payments }}</td>
+                <td class="px-4 py-3 text-slate-600">{{ assessment.debt_to_income_ratio }}%</td>
+                <td class="px-4 py-3 text-slate-600">{{ assessment.updated_at|date:"M d, Y" }}</td>
+                <td class="px-4 py-3 text-right">
+                  <a href="{% url 'risk:detail' assessment.pk %}" class="text-sm font-semibold text-sky-600 hover:text-sky-700">View</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="8" class="px-4 py-6 text-center text-sm text-slate-500">
+                  No risk assessments yet. Generate one from a loan application to populate this dashboard.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+{% endblock content %}
