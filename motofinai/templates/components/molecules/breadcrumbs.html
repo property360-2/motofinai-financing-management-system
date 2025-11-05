@@ -1,0 +1,39 @@
+{% comment %}
+Breadcrumbs component for navigation context
+Usage:
+  {% include 'components/molecules/breadcrumbs.html' with breadcrumbs=breadcrumbs_list %}
+
+Where breadcrumbs_list is a list of dicts with 'name' and optional 'url' keys:
+  breadcrumbs = [
+    {'name': 'Home', 'url': '/'},
+    {'name': 'Inventory', 'url': '/inventory/'},
+    {'name': 'Motor Detail'},  # Last item typically has no URL
+  ]
+{% endcomment %}
+
+{% if breadcrumbs %}
+<nav class="bg-white border-b border-slate-200" aria-label="Breadcrumb">
+  <div class="mx-auto max-w-7xl px-4 py-3 lg:px-6">
+    <ol class="flex items-center space-x-2 text-sm">
+      {% for crumb in breadcrumbs %}
+        <li class="flex items-center">
+          {% if not forloop.first %}
+            <svg class="h-5 w-5 flex-shrink-0 text-slate-400 mr-2" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+            </svg>
+          {% endif %}
+          {% if crumb.url and not forloop.last %}
+            <a href="{{ crumb.url }}" class="font-medium text-slate-600 hover:text-sky-600 transition">
+              {{ crumb.name }}
+            </a>
+          {% else %}
+            <span class="font-medium {% if forloop.last %}text-slate-900{% else %}text-slate-600{% endif %}" {% if forloop.last %}aria-current="page"{% endif %}>
+              {{ crumb.name }}
+            </span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  </div>
+</nav>
+{% endif %}

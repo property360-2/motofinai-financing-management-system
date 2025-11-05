@@ -1,0 +1,20 @@
+{% comment %}
+Responsive table wrapper that converts to cards on mobile
+Usage: Wrap your table with this component's divs
+{% endcomment %}
+
+<style>
+  @media (max-width: 768px) {
+    .responsive-table table {
+      display: none;
+    }
+    .responsive-table .mobile-card-view {
+      display: block;
+    }
+  }
+  @media (min-width: 769px) {
+    .responsive-table .mobile-card-view {
+      display: none;
+    }
+  }
+</style>

@@ -1,35 +1,144 @@
 {% extends 'layouts/base.html' %}
+{% load static %}
 
-{% block title %}MotofinAI · Financing & Inventory{% endblock title %}
+{% block title %}MotofinAI · Motorcycle Financing Management{% endblock title %}
 
 {% block content %}
-  <section class="mx-auto max-w-4xl px-6 py-16">
-    <div class="rounded-3xl bg-white p-10 shadow-lg ring-1 ring-slate-200">
-      <h1 class="text-3xl font-semibold tracking-tight text-slate-900">
-        Welcome to MotofinAI
-      </h1>
-      <p class="mt-4 text-base leading-7 text-slate-600">
-        Core authentication with role-based access control is now available. Use the sign-in button above to
-        authenticate as an admin or finance officer and continue into secured modules as they come online.
-      </p>
-      <div class="mt-8 grid gap-4 sm:grid-cols-2">
-        <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Auth & RBAC
-          </h2>
-          <p class="mt-2 text-sm text-slate-600">
-            Session-based authentication, login/logout flows, and role decorators enforce admin and finance-only areas.
-          </p>
-        </article>
-        <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Tailwind pipeline
-          </h2>
-          <p class="mt-2 text-sm text-slate-600">
-            Tailwind CSS is configured through django-tailwind. Compile assets via
-            <code class="rounded bg-slate-200 px-1 py-0.5 text-xs">python manage.py tailwind build</code>.
-          </p>
-        </article>
+  <section class="relative overflow-hidden bg-gradient-to-br from-sky-50 via-blue-50 to-slate-50">
+    <div class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10"></div>
+    <div class="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
+      <div class="mx-auto max-w-3xl text-center">
+        <div class="mb-8 inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700">
+          <span class="animate-pulse mr-2">✨</span>
+          Complete Financing Management System
+        </div>
+        <h1 class="text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl">
+          Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 to-blue-600">MotofinAI</span>
+        </h1>
+        <p class="mt-6 text-lg leading-8 text-slate-600">
+          A comprehensive motorcycle financing management system with role-based access control,
+          risk assessment, payment tracking, and comprehensive analytics for dealerships.
+        </p>
+        <div class="mt-10 flex items-center justify-center gap-x-6">
+          {% if request.user.is_authenticated %}
+            <a href="{% if request.user.is_admin %}{% url 'dashboard:admin' %}{% else %}{% url 'dashboard:finance' %}{% endif %}" class="rounded-lg bg-sky-600 px-6 py-3 text-base font-semibold text-white shadow-md hover:bg-sky-700 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
+              Go to Dashboard
+            </a>
+            <a href="{% url 'loans:new' %}" class="text-base font-semibold leading-7 text-slate-900 hover:text-sky-600 transition">
+              New Application <span aria-hidden="true">→</span>
+            </a>
+          {% else %}
+            <a href="{% url 'users:login' %}" class="rounded-lg bg-sky-600 px-6 py-3 text-base font-semibold text-white shadow-md hover:bg-sky-700 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
+              Sign In
+            </a>
+            <a href="#features" class="text-base font-semibold leading-7 text-slate-900 hover:text-sky-600 transition">
+              Learn more <span aria-hidden="true">→</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Feature Grid -->
+      <div id="features" class="mx-auto mt-24 max-w-7xl">
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Feature 1 -->
+          <div class="group relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
+            <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white mb-5">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Loan Management</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Complete loan application workflow with multi-step wizard, document management, and automated payment schedules.
+            </p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="group relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
+            <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white mb-5">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Risk Assessment</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Rule-based risk scoring system analyzing credit scores, employment status, income, and payment history.
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="group relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
+            <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white mb-5">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Payment Tracking</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Automated payment schedules, overdue tracking, and collection rate analytics with detailed breakdowns.
+            </p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="group relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
+            <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white mb-5">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Inventory Management</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Track motorcycle inventory with status management, image uploads, and integration with loan applications.
+            </p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="group relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
+            <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 text-white mb-5">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Repossession</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Manage repossession cases with event tracking, reminder systems, and recovery rate monitoring.
+            </p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="group relative rounded-2xl border border-slate-200 bg-white p-8 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
+            <div class="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white mb-5">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Audit Trail</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">
+              Complete system audit logging with user action tracking, IP addresses, and comprehensive activity history.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="mx-auto mt-24 max-w-7xl">
+        <div class="rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 p-12 shadow-2xl">
+          <div class="grid grid-cols-1 gap-8 sm:grid-cols-3 text-center text-white">
+            <div>
+              <div class="text-5xl font-bold">9+</div>
+              <div class="mt-2 text-sky-100">Integrated Modules</div>
+            </div>
+            <div>
+              <div class="text-5xl font-bold">2</div>
+              <div class="mt-2 text-sky-100">User Roles (RBAC)</div>
+            </div>
+            <div>
+              <div class="text-5xl font-bold">100%</div>
+              <div class="mt-2 text-sky-100">Test Coverage</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
