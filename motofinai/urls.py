@@ -29,4 +29,6 @@ urlpatterns = [
     path("payments/", include("motofinai.apps.payments.urls")),
     path("risk/", include("motofinai.apps.risk.urls")),
     path("repos/", include("motofinai.apps.repossession.urls")),
+    path("audit/", include("motofinai.apps.audit.urls")),
+    path("archive/", include("motofinai.apps.archive.urls")),
 ]
