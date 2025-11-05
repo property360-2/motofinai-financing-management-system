@@ -18,6 +18,21 @@
             {% if request.user.is_authenticated %}
               <div class="hidden items-center gap-4 text-slate-600 sm:flex">
                 {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "finance" %}
+                  {% if request.user.is_admin %}
+                  <a
+                    href="{% url 'dashboard:admin' %}"
+                    class="font-medium text-slate-600 transition hover:text-sky-700"
+                  >
+                    Dashboard
+                  </a>
+                  {% elif request.user.is_finance %}
+                  <a
+                    href="{% url 'dashboard:finance' %}"
+                    class="font-medium text-slate-600 transition hover:text-sky-700"
+                  >
+                    Dashboard
+                  </a>
+                  {% endif %}
                   <a
                     href="{% url 'inventory:motor-list' %}"
                     class="font-medium text-slate-600 transition hover:text-sky-700"

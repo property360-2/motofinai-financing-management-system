@@ -23,6 +23,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path("", include("motofinai.apps.users.urls")),
+    path("dashboard/", include("motofinai.apps.dashboard.urls")),
     path("inventory/", include("motofinai.apps.inventory.urls")),
     path("terms/", include("motofinai.apps.loans.urls")),
     path("loans/", include("motofinai.apps.loans.urls_applications")),

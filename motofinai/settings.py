@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "motofinai.apps.repossession",
     "motofinai.apps.audit",
     "motofinai.apps.archive",
+    "motofinai.apps.dashboard",
 ]
 
 if (BASE_DIR / "theme").exists():
