@@ -95,8 +95,8 @@
                                 #{{ schedule.id }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-slate-900">{{ schedule.loan_application.applicant.get_full_name }}</div>
-                                <div class="text-sm text-slate-500">{{ schedule.loan_application.applicant.email }}</div>
+                                <div class="text-sm font-medium text-slate-900">{{ schedule.loan_application.applicant_full_name }}</div>
+                                <div class="text-sm text-slate-500">{{ schedule.loan_application.applicant_email }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
                                 {{ schedule.loan_application.motor.model }}
@@ -133,13 +133,13 @@
                                 <div class="flex justify-end gap-2">
                                     {% if schedule.status != 'paid' %}
                                     <button
-                                        onclick="markAsPaid({{ schedule.id }}, '{{ schedule.loan_application.applicant.get_full_name }}', '{{ schedule.total_amount }}')"
+                                        onclick="markAsPaid({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name }}', '{{ schedule.total_amount }}')"
                                         class="text-emerald-600 hover:text-emerald-900 transition-colors font-medium">
                                         Mark as Paid
                                     </button>
-                                    {% if schedule.loan_application.applicant.phone_number %}
+                                    {% if schedule.loan_application.applicant_phone %}
                                     <button
-                                        onclick="sendReminder({{ schedule.id }}, '{{ schedule.loan_application.applicant.get_full_name }}', '{{ schedule.loan_application.applicant.phone_number }}')"
+                                        onclick="sendReminder({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name }}', '{{ schedule.loan_application.applicant_phone }}')"
                                         class="text-sky-600 hover:text-sky-900 transition-colors font-medium">
                                         Send Reminder
                                     </button>

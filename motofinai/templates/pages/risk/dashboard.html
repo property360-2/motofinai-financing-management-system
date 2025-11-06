@@ -92,8 +92,8 @@
                     {% if assessment.risk_level == 'LOW' %}border-emerald-200 bg-emerald-50{% elif assessment.risk_level == 'MEDIUM' %}border-amber-200 bg-amber-50{% else %}border-rose-200 bg-rose-50{% endif %}">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex-1">
-                            <h3 class="text-lg font-semibold text-slate-900">{{ assessment.loan_application.applicant.get_full_name }}</h3>
-                            <p class="text-sm text-slate-600">{{ assessment.loan_application.applicant.email }}</p>
+                            <h3 class="text-lg font-semibold text-slate-900">{{ assessment.loan_application.applicant_full_name }}</h3>
+                            <p class="text-sm text-slate-600">{{ assessment.loan_application.applicant_email }}</p>
                         </div>
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
                             {% if assessment.risk_level == 'LOW' %}bg-emerald-100 text-emerald-700{% elif assessment.risk_level == 'MEDIUM' %}bg-amber-100 text-amber-700{% else %}bg-rose-100 text-rose-700{% endif %}">
@@ -116,8 +116,8 @@
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-600">Monthly Income:</span>
                             <span class="font-medium text-slate-900">
-                                {% if assessment.loan_application.applicant.monthly_income %}
-                                    ₱{{ assessment.loan_application.applicant.monthly_income|floatformat:2 }}
+                                {% if assessment.loan_application.monthly_income %}
+                                    ₱{{ assessment.loan_application.monthly_income|floatformat:2 }}
                                 {% else %}
                                     N/A
                                 {% endif %}
