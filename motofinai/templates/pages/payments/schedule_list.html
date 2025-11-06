@@ -11,24 +11,28 @@
 <div class="min-h-screen bg-slate-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {# Page Header #}
-        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900 mb-2">Payments Tracking</h1>
-                <p class="text-slate-600">Monitor payment schedules and collection metrics</p>
+        <div class="mb-8">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 mb-2">Payments Tracking</h1>
+                    <p class="text-slate-600">Monitor payment schedules and collection metrics</p>
+                </div>
             </div>
-            <div class="flex gap-3">
-                <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
-                    <label for="start_date" class="text-sm font-medium text-slate-700">From:</label>
+
+            {# Date Filters - Stack on mobile #}
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-white px-4 py-3 sm:py-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="start_date" class="text-sm font-medium text-slate-700 whitespace-nowrap">From:</label>
                     <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}"
-                        class="text-sm border-0 p-0 focus:ring-0">
+                        class="text-sm border border-slate-300 rounded px-2 py-1 sm:border-0 sm:p-0 focus:ring-0 focus:border-sky-500 sm:focus:border-0">
                 </div>
-                <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
-                    <label for="end_date" class="text-sm font-medium text-slate-700">To:</label>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-white px-4 py-3 sm:py-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="end_date" class="text-sm font-medium text-slate-700 whitespace-nowrap">To:</label>
                     <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}"
-                        class="text-sm border-0 p-0 focus:ring-0">
+                        class="text-sm border border-slate-300 rounded px-2 py-1 sm:border-0 sm:p-0 focus:ring-0 focus:border-sky-500 sm:focus:border-0">
                 </div>
-                <button onclick="applyDateFilter()" class="px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors">
-                    Apply
+                <button onclick="applyDateFilter()" class="px-4 py-3 sm:py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors whitespace-nowrap">
+                    Apply Filter
                 </button>
             </div>
         </div>
@@ -46,7 +50,7 @@
             {# Bar Chart: Monthly Collected vs Pending #}
             <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
                 <h3 class="text-lg font-semibold text-slate-900 mb-4">Monthly Collected vs Pending Payments</h3>
-                <div style="height: 300px;">
+                <div class="relative w-full" style="height: 300px; max-height: 400px;">
                     <canvas id="collectedVsPendingChart"></canvas>
                 </div>
             </div>
@@ -54,7 +58,7 @@
             {# Line Chart: Collection Rate Trend #}
             <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
                 <h3 class="text-lg font-semibold text-slate-900 mb-4">Collection Rate Trend</h3>
-                <div style="height: 300px;">
+                <div class="relative w-full" style="height: 300px; max-height: 400px;">
                     <canvas id="collectionRateTrendChart"></canvas>
                 </div>
             </div>
@@ -62,10 +66,10 @@
 
         {# Payment Schedule Table #}
         <div class="bg-white rounded-xl shadow-md border border-slate-100 p-6">
-            <div class="flex items-center justify-between mb-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
                 <h2 class="text-xl font-semibold text-slate-900">Payment Schedule</h2>
                 <div class="flex gap-2">
-                    <select id="statusFilter" class="px-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <select id="statusFilter" class="px-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 w-full sm:w-auto">
                         <option value="">All Statuses</option>
                         <option value="pending">Pending</option>
                         <option value="paid">Paid</option>
@@ -74,7 +78,8 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
+            {# Desktop Table View - Hidden on mobile #}
+            <div class="hidden md:block overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-200">
                     <thead class="bg-slate-50">
                         <tr>
@@ -163,6 +168,87 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            {# Mobile Card View - Visible only on mobile #}
+            <div class="md:hidden space-y-4">
+                {% for schedule in schedules %}
+                <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow
+                    {% if schedule.status == 'paid' %}bg-emerald-50/30{% elif schedule.status == 'overdue' %}bg-rose-50/30{% else %}bg-amber-50/30{% endif %}">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs font-medium text-slate-500">#{{ schedule.id }}</span>
+                                {% if schedule.status == 'paid' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                    Paid
+                                </span>
+                                {% elif schedule.status == 'overdue' %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
+                                    Overdue
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                                    Pending
+                                </span>
+                                {% endif %}
+                            </div>
+                            <h3 class="text-base font-semibold text-slate-900">{{ schedule.loan_application.applicant_full_name }}</h3>
+                            <p class="text-sm text-slate-600">{{ schedule.loan_application.applicant_email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 mb-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Motorcycle:</span>
+                            <span class="font-medium text-slate-900">{{ schedule.loan_application.motor.model }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Due Date:</span>
+                            <span class="font-medium text-slate-900">{{ schedule.due_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Amount:</span>
+                            <span class="text-lg font-bold text-slate-900">₱{{ schedule.total_amount|floatformat:2 }}</span>
+                        </div>
+                        {% if schedule.status == 'paid' %}
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Paid Date:</span>
+                            <span class="font-medium text-slate-900">{{ schedule.updated_at|date:"M d, Y" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-3">
+                        {% if schedule.status != 'paid' %}
+                        <div class="flex flex-col gap-2">
+                            <button
+                                onclick="markAsPaid({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name }}', '{{ schedule.total_amount }}')"
+                                class="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">
+                                Mark as Paid
+                            </button>
+                            {% if schedule.loan_application.applicant_phone %}
+                            <button
+                                onclick="sendReminder({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name }}', '{{ schedule.loan_application.applicant_phone }}')"
+                                class="w-full px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors">
+                                Send Reminder
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="text-sm text-slate-400 block text-center">No actions available</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-slate-900">No payment schedules found</h3>
+                    <p class="mt-1 text-sm text-slate-500">Try adjusting your date range or filters.</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
