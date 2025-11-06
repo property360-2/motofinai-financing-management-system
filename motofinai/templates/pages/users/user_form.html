@@ -1,0 +1,176 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ form_title }}{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-2xl px-6 py-12">
+    <div class="mb-8">
+      <p class="text-sm uppercase tracking-wide text-sky-600">User Management</p>
+      <h1 class="mt-1 text-3xl font-semibold text-slate-900">{{ form_title }}</h1>
+      <p class="mt-2 text-sm text-slate-600">
+        {% if object %}
+          Update user account information, role, and status.
+        {% else %}
+          Create a new user account for the system.
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-800">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="space-y-6">
+          <!-- Username -->
+          <div>
+            <label for="{{ form.username.id_for_label }}" class="block text-sm font-semibold text-slate-700">
+              Username <span class="text-red-500">*</span>
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <p class="mt-1 text-xs text-red-600">{{ form.username.errors.0 }}</p>
+            {% endif %}
+            {% if form.username.help_text %}
+              <p class="mt-1 text-xs text-slate-500">{{ form.username.help_text }}</p>
+            {% endif %}
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label for="{{ form.email.id_for_label }}" class="block text-sm font-semibold text-slate-700">
+              Email
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <p class="mt-1 text-xs text-red-600">{{ form.email.errors.0 }}</p>
+            {% endif %}
+          </div>
+
+          <!-- First and Last Name -->
+          <div class="grid gap-6 sm:grid-cols-2">
+            <div>
+              <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-semibold text-slate-700">
+                First Name
+              </label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ form.first_name.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-semibold text-slate-700">
+                Last Name
+              </label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ form.last_name.errors.0 }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Passwords (only for create) -->
+          {% if form.password1 %}
+            <div>
+              <label for="{{ form.password1.id_for_label }}" class="block text-sm font-semibold text-slate-700">
+                Password <span class="text-red-500">*</span>
+              </label>
+              {{ form.password1 }}
+              {% if form.password1.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ form.password1.errors.0 }}</p>
+              {% endif %}
+              {% if form.password1.help_text %}
+                <p class="mt-1 text-xs text-slate-500">{{ form.password1.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.password2.id_for_label }}" class="block text-sm font-semibold text-slate-700">
+                Confirm Password <span class="text-red-500">*</span>
+              </label>
+              {{ form.password2 }}
+              {% if form.password2.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ form.password2.errors.0 }}</p>
+              {% endif %}
+              {% if form.password2.help_text %}
+                <p class="mt-1 text-xs text-slate-500">{{ form.password2.help_text }}</p>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <!-- Role -->
+          <div>
+            <label for="{{ form.role.id_for_label }}" class="block text-sm font-semibold text-slate-700">
+              Role <span class="text-red-500">*</span>
+            </label>
+            {{ form.role }}
+            {% if form.role.errors %}
+              <p class="mt-1 text-xs text-red-600">{{ form.role.errors.0 }}</p>
+            {% endif %}
+            <p class="mt-1 text-xs text-slate-500">
+              Admin: Full system access. Finance: Loan and payment management.
+            </p>
+          </div>
+
+          <!-- Checkboxes -->
+          <div class="space-y-4 rounded-lg bg-slate-50 p-4">
+            <div class="flex items-start">
+              <div class="flex h-5 items-center">
+                {{ form.is_active }}
+              </div>
+              <div class="ml-3">
+                <label for="{{ form.is_active.id_for_label }}" class="text-sm font-medium text-slate-700">
+                  Active
+                </label>
+                {% if form.is_active.help_text %}
+                  <p class="text-xs text-slate-500">{{ form.is_active.help_text }}</p>
+                {% endif %}
+                {% if form.is_active.errors %}
+                  <p class="text-xs text-red-600">{{ form.is_active.errors.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="flex items-start">
+              <div class="flex h-5 items-center">
+                {{ form.is_staff }}
+              </div>
+              <div class="ml-3">
+                <label for="{{ form.is_staff.id_for_label }}" class="text-sm font-medium text-slate-700">
+                  Staff Status
+                </label>
+                {% if form.is_staff.help_text %}
+                  <p class="text-xs text-slate-500">{{ form.is_staff.help_text }}</p>
+                {% endif %}
+                {% if form.is_staff.errors %}
+                  <p class="text-xs text-red-600">{{ form.is_staff.errors.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <a
+            href="{% url 'users:user-list' %}"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Cancel
+          </a>
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+          >
+            {{ submit_text }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+{% endblock content %}

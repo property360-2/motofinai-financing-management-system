@@ -217,6 +217,9 @@
                 <a href="{% url 'risk:dashboard' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Risk</a>
                 <a href="{% url 'repossession:case-list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Repossession</a>
                 <a href="{% url 'terms:list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Terms</a>
+                {% if request.user.is_admin %}
+                <a href="{% url 'users:user-list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Users</a>
+                {% endif %}
               {% endif %}
               <div class="flex items-center gap-4 pl-4 border-l border-slate-200">
                 <span class="text-xs text-slate-500" aria-label="Current user">
@@ -267,6 +270,9 @@
                 <a href="{% url 'risk:dashboard' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Risk</a>
                 <a href="{% url 'repossession:case-list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Repossession</a>
                 <a href="{% url 'terms:list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Financing Terms</a>
+                {% if request.user.is_admin %}
+                <a href="{% url 'users:user-list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">User Management</a>
+                {% endif %}
               {% endif %}
               <a href="{% url 'users:logout' %}" class="block rounded-md px-3 py-2 mt-2 text-base font-medium text-white bg-sky-600 hover:bg-sky-700">Sign out</a>
             {% else %}
