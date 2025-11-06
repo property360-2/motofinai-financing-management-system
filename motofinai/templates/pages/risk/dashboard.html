@@ -1,172 +1,305 @@
-{% extends "layouts/base.html" %}
+{% extends 'layouts/base.html' %}
+{% load static %}
 
-{% block title %}Risk assessments · {{ block.super }}{% endblock title %}
+{% block title %}{{ page_title }} - MotofinAI{% endblock %}
+
+{% block head_extras %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
 
 {% block content %}
-  <div class="mx-auto max-w-6xl space-y-8 px-4 py-10">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-slate-900">Risk assessments</h1>
-        <p class="text-sm text-slate-600">Track underwriting risk across active and pending loans.</p>
-      </div>
-      <a
-        href="{% url 'loans:list' %}"
-        class="inline-flex items-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
-      >Review loan pipeline &rarr;</a>
+<div class="min-h-screen bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {# Page Header #}
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 mb-2">AI Risk Scoring</h1>
+                <p class="text-slate-600">Evaluate customer creditworthiness and risk profiles</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="start_date" class="text-sm font-medium text-slate-700">From:</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}"
+                        class="text-sm border-0 p-0 focus:ring-0">
+                </div>
+                <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="end_date" class="text-sm font-medium text-slate-700">To:</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}"
+                        class="text-sm border-0 p-0 focus:ring-0">
+                </div>
+                <button onclick="applyDateFilter()" class="px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors">
+                    Apply
+                </button>
+            </div>
+        </div>
+
+        {# KPI Summary Cards #}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {% include 'components/molecules/kpi_card.html' with title="Average Risk Score" value=average_score icon="shield" %}
+            {% include 'components/molecules/kpi_card.html' with title="Low Risk Applications" value=low_risk_count icon="check" trend="up" trend_value="+10%" %}
+            {% include 'components/molecules/kpi_card.html' with title="High Risk Flagged" value=high_risk_count icon="alert" trend="down" trend_value="-5%" %}
+        </div>
+
+        {# Charts Section #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {# Pie Chart: Risk Distribution #}
+            <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Risk Distribution</h3>
+                <div style="height: 300px;">
+                    <canvas id="riskDistributionChart"></canvas>
+                </div>
+            </div>
+
+            {# Line Chart: Risk Factor Impact #}
+            <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Risk Factor Impact Trend</h3>
+                <div style="height: 300px;">
+                    <canvas id="riskFactorChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Customer Risk Assessment Section #}
+        <div class="bg-white rounded-xl shadow-md border border-slate-100 p-6">
+            <h2 class="text-xl font-semibold text-slate-900 mb-6">Customer Risk Assessment</h2>
+
+            {# Search and Filters #}
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <div class="flex-1">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        value="{{ search_query }}"
+                        placeholder="Search by customer name or email..."
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                </div>
+                <select id="riskLevelFilter" class="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <option value="">All Risk Levels</option>
+                    <option value="LOW" {% if risk_level_filter == 'LOW' %}selected{% endif %}>Low Risk</option>
+                    <option value="MEDIUM" {% if risk_level_filter == 'MEDIUM' %}selected{% endif %}>Medium Risk</option>
+                    <option value="HIGH" {% if risk_level_filter == 'HIGH' %}selected{% endif %}>High Risk</option>
+                </select>
+                <button onclick="applyFilters()" class="px-6 py-2 bg-sky-600 text-white font-medium rounded-lg hover:bg-sky-700 transition-colors">
+                    Apply Filters
+                </button>
+            </div>
+
+            {# Customer Cards Grid #}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for assessment in assessments %}
+                <div class="border rounded-xl p-6 hover:shadow-lg transition-shadow
+                    {% if assessment.risk_level == 'LOW' %}border-emerald-200 bg-emerald-50{% elif assessment.risk_level == 'MEDIUM' %}border-amber-200 bg-amber-50{% else %}border-rose-200 bg-rose-50{% endif %}">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-slate-900">{{ assessment.loan_application.applicant.get_full_name }}</h3>
+                            <p class="text-sm text-slate-600">{{ assessment.loan_application.applicant.email }}</p>
+                        </div>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                            {% if assessment.risk_level == 'LOW' %}bg-emerald-100 text-emerald-700{% elif assessment.risk_level == 'MEDIUM' %}bg-amber-100 text-amber-700{% else %}bg-rose-100 text-rose-700{% endif %}">
+                            {{ assessment.get_risk_level_display }}
+                        </span>
+                    </div>
+
+                    <div class="space-y-3 mb-4">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Motorcycle:</span>
+                            <span class="font-medium text-slate-900">{{ assessment.loan_application.motor.model }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Risk Score:</span>
+                            <span class="font-bold text-lg
+                                {% if assessment.risk_level == 'LOW' %}text-emerald-600{% elif assessment.risk_level == 'MEDIUM' %}text-amber-600{% else %}text-rose-600{% endif %}">
+                                {{ assessment.score|floatformat:0 }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Monthly Income:</span>
+                            <span class="font-medium text-slate-900">
+                                {% if assessment.loan_application.applicant.monthly_income %}
+                                    ₱{{ assessment.loan_application.applicant.monthly_income|floatformat:2 }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Credit Score:</span>
+                            <span class="font-medium text-slate-900">{{ assessment.credit_score|default:"N/A" }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Debt-to-Income:</span>
+                            <span class="font-medium text-slate-900">
+                                {% if assessment.debt_to_income_ratio %}
+                                    {{ assessment.debt_to_income_ratio|floatformat:1 }}%
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-600">Loan Amount:</span>
+                            <span class="font-medium text-slate-900">₱{{ assessment.loan_application.loan_amount|floatformat:2 }}</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-4 mb-4">
+                        <h4 class="text-xs font-semibold text-slate-700 uppercase mb-2">AI Insights</h4>
+                        <p class="text-sm text-slate-600">
+                            {% if assessment.risk_level == 'LOW' %}
+                            Strong financial profile with consistent income and low debt ratio. Recommended for approval with standard terms.
+                            {% elif assessment.risk_level == 'MEDIUM' %}
+                            Moderate risk profile. Consider requiring additional collateral or co-signer for approval.
+                            {% else %}
+                            High risk detected. Multiple risk factors identified. Recommend thorough manual review before proceeding.
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-4">
+                        <h4 class="text-xs font-semibold text-slate-700 uppercase mb-2">System Actions</h4>
+                        <div class="flex gap-2">
+                            <a href="{% url 'risk:detail' assessment.id %}" class="flex-1 text-center px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors">
+                                View Details
+                            </a>
+                            <a href="{% url 'loans:application_detail' assessment.loan_application.id %}" class="flex-1 text-center px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors">
+                                View Application
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full text-center py-12">
+                    <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-slate-900">No risk assessments found</h3>
+                    <p class="mt-1 text-sm text-slate-500">Try adjusting your filters or date range.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
+</div>
 
-    <section class="grid gap-4 md:grid-cols-4">
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Total assessed</p>
-        <p class="mt-2 text-2xl font-semibold text-slate-900">{{ total_assessments }}</p>
-      </div>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <p class="text-xs uppercase tracking-wide text-slate-500">High risk</p>
-        <p class="mt-2 text-2xl font-semibold text-rose-600">{{ high_risk_count }}</p>
-      </div>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Medium risk</p>
-        <p class="mt-2 text-2xl font-semibold text-amber-600">{{ medium_risk_count }}</p>
-      </div>
-      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <p class="text-xs uppercase tracking-wide text-slate-500">Average score</p>
-        <p class="mt-2 text-2xl font-semibold text-slate-900">
-          {% if average_score %}
-            {{ average_score|floatformat:1 }}
-          {% else %}
-            —
-          {% endif %}
-        </p>
-      </div>
-    </section>
+<script>
+// Chart Data from Backend
+const chartData = {{ chart_data|safe }};
 
-    <section class="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div class="border-b border-slate-200 px-4 py-4">
-        <h2 class="text-lg font-semibold text-slate-900">Latest evaluations</h2>
-        <p class="mt-1 text-sm text-slate-600">Includes both pending and active loans with computed risk scores.</p>
-      </div>
+// Initialize Charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Pie Chart: Risk Distribution
+    const riskDistCtx = document.getElementById('riskDistributionChart');
+    if (riskDistCtx && chartData && chartData.risk_distribution) {
+        new Chart(riskDistCtx, {
+            type: 'doughnut',
+            data: {
+                labels: chartData.risk_distribution.labels,
+                datasets: [{
+                    data: chartData.risk_distribution.data,
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(251, 191, 36, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { usePointStyle: true, padding: 15 } },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                cutout: '60%',
+            }
+        });
+    }
 
-      {# Desktop table view #}
-      <div class="hidden overflow-x-auto md:block">
-        <table class="min-w-full divide-y divide-slate-200 text-sm">
-          <caption class="sr-only">Risk assessment evaluations for all loan applications</caption>
-          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-            <tr>
-              <th scope="col" class="px-4 py-3 text-left">Loan</th>
-              <th scope="col" class="px-4 py-3 text-left">Applicant</th>
-              <th scope="col" class="px-4 py-3 text-left">Score</th>
-              <th scope="col" class="px-4 py-3 text-left">Level</th>
-              <th scope="col" class="px-4 py-3 text-left">Missed</th>
-              <th scope="col" class="px-4 py-3 text-left">Debt-to-income</th>
-              <th scope="col" class="px-4 py-3 text-left">Updated</th>
-              <th scope="col" class="px-4 py-3 text-left"><span class="sr-only">Actions</span></th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-200 bg-white">
-            {% for assessment in assessments %}
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-slate-700">
-                  <a href="{% url 'loans:detail' assessment.loan_application.pk %}" class="font-medium text-sky-600 hover:text-sky-700">
-                    Application #{{ assessment.loan_application.pk }}
-                  </a>
-                </td>
-                <td class="px-4 py-3 text-slate-600">
-                  {{ assessment.loan_application.applicant_full_name }}
-                </td>
-                <td class="px-4 py-3 font-semibold text-slate-900">{{ assessment.score }}</td>
-                <td class="px-4 py-3 text-slate-600">
-                  {% if assessment.risk_level == 'high' %}
-                    <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
-                      {{ assessment.get_risk_level_display }}
-                    </span>
-                  {% elif assessment.risk_level == 'medium' %}
-                    <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
-                      {{ assessment.get_risk_level_display }}
-                    </span>
-                  {% else %}
-                    <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                      {{ assessment.get_risk_level_display }}
-                    </span>
-                  {% endif %}
-                </td>
-                <td class="px-4 py-3 text-slate-600">{{ assessment.missed_payments }}</td>
-                <td class="px-4 py-3 text-slate-600">{{ assessment.debt_to_income_ratio }}%</td>
-                <td class="px-4 py-3 text-slate-600">{{ assessment.updated_at|date:"M d, Y" }}</td>
-                <td class="px-4 py-3 text-right">
-                  <a href="{% url 'risk:detail' assessment.pk %}" class="text-sm font-semibold text-sky-600 hover:text-sky-700">View</a>
-                </td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="8" class="px-4 py-6 text-center text-sm text-slate-500">
-                  No risk assessments yet. Generate one from a loan application to populate this dashboard.
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+    // Line Chart: Risk Factor Impact
+    const riskFactorCtx = document.getElementById('riskFactorChart');
+    if (riskFactorCtx && chartData && chartData.risk_factors) {
+        const labels = chartData.risk_factors.map(d => d.month);
+        const scores = chartData.risk_factors.map(d => d.avg_score);
 
-      {# Mobile card view #}
-      <div class="divide-y divide-slate-200 md:hidden">
-        {% for assessment in assessments %}
-          <div class="space-y-3 p-4 hover:bg-slate-50">
-            <div class="flex items-start justify-between">
-              <div>
-                <a href="{% url 'loans:detail' assessment.loan_application.pk %}" class="font-medium text-sky-600 hover:text-sky-700">
-                  Application #{{ assessment.loan_application.pk }}
-                </a>
-                <p class="mt-1 text-sm text-slate-600">{{ assessment.loan_application.applicant_full_name }}</p>
-              </div>
-              {% if assessment.risk_level == 'high' %}
-                <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
-                  {{ assessment.get_risk_level_display }}
-                </span>
-              {% elif assessment.risk_level == 'medium' %}
-                <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
-                  {{ assessment.get_risk_level_display }}
-                </span>
-              {% else %}
-                <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                  {{ assessment.get_risk_level_display }}
-                </span>
-              {% endif %}
-            </div>
-            <div class="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p class="text-xs text-slate-500">Score</p>
-                <p class="font-semibold text-slate-900">{{ assessment.score }}</p>
-              </div>
-              <div>
-                <p class="text-xs text-slate-500">Missed payments</p>
-                <p class="text-slate-700">{{ assessment.missed_payments }}</p>
-              </div>
-              <div>
-                <p class="text-xs text-slate-500">Debt-to-income</p>
-                <p class="text-slate-700">{{ assessment.debt_to_income_ratio }}%</p>
-              </div>
-              <div>
-                <p class="text-xs text-slate-500">Updated</p>
-                <p class="text-slate-700">{{ assessment.updated_at|date:"M d, Y" }}</p>
-              </div>
-            </div>
-            <div class="pt-2">
-              <a href="{% url 'risk:detail' assessment.pk %}" class="inline-flex items-center rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-700">
-                View details
-              </a>
-            </div>
-          </div>
-        {% empty %}
-          <div class="px-4 py-8 text-center">
-            <p class="text-sm text-slate-500">No risk assessments yet.</p>
-            <p class="mt-2 text-sm text-slate-600">
-              <a href="{% url 'loans:list' %}" class="font-medium text-sky-600 hover:text-sky-700">
-                Review loan applications &rarr;
-              </a>
-            </p>
-          </div>
-        {% endfor %}
-      </div>
-    </section>
-  </div>
-{% endblock content %}
+        new Chart(riskFactorCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Average Risk Score',
+                    data: scores,
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 12 }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, grid: { color: 'rgba(226, 232, 240, 0.5)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+});
+
+// Date Filter
+function applyDateFilter() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    const params = new URLSearchParams(window.location.search);
+    params.set('start_date', startDate);
+    params.set('end_date', endDate);
+    window.location.search = params.toString();
+}
+
+// Search and Filter
+function applyFilters() {
+    const search = document.getElementById('searchInput').value;
+    const riskLevel = document.getElementById('riskLevelFilter').value;
+    const params = new URLSearchParams(window.location.search);
+    if (search) params.set('search', search);
+    else params.delete('search');
+    if (riskLevel) params.set('risk_level', riskLevel);
+    else params.delete('risk_level');
+    window.location.search = params.toString();
+}
+
+// Enter key on search
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') applyFilters();
+    });
+}
+</script>
+{% endblock %}
