@@ -164,9 +164,32 @@
         </div>
       {% else %}
         <div class="px-6 py-16 text-center">
-          <p class="text-sm font-medium text-slate-600">
-            No motors found with the current filters.
-          </p>
+          <div class="flex flex-col items-center justify-center">
+            <svg class="h-16 w-16 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <h3 class="mt-4 text-base font-semibold text-slate-900">No motorcycles found</h3>
+            {% if request.GET %}
+              <p class="mt-2 max-w-md text-sm text-slate-600">No motorcycles match your current filters. Try adjusting your search criteria.</p>
+              <div class="mt-6">
+                <a href="{% url 'inventory:motor-list' %}" class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                  Clear filters
+                </a>
+              </div>
+            {% else %}
+              <p class="mt-2 max-w-md text-sm text-slate-600">Get started by adding motorcycles to your inventory. These will be available for loan applications.</p>
+              {% if can_manage_inventory %}
+                <div class="mt-6">
+                  <a href="{% url 'inventory:motor-create' %}" class="inline-flex items-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700">
+                    <svg class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add first motorcycle
+                  </a>
+                </div>
+              {% endif %}
+            {% endif %}
+          </div>
         </div>
       {% endif %}
     </div>
