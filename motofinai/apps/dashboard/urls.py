@@ -9,6 +9,7 @@ app_name = 'dashboard'
 urlpatterns = [
     path('admin/', views.AdminDashboardView.as_view(), name='admin'),
     path('finance/', views.FinanceDashboardView.as_view(), name='finance'),
+    path('loan-officer/', views.LoanOfficerDashboardView.as_view(), name='loan_officer'),
 
     # Export endpoints
     path('export/loans/', views.ExportLoansView.as_view(), name='export_loans'),

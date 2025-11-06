@@ -301,3 +301,17 @@ class FinanceDashboardKPI(DashboardKPI):
             'repossession': cls.get_repossession_kpis(),
             'recent_activities': cls.get_recent_activities(limit=5),
         }
+
+
+class LoanOfficerDashboardKPI(DashboardKPI):
+    """Loan Officer-specific KPI aggregator"""
+
+    @classmethod
+    def get_all_kpis(cls):
+        """Get all KPIs for loan officer dashboard"""
+        return {
+            'loans': cls.get_loan_kpis(),
+            'payments': cls.get_payment_kpis(),
+            'repossession': cls.get_repossession_kpis(),
+            'recent_activities': cls.get_recent_activities(limit=8),
+        }

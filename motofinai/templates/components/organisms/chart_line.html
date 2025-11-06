@@ -1,0 +1,105 @@
+{# Line Chart Component #}
+{# Usage: {% include 'components/organisms/chart_line.html' with chart_id="lineChart" chart_title="Trend" chart_height="300" %} #}
+
+<div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+    <h3 class="text-lg font-semibold text-slate-900 mb-4">{{ chart_title }}</h3>
+    <div style="height: {{ chart_height|default:'300' }}px;">
+        <canvas id="{{ chart_id }}"></canvas>
+    </div>
+</div>
+
+{% if not chart_js_loaded %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('{{ chart_id }}');
+    if (!ctx) return;
+
+    // Default data structure - override in parent template
+    const chartData = window['{{ chart_id }}_data'] || {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Dataset 1',
+            data: [65, 59, 80, 81, 56, 55],
+            borderColor: 'rgba(14, 165, 233, 1)',
+            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+        }]
+    };
+
+    const config = {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            family: "'Inter', sans-serif"
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    padding: 12,
+                    borderRadius: 8,
+                    titleFont: {
+                        size: 13,
+                        weight: '600'
+                    },
+                    bodyFont: {
+                        size: 12
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(226, 232, 240, 0.5)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    new Chart(ctx, config);
+});
+</script>

@@ -1,0 +1,115 @@
+{# Confirmation Modal Component #}
+{# Usage: Include this in your page and call showConfirmationModal(title, message, onConfirm) from JavaScript #}
+
+<div id="confirmationModal" class="fixed inset-0 bg-slate-900 bg-opacity-50 hidden items-center justify-center z-50 p-4" style="display: none;">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+        <div class="flex items-start gap-4 mb-4">
+            <div class="flex-shrink-0">
+                <div id="modalIconContainer" class="w-12 h-12 rounded-full flex items-center justify-center">
+                    <svg id="modalIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="flex-1">
+                <h3 id="modalTitle" class="text-lg font-semibold text-slate-900 mb-2"></h3>
+                <p id="modalMessage" class="text-sm text-slate-600"></p>
+            </div>
+        </div>
+        <div class="flex gap-3 justify-end mt-6">
+            <button
+                type="button"
+                id="modalCancelBtn"
+                class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+                Cancel
+            </button>
+            <button
+                type="button"
+                id="modalConfirmBtn"
+                class="px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Confirmation Modal Functions
+let confirmationCallback = null;
+
+function showConfirmationModal(title, message, onConfirm, type = 'warning') {
+    const modal = document.getElementById('confirmationModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmBtn = document.getElementById('modalConfirmBtn');
+    const iconContainer = document.getElementById('modalIconContainer');
+    const icon = document.getElementById('modalIcon');
+
+    // Set content
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    confirmationCallback = onConfirm;
+
+    // Set colors based on type
+    if (type === 'danger' || type === 'warning') {
+        iconContainer.className = 'w-12 h-12 rounded-full flex items-center justify-center bg-rose-100';
+        icon.className = 'w-6 h-6 text-rose-600';
+        confirmBtn.className = 'px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-lg hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-colors';
+    } else if (type === 'success') {
+        iconContainer.className = 'w-12 h-12 rounded-full flex items-center justify-center bg-emerald-100';
+        icon.className = 'w-6 h-6 text-emerald-600';
+        confirmBtn.className = 'px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors';
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+    } else {
+        iconContainer.className = 'w-12 h-12 rounded-full flex items-center justify-center bg-sky-100';
+        icon.className = 'w-6 h-6 text-sky-600';
+        confirmBtn.className = 'px-4 py-2 text-sm font-medium text-white bg-sky-600 rounded-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors';
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+    }
+
+    // Show modal
+    modal.style.display = 'flex';
+    modal.classList.remove('hidden');
+}
+
+function hideConfirmationModal() {
+    const modal = document.getElementById('confirmationModal');
+    modal.style.display = 'none';
+    modal.classList.add('hidden');
+    confirmationCallback = null;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmBtn = document.getElementById('modalConfirmBtn');
+    const cancelBtn = document.getElementById('modalCancelBtn');
+    const modal = document.getElementById('confirmationModal');
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (confirmationCallback) {
+                confirmationCallback();
+            }
+            hideConfirmationModal();
+        });
+    }
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', hideConfirmationModal);
+    }
+
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                hideConfirmationModal();
+            }
+        });
+    }
+
+    // ESC key to close
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideConfirmationModal();
+        }
+    });
+});
+</script>
