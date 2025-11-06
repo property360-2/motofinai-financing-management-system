@@ -4,111 +4,347 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="MotofinAI - Motorcycle Financing Management System" />
     <title>{% block title %}MotofinAI{% endblock title %}</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏍️</text></svg>" />
     <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}" />
     {% block head_extras %}{% endblock head_extras %}
+    <style>
+      /* Custom animations and enhancements */
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      .animate-slide-in { animation: slideIn 0.3s ease-out; }
+      .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+      .animate-spin { animation: spin 1s linear infinite; }
+
+      /* Mobile menu transition */
+      .mobile-menu {
+        transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+      }
+      .mobile-menu.open {
+        max-height: 100vh;
+        opacity: 1;
+      }
+
+      /* Focus visible styles for accessibility */
+      *:focus-visible {
+        outline: 2px solid #0ea5e9;
+        outline-offset: 2px;
+      }
+
+      /* Loading overlay */
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      .loading-overlay.show {
+        display: flex;
+      }
+    </style>
   </head>
-  <body class="min-h-full font-sans text-slate-900">
+  <body class="min-h-full font-sans text-slate-900 antialiased">
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite">
+      <div class="text-center">
+        <div class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-white border-r-transparent"></div>
+        <p class="mt-4 text-white font-medium">Loading...</p>
+      </div>
+    </div>
+
     <div class="min-h-screen flex flex-col">
       {% include 'components/atoms/skip_link.html' %}
-      <header class="border-b border-slate-200 bg-white">
-        <div class="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4">
-          <a href="{% url 'home' %}" class="text-lg font-semibold text-slate-900">MotofinAI</a>
-          <nav class="flex items-center gap-4 text-sm">
+      <header class="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm" role="banner">
+        <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 lg:px-6">
+          <div class="flex items-center gap-4">
+            <a href="{% url 'home' %}" class="flex items-center gap-2 text-lg font-bold text-slate-900 transition hover:text-sky-600" aria-label="MotofinAI Home">
+              <span aria-hidden="true">🏍️</span>
+              <span>MotofinAI</span>
+            </a>
+          </div>
+
+          <!-- Desktop Navigation -->
+          <nav class="hidden lg:flex items-center gap-6 text-sm" role="navigation" aria-label="Main navigation">
             {% if request.user.is_authenticated %}
-              <div class="hidden items-center gap-4 text-slate-600 sm:flex">
-                {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "finance" %}
-                  {% if request.user.is_admin %}
-                  <a
-                    href="{% url 'dashboard:admin' %}"
-                    class="font-medium text-slate-600 transition hover:text-sky-700"
-                  >
-                    Dashboard
-                  </a>
-                  {% elif request.user.is_finance %}
-                  <a
-                    href="{% url 'dashboard:finance' %}"
-                    class="font-medium text-slate-600 transition hover:text-sky-700"
-                  >
-                    Dashboard
-                  </a>
-                  {% endif %}
-                  <a
-                    href="{% url 'inventory:motor-list' %}"
-                    class="font-medium text-slate-600 transition hover:text-sky-700"
-                  >
-                    Inventory
-                  </a>
-                  <a
-                    href="{% url 'loans:list' %}"
-                    class="font-medium text-slate-600 transition hover:text-sky-700"
-                  >
-                    Loan applications
-                  </a>
-                  <a
-                    href="{% url 'payments:schedule-list' %}"
-                    class="font-medium text-slate-600 transition hover:text-sky-700"
-                  >
-                    Payments
-                  </a>
-                  <a
-                    href="{% url 'risk:dashboard' %}"
-                    class="font-medium text-slate-600 transition hover:text-sky-700"
-                  >
-                    Risk scoring
-                  </a>
-                  <a
-                    href="{% url 'repossession:case-list' %}"
-                    class="font-medium text-slate-600 transition hover:text-sky-700"
-                  >
-                    Repossession
-                  </a>
-                  <a
-                    href="{% url 'terms:list' %}"
-                    class="font-medium text-slate-600 transition hover:text-sky-700"
-                  >
-                    Financing terms
-                  </a>
+              {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "finance" %}
+                {% if request.user.is_admin %}
+                <a href="{% url 'dashboard:admin' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700" aria-label="Admin Dashboard">Dashboard</a>
+                {% elif request.user.is_finance %}
+                <a href="{% url 'dashboard:finance' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700" aria-label="Finance Dashboard">Dashboard</a>
                 {% endif %}
+                <a href="{% url 'inventory:motor-list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Inventory</a>
+                <a href="{% url 'loans:list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Loans</a>
+                <a href="{% url 'payments:schedule-list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Payments</a>
+                <a href="{% url 'risk:dashboard' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Risk</a>
+                <a href="{% url 'repossession:case-list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Repossession</a>
+                <a href="{% url 'terms:list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Terms</a>
+              {% endif %}
+              <div class="flex items-center gap-4 pl-4 border-l border-slate-200">
+                <span class="text-xs text-slate-500" aria-label="Current user">
+                  {{ request.user.get_full_name|default:request.user.username }}
+                </span>
+                <a href="{% url 'users:logout' %}" class="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 focus:bg-slate-200">Sign out</a>
               </div>
-              <span class="hidden text-slate-500 sm:inline-flex">
-                Signed in as {{ request.user.get_full_name|default:request.user.username }}
-              </span>
-              <a
-                href="{% url 'users:logout' %}"
-                class="font-medium text-sky-600 transition hover:text-sky-700"
-                >Sign out</a
-              >
             {% else %}
-              <a
-                href="{% url 'users:login' %}"
-                class="font-medium text-sky-600 transition hover:text-sky-700"
-                >Sign in</a
-              >
+              <a href="{% url 'users:login' %}" class="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700 focus:bg-sky-700">Sign in</a>
             {% endif %}
           </nav>
+
+          <!-- Mobile Menu Button -->
+          <button
+            type="button"
+            id="mobileMenuButton"
+            class="lg:hidden inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-600"
+            aria-controls="mobileMenu"
+            aria-expanded="false"
+            aria-label="Toggle navigation menu"
+          >
+            <svg class="h-6 w-6" id="menuIconOpen" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+            <svg class="h-6 w-6 hidden" id="menuIconClose" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu lg:hidden border-t border-slate-200 bg-white" id="mobileMenu" aria-label="Mobile navigation">
+          <div class="space-y-1 px-4 pb-3 pt-2">
+            {% if request.user.is_authenticated %}
+              <div class="mb-3 pb-3 border-b border-slate-200">
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Signed in as</p>
+                <p class="mt-1 text-sm font-semibold text-slate-900">{{ request.user.get_full_name|default:request.user.username }}</p>
+              </div>
+              {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "finance" %}
+                {% if request.user.is_admin %}
+                <a href="{% url 'dashboard:admin' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Dashboard</a>
+                {% elif request.user.is_finance %}
+                <a href="{% url 'dashboard:finance' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Dashboard</a>
+                {% endif %}
+                <a href="{% url 'inventory:motor-list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Inventory</a>
+                <a href="{% url 'loans:list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Loans</a>
+                <a href="{% url 'payments:schedule-list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Payments</a>
+                <a href="{% url 'risk:dashboard' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Risk</a>
+                <a href="{% url 'repossession:case-list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Repossession</a>
+                <a href="{% url 'terms:list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Financing Terms</a>
+              {% endif %}
+              <a href="{% url 'users:logout' %}" class="block rounded-md px-3 py-2 mt-2 text-base font-medium text-white bg-sky-600 hover:bg-sky-700">Sign out</a>
+            {% else %}
+              <a href="{% url 'users:login' %}" class="block rounded-md px-3 py-2 text-base font-medium text-white bg-sky-600 hover:bg-sky-700">Sign in</a>
+            {% endif %}
+          </div>
         </div>
       </header>
       {% if messages %}
-        <div class="border-b border-sky-100 bg-sky-50">
-          <div class="mx-auto max-w-5xl px-4 py-3 text-sm text-sky-900">
-            <ul class="space-y-1">
+        <div class="animate-fade-in border-b border-sky-100 bg-gradient-to-r from-sky-50 to-blue-50" role="alert">
+          <div class="mx-auto max-w-7xl px-4 py-3 lg:px-6">
+            <ul class="space-y-2">
               {% for message in messages %}
-                <li>{{ message }}</li>
+                <li class="flex items-start gap-3 text-sm {% if message.tags == 'error' %}text-red-700{% elif message.tags == 'warning' %}text-amber-700{% elif message.tags == 'success' %}text-green-700{% else %}text-sky-900{% endif %}">
+                  <span class="flex-shrink-0 mt-0.5">
+                    {% if message.tags == 'error' %}
+                      <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+                      </svg>
+                    {% elif message.tags == 'success' %}
+                      <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+                      </svg>
+                    {% elif message.tags == 'warning' %}
+                      <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                      </svg>
+                    {% else %}
+                      <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+                      </svg>
+                    {% endif %}
+                  </span>
+                  <span class="flex-1">{{ message }}</span>
+                </li>
               {% endfor %}
             </ul>
           </div>
         </div>
       {% endif %}
-      <main id="main-content" class="flex-1">
+
+      <!-- Breadcrumbs -->
+      {% block breadcrumbs %}{% endblock breadcrumbs %}
+
+      <main id="main-content" class="flex-1" role="main">
         {% block content %}{% endblock content %}
       </main>
-      <footer class="py-6 text-center text-xs text-slate-500">
-        {% block footer %}
-        &copy; {% now 'Y' %} MotofinAI. All rights reserved.
-        {% endblock footer %}
+
+      <footer class="mt-auto border-t border-slate-200 bg-white py-8" role="contentinfo">
+        <div class="mx-auto max-w-7xl px-4 lg:px-6">
+          <div class="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+            <div class="text-sm text-slate-600">
+              &copy; {% now 'Y' %} MotofinAI. All rights reserved.
+            </div>
+            <div class="flex items-center gap-6 text-sm text-slate-600">
+              {% if request.user.is_authenticated and request.user.is_admin %}
+                <a href="{% url 'audit:list' %}" class="transition hover:text-sky-600">Audit Trail</a>
+                <a href="{% url 'archive:list' %}" class="transition hover:text-sky-600">Archive</a>
+              {% endif %}
+              <span class="text-slate-400">v1.0.0</span>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
+
+    <!-- JavaScript for interactivity -->
+    <script>
+      // Mobile menu toggle
+      (function() {
+        const menuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuIconOpen = document.getElementById('menuIconOpen');
+        const menuIconClose = document.getElementById('menuIconClose');
+
+        if (menuButton && mobileMenu) {
+          menuButton.addEventListener('click', function() {
+            const isOpen = mobileMenu.classList.contains('open');
+
+            if (isOpen) {
+              mobileMenu.classList.remove('open');
+              menuButton.setAttribute('aria-expanded', 'false');
+              menuIconOpen.classList.remove('hidden');
+              menuIconClose.classList.add('hidden');
+            } else {
+              mobileMenu.classList.add('open');
+              menuButton.setAttribute('aria-expanded', 'true');
+              menuIconOpen.classList.add('hidden');
+              menuIconClose.classList.remove('hidden');
+            }
+          });
+
+          // Close mobile menu when clicking outside
+          document.addEventListener('click', function(event) {
+            const isClickInside = menuButton.contains(event.target) || mobileMenu.contains(event.target);
+            if (!isClickInside && mobileMenu.classList.contains('open')) {
+              mobileMenu.classList.remove('open');
+              menuButton.setAttribute('aria-expanded', 'false');
+              menuIconOpen.classList.remove('hidden');
+              menuIconClose.classList.add('hidden');
+            }
+          });
+
+          // Close mobile menu on escape key
+          document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && mobileMenu.classList.contains('open')) {
+              mobileMenu.classList.remove('open');
+              menuButton.setAttribute('aria-expanded', 'false');
+              menuIconOpen.classList.remove('hidden');
+              menuIconClose.classList.add('hidden');
+              menuButton.focus();
+            }
+          });
+        }
+      })();
+
+      // Confirmation dialogs for destructive actions
+      document.addEventListener('DOMContentLoaded', function() {
+        const deleteButtons = document.querySelectorAll('a[href*="delete"], button[name*="delete"], form[action*="delete"] button[type="submit"]');
+        deleteButtons.forEach(function(button) {
+          button.addEventListener('click', function(event) {
+            if (!button.hasAttribute('data-no-confirm')) {
+              const confirmMessage = button.getAttribute('data-confirm') || 'Are you sure you want to delete this item? This action cannot be undone.';
+              if (!confirm(confirmMessage)) {
+                event.preventDefault();
+              }
+            }
+          });
+        });
+      });
+
+      // Show loading overlay on form submissions
+      document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('form:not([data-no-loading])');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        forms.forEach(function(form) {
+          form.addEventListener('submit', function(event) {
+            // Don't show loading for forms with file inputs (better to show progress separately)
+            const hasFileInput = form.querySelector('input[type="file"]');
+            if (!hasFileInput && loadingOverlay) {
+              loadingOverlay.classList.add('show');
+            }
+          });
+        });
+
+        // Auto-dismiss success messages after 5 seconds
+        setTimeout(function() {
+          const messages = document.querySelectorAll('[role="alert"]');
+          messages.forEach(function(message) {
+            if (message.textContent.includes('success') || message.classList.contains('bg-gradient-to-r')) {
+              message.style.transition = 'opacity 0.5s ease-out';
+              message.style.opacity = '0';
+              setTimeout(function() {
+                message.remove();
+              }, 500);
+            }
+          });
+        }, 5000);
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+          anchor.addEventListener('click', function(e) {
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+              e.preventDefault();
+              target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
+          });
+        });
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(event) {
+        // Ctrl/Cmd + K: Focus search (if exists)
+        if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+          event.preventDefault();
+          const searchInput = document.querySelector('input[type="search"], input[name="q"]');
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          }
+        }
+
+        // Ctrl/Cmd + /: Focus navigation
+        if ((event.ctrlKey || event.metaKey) && event.key === '/') {
+          event.preventDefault();
+          const firstNavLink = document.querySelector('nav a');
+          if (firstNavLink) {
+            firstNavLink.focus();
+          }
+        }
+      });
+    </script>
+
     {% block scripts %}{% endblock scripts %}
   </body>
 </html>
