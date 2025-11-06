@@ -13,6 +13,7 @@ media/
 # Environment
 .env
 .venv/
+venv/
 
 # Tailwind / Node
 node_modules/
