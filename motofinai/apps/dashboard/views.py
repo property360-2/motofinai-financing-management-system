@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 
-from .kpi import AdminDashboardKPI, FinanceDashboardKPI
+from .kpi import AdminDashboardKPI, FinanceDashboardKPI, LoanOfficerDashboardKPI
 from .reports import LoanReport, PaymentReport, RiskReport, InventoryReport
 
 
@@ -45,6 +45,60 @@ class FinanceDashboardView(LoginRequiredMixin, TemplateView):
             'page_title': 'Finance Dashboard',
             'kpis': kpis,
             'current_month': timezone.now().strftime('%B %Y'),
+        })
+
+        return context
+
+
+class LoanOfficerDashboardView(LoginRequiredMixin, TemplateView):
+    """Loan Officer dashboard with application tracking and repossession alerts"""
+    template_name = 'pages/dashboard/loan_officer_dashboard.html'
+    required_roles = ['finance', 'admin']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from motofinai.apps.loans.models import LoanApplication
+        from motofinai.apps.repossession.models import RepossessionCase
+
+        # Get loan officer KPIs
+        kpis = LoanOfficerDashboardKPI.get_all_kpis()
+
+        # Get recent applications categorized
+        recent_pending = LoanApplication.objects.filter(
+            status='pending'
+        ).select_related('applicant', 'motor').order_by('-created_at')[:10]
+
+        recent_approved = LoanApplication.objects.filter(
+            status='approved'
+        ).select_related('applicant', 'motor').order_by('-created_at')[:10]
+
+        recent_under_review = LoanApplication.objects.filter(
+            status='under_review'
+        ).select_related('applicant', 'motor').order_by('-created_at')[:10]
+
+        # Get repossession alerts categorized by risk
+        high_risk_repos = RepossessionCase.objects.filter(
+            status='ACTIVE'
+        ).select_related('loan__applicant', 'loan__motor').order_by('-created_at')[:10]
+
+        medium_risk_repos = RepossessionCase.objects.filter(
+            status='REMINDER'
+        ).select_related('loan__applicant', 'loan__motor').order_by('-created_at')[:10]
+
+        low_risk_repos = RepossessionCase.objects.filter(
+            status='WARNING'
+        ).select_related('loan__applicant', 'loan__motor').order_by('-created_at')[:10]
+
+        context.update({
+            'page_title': 'Loan Officer Dashboard',
+            'kpis': kpis,
+            'current_month': timezone.now().strftime('%B %Y'),
+            'recent_pending': recent_pending,
+            'recent_approved': recent_approved,
+            'recent_under_review': recent_under_review,
+            'high_risk_repos': high_risk_repos,
+            'medium_risk_repos': medium_risk_repos,
+            'low_risk_repos': low_risk_repos,
         })
 
         return context

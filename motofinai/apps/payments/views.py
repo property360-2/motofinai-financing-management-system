@@ -2,15 +2,19 @@ from __future__ import annotations
 
 from decimal import Decimal
 from typing import Any, Dict
+from datetime import datetime, timedelta
+from calendar import monthrange
+import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q, Sum
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.views.generic import FormView, TemplateView
 
 from motofinai.apps.loans.models import LoanApplication, PaymentSchedule
@@ -23,11 +27,44 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
     template_name = "pages/payments/schedule_list.html"
     required_roles = ("admin", "finance")
 
+    def get_date_range(self):
+        """Get date range from request or default to current month"""
+        now = timezone.now()
+
+        # Get start and end dates from GET parameters
+        start_date_str = self.request.GET.get('start_date')
+        end_date_str = self.request.GET.get('end_date')
+
+        if start_date_str and end_date_str:
+            try:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                # Fall back to current month if invalid dates
+                start_date = now.replace(day=1).date()
+                _, last_day = monthrange(now.year, now.month)
+                end_date = now.replace(day=last_day).date()
+        else:
+            # Default to current month
+            start_date = now.replace(day=1).date()
+            _, last_day = monthrange(now.year, now.month)
+            end_date = now.replace(day=last_day).date()
+
+        return start_date, end_date
+
     def get_queryset(self):
         reference_date = timezone.now().date()
         PaymentSchedule.objects.mark_overdue(reference_date)
+
+        start_date, end_date = self.get_date_range()
+
         schedules = (
-            PaymentSchedule.objects.select_related("loan_application", "loan_application__motor")
+            PaymentSchedule.objects.select_related(
+                "loan_application",
+                "loan_application__motor",
+                "loan_application__applicant"
+            )
+            .filter(due_date__gte=start_date, due_date__lte=end_date)
             .order_by("due_date", "sequence")
         )
         loan_id = self.request.GET.get("loan")
@@ -63,16 +100,71 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
             "paid_count": aggregates["paid_count"] or 0,
             "collection_rate": collection_rate,
             "pending_amount": due_total + overdue_total,
+            "total_collected": paid_total,
+        }
+
+    def get_chart_data(self):
+        """Generate data for payment tracking charts"""
+        now = timezone.now()
+
+        # Get last 6 months of data for charts
+        months_data = []
+        collection_rates = []
+
+        for i in range(5, -1, -1):
+            month_date = now - timedelta(days=30 * i)
+            month_start = month_date.replace(day=1).date()
+            _, last_day = monthrange(month_date.year, month_date.month)
+            month_end = month_date.replace(day=last_day).date()
+
+            month_schedules = PaymentSchedule.objects.filter(
+                due_date__gte=month_start,
+                due_date__lte=month_end
+            )
+
+            month_summary = month_schedules.aggregate(
+                collected=Sum("total_amount", filter=Q(status=PaymentSchedule.Status.PAID)),
+                pending=Sum("total_amount", filter=~Q(status=PaymentSchedule.Status.PAID)),
+            )
+
+            collected = float(month_summary["collected"] or 0)
+            pending = float(month_summary["pending"] or 0)
+            total = collected + pending
+            rate = (collected / total * 100) if total > 0 else 0
+
+            months_data.append({
+                'month': month_date.strftime('%b'),
+                'collected': collected,
+                'pending': pending,
+            })
+            collection_rates.append({
+                'month': month_date.strftime('%b'),
+                'rate': round(rate, 2),
+            })
+
+        return {
+            'months_data': months_data,
+            'collection_rates': collection_rates,
         }
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         schedules = self.get_queryset()
+        start_date, end_date = self.get_date_range()
+
+        # Convert chart data to JSON for template
+        chart_data = self.get_chart_data()
+        chart_data_json = mark_safe(json.dumps(chart_data))
+
         context.update(
             {
                 "schedules": schedules,
                 "summary": self.get_summary(schedules),
                 "loans": LoanApplication.objects.order_by("-submitted_at")[:20],
+                "chart_data": chart_data_json,
+                "start_date": start_date,
+                "end_date": end_date,
+                "page_title": "Payment Tracking",
             }
         )
         return context

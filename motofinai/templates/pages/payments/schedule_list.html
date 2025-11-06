@@ -1,185 +1,383 @@
-{% extends "layouts/base.html" %}
+{% extends 'layouts/base.html' %}
+{% load static %}
 
-{% block title %}Payment Schedules · {{ block.super }}{% endblock title %}
+{% block title %}{{ page_title }} - MotofinAI{% endblock %}
+
+{% block head_extras %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
 
 {% block content %}
-  <div class="mx-auto max-w-5xl px-4 py-10">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold text-slate-900">Payment schedules</h1>
-        <p class="mt-1 text-sm text-slate-600">
-          Monitor installments, flag overdue items, and record successful collections.
-        </p>
-      </div>
+<div class="min-h-screen bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {# Page Header #}
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 mb-2">Payments Tracking</h1>
+                <p class="text-slate-600">Monitor payment schedules and collection metrics</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="start_date" class="text-sm font-medium text-slate-700">From:</label>
+                    <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}"
+                        class="text-sm border-0 p-0 focus:ring-0">
+                </div>
+                <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="end_date" class="text-sm font-medium text-slate-700">To:</label>
+                    <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}"
+                        class="text-sm border-0 p-0 focus:ring-0">
+                </div>
+                <button onclick="applyDateFilter()" class="px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors">
+                    Apply
+                </button>
+            </div>
+        </div>
+
+        {# KPI Summary Cards #}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {% include 'components/molecules/kpi_card.html' with title="Total Collected" value="₱"|add:summary.total_collected|floatformat:2 icon="dollar" trend="up" trend_value="+15%" %}
+            {% include 'components/molecules/kpi_card.html' with title="Pending Payments" value="₱"|add:summary.pending_amount|floatformat:2 icon="clock" %}
+            {% include 'components/molecules/kpi_card.html' with title="Overdue Amount" value="₱"|add:summary.overdue_total|floatformat:2 icon="alert" trend="down" trend_value="-8%" %}
+            {% include 'components/molecules/kpi_card.html' with title="Collection Rate" value=summary.collection_rate|floatformat:1|add:"%" icon="percent" trend="up" trend_value="+3%" %}
+        </div>
+
+        {# Charts Section #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {# Bar Chart: Monthly Collected vs Pending #}
+            <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Monthly Collected vs Pending Payments</h3>
+                <div style="height: 300px;">
+                    <canvas id="collectedVsPendingChart"></canvas>
+                </div>
+            </div>
+
+            {# Line Chart: Collection Rate Trend #}
+            <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Collection Rate Trend</h3>
+                <div style="height: 300px;">
+                    <canvas id="collectionRateTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Payment Schedule Table #}
+        <div class="bg-white rounded-xl shadow-md border border-slate-100 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-slate-900">Payment Schedule</h2>
+                <div class="flex gap-2">
+                    <select id="statusFilter" class="px-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Payment ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Customer Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Motorcycle</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Due Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Paid Date</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-200">
+                        {% for schedule in schedules %}
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                                #{{ schedule.id }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-slate-900">{{ schedule.loan_application.applicant.get_full_name }}</div>
+                                <div class="text-sm text-slate-500">{{ schedule.loan_application.applicant.email }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                {{ schedule.loan_application.motor.model }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                                {{ schedule.due_date|date:"M d, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">
+                                ₱{{ schedule.total_amount|floatformat:2 }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if schedule.status == 'paid' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                    Paid
+                                </span>
+                                {% elif schedule.status == 'overdue' %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
+                                    Overdue
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                                    Pending
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                                {% if schedule.status == 'paid' %}
+                                    {{ schedule.updated_at|date:"M d, Y" }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end gap-2">
+                                    {% if schedule.status != 'paid' %}
+                                    <button
+                                        onclick="markAsPaid({{ schedule.id }}, '{{ schedule.loan_application.applicant.get_full_name }}', '{{ schedule.total_amount }}')"
+                                        class="text-emerald-600 hover:text-emerald-900 transition-colors font-medium">
+                                        Mark as Paid
+                                    </button>
+                                    {% if schedule.loan_application.applicant.phone_number %}
+                                    <button
+                                        onclick="sendReminder({{ schedule.id }}, '{{ schedule.loan_application.applicant.get_full_name }}', '{{ schedule.loan_application.applicant.phone_number }}')"
+                                        class="text-sky-600 hover:text-sky-900 transition-colors font-medium">
+                                        Send Reminder
+                                    </button>
+                                    {% endif %}
+                                    {% else %}
+                                    <span class="text-slate-400">No actions</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center">
+                                <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <h3 class="mt-2 text-sm font-medium text-slate-900">No payment schedules found</h3>
+                                <p class="mt-1 text-sm text-slate-500">Try adjusting your date range or filters.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
+</div>
 
-    <dl class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
-        <dt class="text-xs uppercase tracking-wide text-slate-500">Pending amount</dt>
-        <dd class="mt-2 text-2xl font-semibold text-slate-900">₱{{ summary.pending_amount }}</dd>
-        <p class="mt-1 text-xs text-slate-500">Due + overdue installments awaiting payment.</p>
-      </div>
-      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
-        <dt class="text-xs uppercase tracking-wide text-slate-500">Overdue</dt>
-        <dd class="mt-2 text-2xl font-semibold text-rose-600">₱{{ summary.overdue_total }}</dd>
-        <p class="mt-1 text-xs text-slate-500">{{ summary.overdue_count }} installment{{ summary.overdue_count|pluralize }} past due.</p>
-      </div>
-      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
-        <dt class="text-xs uppercase tracking-wide text-slate-500">Collected</dt>
-        <dd class="mt-2 text-2xl font-semibold text-emerald-600">₱{{ summary.paid_total }}</dd>
-        <p class="mt-1 text-xs text-slate-500">{{ summary.paid_count }} installment{{ summary.paid_count|pluralize }} settled.</p>
-      </div>
-      <div class="rounded-lg border border-slate-200 bg-white px-4 py-5 shadow-sm">
-        <dt class="text-xs uppercase tracking-wide text-slate-500">Collection rate</dt>
-        <dd class="mt-2 text-2xl font-semibold text-slate-900">{{ summary.collection_rate }}%</dd>
-        <p class="mt-1 text-xs text-slate-500">Percentage of generated schedule already collected.</p>
-      </div>
-    </dl>
+{# Include confirmation modal #}
+{% include 'components/organisms/confirmation_modal.html' %}
 
-    <div class="mt-10 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-      {# Desktop table view #}
-      <div class="hidden md:block">
-        <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
-          <caption class="sr-only">Payment schedules for all loan applications</caption>
-          <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-            <tr>
-              <th scope="col" class="px-4 py-3">Loan</th>
-              <th scope="col" class="px-4 py-3">Applicant</th>
-              <th scope="col" class="px-4 py-3">Due date</th>
-              <th scope="col" class="px-4 py-3">Amount</th>
-              <th scope="col" class="px-4 py-3">Status</th>
-              <th scope="col" class="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-200 text-slate-700">
-            {% for schedule in schedules %}
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3">
-                  <div class="font-medium text-slate-900">{{ schedule.loan_application.motor.display_name }}</div>
-                  <div class="text-xs text-slate-500">#{{ schedule.loan_application_id }} · Term {{ schedule.sequence }}</div>
-                </td>
-                <td class="px-4 py-3">
-                  <div class="font-medium text-slate-900">{{ schedule.loan_application.applicant_full_name }}</div>
-                  <div class="text-xs text-slate-500">₱{{ schedule.loan_application.monthly_payment }} / month</div>
-                </td>
-                <td class="px-4 py-3 text-slate-600">{{ schedule.due_date|date:"M d, Y" }}</td>
-                <td class="px-4 py-3 font-medium text-slate-700">₱{{ schedule.total_amount }}</td>
-                <td class="px-4 py-3">
-                  {% if schedule.status == 'paid' %}
-                    <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                      {{ schedule.get_status_display }}
-                    </span>
-                  {% elif schedule.status == 'overdue' %}
-                    <span class="inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
-                      {{ schedule.get_status_display }}
-                    </span>
-                  {% else %}
-                    <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                      {{ schedule.get_status_display }}
-                    </span>
-                  {% endif %}
-                </td>
-                <td class="px-4 py-3 text-right text-sm">
-                  <div class="inline-flex items-center gap-3">
-                    <a
-                      href="{% url 'loans:detail' schedule.loan_application_id %}"
-                      class="font-medium text-slate-600 transition hover:text-sky-700"
-                    >
-                      View loan
-                    </a>
-                    {% if schedule.status != 'paid' %}
-                      <a
-                        href="{% url 'payments:record-payment' schedule.pk %}"
-                        class="inline-flex items-center rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-700"
-                      >
-                        Record payment
-                      </a>
-                    {% else %}
-                      <span class="text-xs text-slate-500">
-                        Paid {{ schedule.paid_at|date:"M d, Y"|default:"recently" }}
-                      </span>
-                    {% endif %}
-                  </div>
-                </td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="6" class="px-4 py-6 text-center text-sm text-slate-500">
-                  No payment schedules available yet. Approve loan applications to generate installments.
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+<script>
+// Chart Data from Backend
+const chartData = {{ chart_data|safe }};
 
-      {# Mobile card view #}
-      <div class="divide-y divide-slate-200 md:hidden">
-        {% for schedule in schedules %}
-          <div class="space-y-4 p-4 hover:bg-slate-50">
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1">
-                <p class="font-medium text-slate-900">{{ schedule.loan_application.motor.display_name }}</p>
-                <p class="mt-0.5 text-xs text-slate-500">#{{ schedule.loan_application_id }} · Term {{ schedule.sequence }}</p>
-                <p class="mt-2 text-sm text-slate-700">{{ schedule.loan_application.applicant_full_name }}</p>
-                <p class="mt-0.5 text-xs text-slate-500">₱{{ schedule.loan_application.monthly_payment }} / month</p>
-              </div>
-              {% if schedule.status == 'paid' %}
-                <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
-                  {{ schedule.get_status_display }}
-                </span>
-              {% elif schedule.status == 'overdue' %}
-                <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
-                  {{ schedule.get_status_display }}
-                </span>
-              {% else %}
-                <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
-                  {{ schedule.get_status_display }}
-                </span>
-              {% endif %}
-            </div>
-            <div class="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p class="text-xs text-slate-500">Due date</p>
-                <p class="font-medium text-slate-700">{{ schedule.due_date|date:"M d, Y" }}</p>
-              </div>
-              <div>
-                <p class="text-xs text-slate-500">Amount</p>
-                <p class="font-semibold text-slate-900">₱{{ schedule.total_amount }}</p>
-              </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
-              <a
-                href="{% url 'loans:detail' schedule.loan_application_id %}"
-                class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-              >
-                View loan
-              </a>
-              {% if schedule.status != 'paid' %}
-                <a
-                  href="{% url 'payments:record-payment' schedule.pk %}"
-                  class="inline-flex items-center rounded-md bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-700"
-                >
-                  Record payment
-                </a>
-              {% else %}
-                <span class="text-xs text-slate-500">
-                  Paid {{ schedule.paid_at|date:"M d, Y"|default:"recently" }}
-                </span>
-              {% endif %}
-            </div>
-          </div>
-        {% empty %}
-          <div class="px-4 py-8 text-center">
-            <p class="text-sm text-slate-500">No payment schedules available yet.</p>
-            <p class="mt-2 text-sm text-slate-600">
-              <a href="{% url 'loans:list' %}" class="font-medium text-sky-600 hover:text-sky-700">
-                Approve loan applications &rarr;
-              </a>
-            </p>
-          </div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-{% endblock content %}
+// Initialize Charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Bar Chart: Collected vs Pending
+    const collectedVsPendingCtx = document.getElementById('collectedVsPendingChart');
+    if (collectedVsPendingCtx) {
+        const labels = chartData.months_data.map(d => d.month);
+        const collectedData = chartData.months_data.map(d => d.collected);
+        const pendingData = chartData.months_data.map(d => d.pending);
+
+        new Chart(collectedVsPendingCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Collected',
+                        data: collectedData,
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                    },
+                    {
+                        label: 'Pending',
+                        data: pendingData,
+                        backgroundColor: 'rgba(251, 191, 36, 0.8)',
+                        borderColor: 'rgba(251, 191, 36, 1)',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: { size: 12, family: "'Inter', sans-serif" }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        padding: 12,
+                        borderRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ₱' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(226, 232, 240, 0.5)', drawBorder: false },
+                        ticks: {
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return '₱' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // Line Chart: Collection Rate Trend
+    const collectionRateTrendCtx = document.getElementById('collectionRateTrendChart');
+    if (collectionRateTrendCtx) {
+        const labels = chartData.collection_rates.map(d => d.month);
+        const ratesData = chartData.collection_rates.map(d => d.rate);
+
+        new Chart(collectionRateTrendCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Collection Rate (%)',
+                    data: ratesData,
+                    borderColor: 'rgba(14, 165, 233, 1)',
+                    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: { size: 12, family: "'Inter', sans-serif" }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        padding: 12,
+                        borderRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Collection Rate: ' + context.parsed.y.toFixed(2) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(226, 232, 240, 0.5)', drawBorder: false },
+                        ticks: {
+                            font: { size: 11 },
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: { display: false, drawBorder: false },
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+});
+
+// Date Filter
+function applyDateFilter() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    window.location.href = `?start_date=${startDate}&end_date=${endDate}`;
+}
+
+// Mark as Paid Action
+function markAsPaid(scheduleId, customerName, amount) {
+    showConfirmationModal(
+        'Confirm Payment',
+        `Mark payment for ${customerName} (₱${amount}) as paid?`,
+        function() {
+            // Redirect to record payment page
+            window.location.href = `/payments/schedules/${scheduleId}/record/`;
+        },
+        'success'
+    );
+}
+
+// Send Reminder Action
+function sendReminder(scheduleId, customerName, phoneNumber) {
+    showConfirmationModal(
+        'Send Reminder',
+        `Send payment reminder to ${customerName} at ${phoneNumber}?`,
+        function() {
+            // In a real application, this would make an API call
+            alert(`Reminder sent to ${customerName}!`);
+            // TODO: Implement actual reminder sending logic
+        },
+        'info'
+    );
+}
+
+// Status Filter
+document.addEventListener('DOMContentLoaded', function() {
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            const params = new URLSearchParams(window.location.search);
+            if (this.value) {
+                params.set('status', this.value);
+            } else {
+                params.delete('status');
+            }
+            window.location.search = params.toString();
+        });
+
+        // Set current filter from URL
+        const params = new URLSearchParams(window.location.search);
+        const currentStatus = params.get('status');
+        if (currentStatus) {
+            statusFilter.value = currentStatus;
+        }
+    }
+});
+</script>
+{% endblock %}

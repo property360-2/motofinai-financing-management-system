@@ -1,0 +1,466 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - MotofinAI{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {# Page Header #}
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-slate-900 mb-2">Loan Officer Dashboard</h1>
+            <p class="text-slate-600">Monitor loan applications and repossession alerts</p>
+        </div>
+
+        {# KPI Summary Cards #}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {% include 'components/molecules/kpi_card.html' with title="Total Loans" value=kpis.loans.total_loans icon="chart" trend="up" trend_value="+12%" %}
+            {% include 'components/molecules/kpi_card.html' with title="Approved Applications" value=kpis.loans.approved_loans icon="check" trend="up" trend_value="+8%" %}
+            {% include 'components/molecules/kpi_card.html' with title="Pending Applications" value=kpis.loans.pending_loans icon="clock" %}
+            {% include 'components/molecules/kpi_card.html' with title="Overdue Payments" value=kpis.payments.overdue_count icon="alert" trend="down" trend_value="-5%" %}
+        </div>
+
+        {# Recent Applications Section #}
+        <div class="mb-8">
+            <div class="bg-white rounded-xl shadow-md border border-slate-100 p-6">
+                <h2 class="text-xl font-semibold text-slate-900 mb-6">Recent Applications</h2>
+
+                {# Tab Navigation #}
+                <div class="border-b border-slate-200 mb-6">
+                    <nav class="flex gap-2 -mb-px overflow-x-auto" role="tablist">
+                        <button
+                            type="button"
+                            role="tab"
+                            data-tab="pending"
+                            class="application-tab whitespace-nowrap px-6 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 bg-white text-sky-600 border-b-2 border-sky-600">
+                            Pending
+                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-sky-100 text-sky-700">
+                                {{ recent_pending|length }}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            role="tab"
+                            data-tab="approved"
+                            class="application-tab whitespace-nowrap px-6 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-b-2 border-transparent">
+                            Approved
+                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">
+                                {{ recent_approved|length }}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            role="tab"
+                            data-tab="under-review"
+                            class="application-tab whitespace-nowrap px-6 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-b-2 border-transparent">
+                            Under Review
+                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">
+                                {{ recent_under_review|length }}
+                            </span>
+                        </button>
+                    </nav>
+                </div>
+
+                {# Tab Content - Pending #}
+                <div id="pending-panel" class="application-panel">
+                    {% if recent_pending %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Applicant</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Motorcycle</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Loan Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                {% for app in recent_pending %}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900">{{ app.applicant.get_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ app.applicant.email }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ app.motor.model }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">₱{{ app.loan_amount|floatformat:2 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ app.created_at|date:"M d, Y" }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{% url 'loans:application_detail' app.id %}" class="text-sky-600 hover:text-sky-900 transition-colors">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-slate-900">No pending applications</h3>
+                        <p class="mt-1 text-sm text-slate-500">All applications have been processed.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# Tab Content - Approved #}
+                <div id="approved-panel" class="application-panel hidden">
+                    {% if recent_approved %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Applicant</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Motorcycle</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Loan Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                {% for app in recent_approved %}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900">{{ app.applicant.get_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ app.applicant.email }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ app.motor.model }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">₱{{ app.loan_amount|floatformat:2 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ app.created_at|date:"M d, Y" }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{% url 'loans:application_detail' app.id %}" class="text-sky-600 hover:text-sky-900 transition-colors">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-slate-900">No approved applications</h3>
+                        <p class="mt-1 text-sm text-slate-500">No applications have been approved yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# Tab Content - Under Review #}
+                <div id="under-review-panel" class="application-panel hidden">
+                    {% if recent_under_review %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Applicant</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Motorcycle</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Loan Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                {% for app in recent_under_review %}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900">{{ app.applicant.get_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ app.applicant.email }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ app.motor.model }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-amber-600">₱{{ app.loan_amount|floatformat:2 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ app.created_at|date:"M d, Y" }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{% url 'loans:application_detail' app.id %}" class="text-sky-600 hover:text-sky-900 transition-colors">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-slate-900">No applications under review</h3>
+                        <p class="mt-1 text-sm text-slate-500">No applications are currently being reviewed.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# Repossession Alerts Section #}
+        <div class="mb-8">
+            <div class="bg-white rounded-xl shadow-md border border-slate-100 p-6">
+                <h2 class="text-xl font-semibold text-slate-900 mb-6">Repossession Alerts</h2>
+
+                {# Tab Navigation #}
+                <div class="border-b border-slate-200 mb-6">
+                    <nav class="flex gap-2 -mb-px overflow-x-auto" role="tablist">
+                        <button
+                            type="button"
+                            role="tab"
+                            data-tab="high-risk"
+                            class="repos-tab whitespace-nowrap px-6 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 bg-white text-sky-600 border-b-2 border-sky-600">
+                            High Risk
+                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-rose-100 text-rose-700">
+                                {{ high_risk_repos|length }}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            role="tab"
+                            data-tab="medium-risk"
+                            class="repos-tab whitespace-nowrap px-6 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-b-2 border-transparent">
+                            Medium Risk
+                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">
+                                {{ medium_risk_repos|length }}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            role="tab"
+                            data-tab="low-risk"
+                            class="repos-tab whitespace-nowrap px-6 py-3 text-sm font-medium rounded-t-lg transition-all duration-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-b-2 border-transparent">
+                            Low Risk
+                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">
+                                {{ low_risk_repos|length }}
+                            </span>
+                        </button>
+                    </nav>
+                </div>
+
+                {# Tab Content - High Risk #}
+                <div id="high-risk-panel" class="repos-panel">
+                    {% if high_risk_repos %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Customer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Motorcycle</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Overdue Amount</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                {% for case in high_risk_repos %}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900">{{ case.loan.applicant.get_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ case.loan.applicant.email }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ case.loan.motor.model }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
+                                            {{ case.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-rose-600">₱{{ case.total_overdue_amount|floatformat:2 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{% url 'repossession:case_detail' case.id %}" class="text-sky-600 hover:text-sky-900 transition-colors">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-slate-900">No high risk cases</h3>
+                        <p class="mt-1 text-sm text-slate-500">Great! There are no high risk repossession cases.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# Tab Content - Medium Risk #}
+                <div id="medium-risk-panel" class="repos-panel hidden">
+                    {% if medium_risk_repos %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Customer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Motorcycle</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Overdue Amount</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                {% for case in medium_risk_repos %}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900">{{ case.loan.applicant.get_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ case.loan.applicant.email }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ case.loan.motor.model }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                                            {{ case.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-amber-600">₱{{ case.total_overdue_amount|floatformat:2 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{% url 'repossession:case_detail' case.id %}" class="text-sky-600 hover:text-sky-900 transition-colors">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-slate-900">No medium risk cases</h3>
+                        <p class="mt-1 text-sm text-slate-500">There are no medium risk repossession cases.</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# Tab Content - Low Risk #}
+                <div id="low-risk-panel" class="repos-panel hidden">
+                    {% if low_risk_repos %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Customer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Motorcycle</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Overdue Amount</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                {% for case in low_risk_repos %}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-slate-900">{{ case.loan.applicant.get_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ case.loan.applicant.email }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ case.loan.motor.model }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                            {{ case.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">₱{{ case.total_overdue_amount|floatformat:2 }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <a href="{% url 'repossession:case_detail' case.id %}" class="text-sky-600 hover:text-sky-900 transition-colors">View Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-slate-900">No low risk cases</h3>
+                        <p class="mt-1 text-sm text-slate-500">There are no low risk repossession cases.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Application Tabs
+    const applicationTabs = document.querySelectorAll('.application-tab');
+    const applicationPanels = document.querySelectorAll('.application-panel');
+
+    applicationTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+
+            // Update tab states
+            applicationTabs.forEach(t => {
+                const isActive = t.getAttribute('data-tab') === tabId;
+                if (isActive) {
+                    t.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50', 'border-transparent');
+                    t.classList.add('bg-white', 'text-sky-600', 'border-sky-600');
+                    const badge = t.querySelector('span');
+                    if (badge) {
+                        badge.classList.remove('bg-slate-100', 'text-slate-700');
+                        badge.classList.add('bg-sky-100', 'text-sky-700');
+                    }
+                } else {
+                    t.classList.remove('bg-white', 'text-sky-600', 'border-sky-600');
+                    t.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50', 'border-transparent');
+                    const badge = t.querySelector('span');
+                    if (badge) {
+                        badge.classList.remove('bg-sky-100', 'text-sky-700');
+                        badge.classList.add('bg-slate-100', 'text-slate-700');
+                    }
+                }
+            });
+
+            // Update panel visibility
+            applicationPanels.forEach(panel => {
+                if (panel.id === tabId + '-panel') {
+                    panel.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    // Repossession Tabs
+    const reposTabs = document.querySelectorAll('.repos-tab');
+    const reposPanels = document.querySelectorAll('.repos-panel');
+
+    reposTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+
+            // Update tab states
+            reposTabs.forEach(t => {
+                const isActive = t.getAttribute('data-tab') === tabId;
+                if (isActive) {
+                    t.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50', 'border-transparent');
+                    t.classList.add('bg-white', 'text-sky-600', 'border-sky-600');
+                    const badge = t.querySelector('span');
+                    if (badge) {
+                        badge.classList.remove('bg-slate-100', 'text-slate-700');
+                        badge.classList.add('bg-sky-100', 'text-sky-700');
+                    }
+                } else {
+                    t.classList.remove('bg-white', 'text-sky-600', 'border-sky-600');
+                    t.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50', 'border-transparent');
+                    const badge = t.querySelector('span');
+                    if (badge) {
+                        badge.classList.remove('bg-sky-100', 'text-sky-700');
+                        badge.classList.add('bg-slate-100', 'text-slate-700');
+                    }
+                }
+            });
+
+            // Update panel visibility
+            reposPanels.forEach(panel => {
+                if (panel.id === tabId + '-panel') {
+                    panel.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

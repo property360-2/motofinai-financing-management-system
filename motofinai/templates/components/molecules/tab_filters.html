@@ -1,0 +1,99 @@
+{# Tab Filters Component #}
+{# Usage: {% include 'components/molecules/tab_filters.html' with tabs=tab_list active_tab="pending" %} #}
+{# tabs should be a list of dicts with 'id', 'label', and optional 'count' #}
+
+<div class="border-b border-slate-200 mb-6">
+    <nav class="flex gap-2 -mb-px overflow-x-auto" role="tablist">
+        {% for tab in tabs %}
+        <button
+            type="button"
+            role="tab"
+            aria-selected="{% if active_tab == tab.id %}true{% else %}false{% endif %}"
+            aria-controls="{{ tab.id }}-panel"
+            data-tab="{{ tab.id }}"
+            class="tab-button whitespace-nowrap px-6 py-3 text-sm font-medium rounded-t-lg transition-all duration-200
+                {% if active_tab == tab.id %}
+                    bg-white text-sky-600 border-b-2 border-sky-600
+                {% else %}
+                    text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-b-2 border-transparent
+                {% endif %}">
+            {{ tab.label }}
+            {% if tab.count is not None %}
+            <span class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full
+                {% if active_tab == tab.id %}
+                    bg-sky-100 text-sky-700
+                {% else %}
+                    bg-slate-100 text-slate-700
+                {% endif %}">
+                {{ tab.count }}
+            </span>
+            {% endif %}
+        </button>
+        {% endfor %}
+    </nav>
+</div>
+
+{# Tab content containers #}
+<div class="tab-content">
+    {% for tab in tabs %}
+    <div
+        id="{{ tab.id }}-panel"
+        role="tabpanel"
+        class="tab-panel {% if active_tab != tab.id %}hidden{% endif %}"
+        data-tab-panel="{{ tab.id }}">
+        {# Content will be placed here by the parent template #}
+        {% block tab_content %}{% endblock %}
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
+    const tabButtons = document.querySelectorAll('.tab-button');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+
+            // Update button states
+            tabButtons.forEach(btn => {
+                const isActive = btn.getAttribute('data-tab') === tabId;
+                btn.setAttribute('aria-selected', isActive);
+
+                if (isActive) {
+                    btn.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50', 'border-transparent');
+                    btn.classList.add('bg-white', 'text-sky-600', 'border-sky-600');
+
+                    // Update count badge
+                    const badge = btn.querySelector('span');
+                    if (badge) {
+                        badge.classList.remove('bg-slate-100', 'text-slate-700');
+                        badge.classList.add('bg-sky-100', 'text-sky-700');
+                    }
+                } else {
+                    btn.classList.remove('bg-white', 'text-sky-600', 'border-sky-600');
+                    btn.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-50', 'border-transparent');
+
+                    // Update count badge
+                    const badge = btn.querySelector('span');
+                    if (badge) {
+                        badge.classList.remove('bg-sky-100', 'text-sky-700');
+                        badge.classList.add('bg-slate-100', 'text-slate-700');
+                    }
+                }
+            });
+
+            // Update panel visibility
+            const panels = document.querySelectorAll('.tab-panel');
+            panels.forEach(panel => {
+                if (panel.getAttribute('data-tab-panel') === tabId) {
+                    panel.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                }
+            });
+        });
+    });
+});
+</script>

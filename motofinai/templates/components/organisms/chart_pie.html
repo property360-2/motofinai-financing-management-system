@@ -1,0 +1,90 @@
+{# Pie Chart Component #}
+{# Usage: {% include 'components/organisms/chart_pie.html' with chart_id="pieChart" chart_title="Distribution" chart_height="300" %} #}
+
+<div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
+    <h3 class="text-lg font-semibold text-slate-900 mb-4">{{ chart_title }}</h3>
+    <div style="height: {{ chart_height|default:'300' }}px;">
+        <canvas id="{{ chart_id }}"></canvas>
+    </div>
+</div>
+
+{% if not chart_js_loaded %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('{{ chart_id }}');
+    if (!ctx) return;
+
+    // Default data structure - override in parent template
+    const chartData = window['{{ chart_id }}_data'] || {
+        labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+        datasets: [{
+            data: [55, 30, 15],
+            backgroundColor: [
+                'rgba(16, 185, 129, 0.8)',  // Emerald
+                'rgba(251, 191, 36, 0.8)',   // Amber
+                'rgba(239, 68, 68, 0.8)'     // Rose
+            ],
+            borderColor: [
+                'rgba(16, 185, 129, 1)',
+                'rgba(251, 191, 36, 1)',
+                'rgba(239, 68, 68, 1)'
+            ],
+            borderWidth: 2,
+        }]
+    };
+
+    const config = {
+        type: 'doughnut',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            family: "'Inter', sans-serif"
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    padding: 12,
+                    borderRadius: 8,
+                    titleFont: {
+                        size: 13,
+                        weight: '600'
+                    },
+                    bodyFont: {
+                        size: 12
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            label += value + ' (' + percentage + '%)';
+                            return label;
+                        }
+                    }
+                }
+            },
+            cutout: '60%',
+        }
+    };
+
+    new Chart(ctx, config);
+});
+</script>
