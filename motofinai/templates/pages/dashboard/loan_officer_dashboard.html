@@ -79,8 +79,8 @@
                                 {% for app in recent_pending %}
                                 <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-slate-900">{{ app.applicant.get_full_name }}</div>
-                                        <div class="text-sm text-slate-500">{{ app.applicant.email }}</div>
+                                        <div class="text-sm font-medium text-slate-900">{{ app.applicant_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ app.applicant_email }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ app.motor.model }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">₱{{ app.loan_amount|floatformat:2 }}</td>
@@ -122,8 +122,8 @@
                                 {% for app in recent_approved %}
                                 <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-slate-900">{{ app.applicant.get_full_name }}</div>
-                                        <div class="text-sm text-slate-500">{{ app.applicant.email }}</div>
+                                        <div class="text-sm font-medium text-slate-900">{{ app.applicant_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ app.applicant_email }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ app.motor.model }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-emerald-600">₱{{ app.loan_amount|floatformat:2 }}</td>
@@ -165,8 +165,8 @@
                                 {% for app in recent_under_review %}
                                 <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-slate-900">{{ app.applicant.get_full_name }}</div>
-                                        <div class="text-sm text-slate-500">{{ app.applicant.email }}</div>
+                                        <div class="text-sm font-medium text-slate-900">{{ app.applicant_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ app.applicant_email }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ app.motor.model }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-amber-600">₱{{ app.loan_amount|floatformat:2 }}</td>
@@ -251,8 +251,8 @@
                                 {% for case in high_risk_repos %}
                                 <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-slate-900">{{ case.loan.applicant.get_full_name }}</div>
-                                        <div class="text-sm text-slate-500">{{ case.loan.applicant.email }}</div>
+                                        <div class="text-sm font-medium text-slate-900">{{ case.loan.applicant_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ case.loan.applicant_email }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ case.loan.motor.model }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -298,8 +298,8 @@
                                 {% for case in medium_risk_repos %}
                                 <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-slate-900">{{ case.loan.applicant.get_full_name }}</div>
-                                        <div class="text-sm text-slate-500">{{ case.loan.applicant.email }}</div>
+                                        <div class="text-sm font-medium text-slate-900">{{ case.loan.applicant_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ case.loan.applicant_email }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ case.loan.motor.model }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -345,8 +345,8 @@
                                 {% for case in low_risk_repos %}
                                 <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-slate-900">{{ case.loan.applicant.get_full_name }}</div>
-                                        <div class="text-sm text-slate-500">{{ case.loan.applicant.email }}</div>
+                                        <div class="text-sm font-medium text-slate-900">{{ case.loan.applicant_full_name }}</div>
+                                        <div class="text-sm text-slate-500">{{ case.loan.applicant_email }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{{ case.loan.motor.model }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">

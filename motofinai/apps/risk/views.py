@@ -61,9 +61,8 @@ class RiskAssessmentDashboardView(LoginRequiredMixin, TemplateView):
             RiskAssessment.objects.select_related(
                 "loan_application",
                 "loan_application__motor",
-                "loan_application__applicant",
             )
-            .filter(created_at__date__gte=start_date, created_at__date__lte=end_date)
+            .filter(calculated_at__date__gte=start_date, calculated_at__date__lte=end_date)
             .order_by("-updated_at")
         )
 
@@ -109,8 +108,8 @@ class RiskAssessmentDashboardView(LoginRequiredMixin, TemplateView):
             month_end = month_date.replace(day=last_day).date()
 
             month_assessments = RiskAssessment.objects.filter(
-                created_at__date__gte=month_start,
-                created_at__date__lte=month_end
+                calculated_at__date__gte=month_start,
+                calculated_at__date__lte=month_end
             )
 
             avg_score = month_assessments.aggregate(avg=Avg('score'))['avg'] or 0

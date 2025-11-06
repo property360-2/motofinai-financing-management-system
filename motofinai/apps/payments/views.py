@@ -62,7 +62,6 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
             PaymentSchedule.objects.select_related(
                 "loan_application",
                 "loan_application__motor",
-                "loan_application__applicant"
             )
             .filter(due_date__gte=start_date, due_date__lte=end_date)
             .order_by("due_date", "sequence")
