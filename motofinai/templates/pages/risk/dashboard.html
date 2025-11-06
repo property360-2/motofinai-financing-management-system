@@ -11,30 +11,34 @@
 <div class="min-h-screen bg-slate-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {# Page Header #}
-        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900 mb-2">AI Risk Scoring</h1>
-                <p class="text-slate-600">Evaluate customer creditworthiness and risk profiles</p>
+        <div class="mb-8">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 mb-2">AI Risk Scoring</h1>
+                    <p class="text-slate-600">Evaluate customer creditworthiness and risk profiles</p>
+                </div>
             </div>
-            <div class="flex gap-3">
-                <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
-                    <label for="start_date" class="text-sm font-medium text-slate-700">From:</label>
+
+            {# Date Filters - Stack on mobile #}
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-white px-4 py-3 sm:py-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="start_date" class="text-sm font-medium text-slate-700 whitespace-nowrap">From:</label>
                     <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}"
-                        class="text-sm border-0 p-0 focus:ring-0">
+                        class="text-sm border border-slate-300 rounded px-2 py-1 sm:border-0 sm:p-0 focus:ring-0 focus:border-sky-500 sm:focus:border-0">
                 </div>
-                <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
-                    <label for="end_date" class="text-sm font-medium text-slate-700">To:</label>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-white px-4 py-3 sm:py-2 rounded-lg border border-slate-200 shadow-sm">
+                    <label for="end_date" class="text-sm font-medium text-slate-700 whitespace-nowrap">To:</label>
                     <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}"
-                        class="text-sm border-0 p-0 focus:ring-0">
+                        class="text-sm border border-slate-300 rounded px-2 py-1 sm:border-0 sm:p-0 focus:ring-0 focus:border-sky-500 sm:focus:border-0">
                 </div>
-                <button onclick="applyDateFilter()" class="px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors">
-                    Apply
+                <button onclick="applyDateFilter()" class="px-4 py-3 sm:py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors whitespace-nowrap">
+                    Apply Filter
                 </button>
             </div>
         </div>
 
         {# KPI Summary Cards #}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {% include 'components/molecules/kpi_card.html' with title="Average Risk Score" value=average_score icon="shield" %}
             {% include 'components/molecules/kpi_card.html' with title="Low Risk Applications" value=low_risk_count icon="check" trend="up" trend_value="+10%" %}
             {% include 'components/molecules/kpi_card.html' with title="High Risk Flagged" value=high_risk_count icon="alert" trend="down" trend_value="-5%" %}
@@ -45,7 +49,7 @@
             {# Pie Chart: Risk Distribution #}
             <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
                 <h3 class="text-lg font-semibold text-slate-900 mb-4">Risk Distribution</h3>
-                <div style="height: 300px;">
+                <div class="relative w-full" style="height: 300px; max-height: 400px;">
                     <canvas id="riskDistributionChart"></canvas>
                 </div>
             </div>
@@ -53,7 +57,7 @@
             {# Line Chart: Risk Factor Impact #}
             <div class="bg-white rounded-xl shadow-md p-6 border border-slate-100">
                 <h3 class="text-lg font-semibold text-slate-900 mb-4">Risk Factor Impact Trend</h3>
-                <div style="height: 300px;">
+                <div class="relative w-full" style="height: 300px; max-height: 400px;">
                     <canvas id="riskFactorChart"></canvas>
                 </div>
             </div>

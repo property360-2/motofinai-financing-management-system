@@ -50,7 +50,8 @@
       {% endfor %}
     </div>
 
-    <div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    {# Desktop Table View - Hidden on mobile #}
+    <div class="mt-6 hidden md:block overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
@@ -104,6 +105,65 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+
+    {# Mobile Card View - Visible only on mobile #}
+    <div class="mt-6 md:hidden space-y-4">
+      {% for case in cases %}
+        <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <h3 class="text-base font-semibold text-slate-900">{{ case.loan_application.applicant_full_name }}</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Application #{{ case.loan_application_id }}</p>
+            </div>
+            <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 ml-2">
+              {{ case.get_status_display }}
+            </span>
+          </div>
+
+          <div class="space-y-2 mb-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-600">Motorcycle:</span>
+              <span class="font-medium text-slate-900">{{ case.loan_application.motor.display_name }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-600">Monthly Payment:</span>
+              <span class="font-medium text-slate-900">₱{{ case.loan_application.monthly_payment }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-600">Overdue Installments:</span>
+              <span class="font-medium text-rose-600">{{ case.overdue_installments }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-600">Total Exposure:</span>
+              <span class="text-lg font-bold text-slate-900">₱{{ case.total_overdue_amount }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-600">Last Updated:</span>
+              <span class="font-medium text-slate-900">{{ case.updated_at|date:"M d, Y" }}</span>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-200 pt-3">
+            <div class="flex gap-2">
+              <a
+                href="{% url 'repossession:case-detail' case.pk %}"
+                class="flex-1 text-center px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors"
+              >View Details</a>
+              <a
+                href="{% url 'loans:detail' case.loan_application_id %}"
+                class="flex-1 text-center px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
+              >View Loan</a>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="rounded-lg border border-slate-200 bg-white p-8 shadow-sm text-center">
+          <p class="text-sm text-slate-500">
+            No repossession cases at the moment. Overdue payment detection will open cases automatically.
+          </p>
+        </div>
+      {% endfor %}
     </div>
   </div>
 {% endblock content %}
