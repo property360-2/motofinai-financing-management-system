@@ -1,0 +1,8 @@
+  self.stdout.write(self.style.SUCCESS("\n✓ Demo data seeding completed successfully!"))
+        self.stdout.write(self.style.SUCCESS("\nLogin credentials:"))
+        self.stdout.write("  Admin User:")
+        self.stdout.write("    Username: admin_demo | Password: Demo123456!")
+        self.stdout.write("  Finance User:")
+        self.stdout.write("    Username: finance_demo | Password: Demo123456!")
+        self.stdout.write("  Finance Manager:")
+        self.stdout.write("    Username: finance_manager | Password: Demo123456!")

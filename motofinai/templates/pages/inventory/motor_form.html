@@ -32,7 +32,7 @@
 
       <div class="grid gap-6 md:grid-cols-2">
         {% for field in form %}
-          <div class="{% if field.name in ('notes', 'image') %}md:col-span-2{% endif %}">
+          <div class="{% if field.name == 'notes' or field.name == 'image' %}md:col-span-2{% endif %}">
             <label class="text-xs font-semibold uppercase tracking-wide text-slate-500" for="{{ field.id_for_label }}">
               {{ field.label }}
             </label>
