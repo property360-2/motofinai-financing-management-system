@@ -2,7 +2,7 @@ from datetime import date
 
 from django import forms
 
-from .models import Motor
+from .models import Motor, Stock
 
 
 INPUT_CLASSES = (
@@ -23,6 +23,7 @@ class MotorForm(forms.ModelForm):
             "color",
             "purchase_price",
             "chassis_number",
+            "stock",
             "image",
             "notes",
         ]
@@ -39,6 +40,7 @@ class MotorForm(forms.ModelForm):
             "chassis_number": forms.TextInput(
                 attrs={"class": INPUT_CLASSES, "placeholder": "Optional chassis/VIN"}
             ),
+            "stock": forms.Select(attrs={"class": INPUT_CLASSES}),
             "image": forms.ClearableFileInput(attrs={"class": INPUT_CLASSES}),
             "notes": forms.Textarea(
                 attrs={
@@ -72,6 +74,49 @@ class MotorFilterForm(forms.Form):
             attrs={
                 "class": INPUT_CLASSES,
                 "placeholder": "Search by keyword (brand, model, type, chassis)",
+            }
+        ),
+    )
+
+
+class StockForm(forms.ModelForm):
+    class Meta:
+        model = Stock
+        fields = [
+            "brand",
+            "model_name",
+            "year",
+            "color",
+            "quantity_available",
+        ]
+        widgets = {
+            "brand": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Honda"}),
+            "model_name": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Click 125i"}),
+            "year": forms.NumberInput(attrs={"class": INPUT_CLASSES, "min": 1900}),
+            "color": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Matte Black"}),
+            "quantity_available": forms.NumberInput(
+                attrs={"class": INPUT_CLASSES, "min": "0"}
+            ),
+        }
+
+    def clean_year(self):
+        year = self.cleaned_data["year"]
+        max_year = date.today().year + 1
+        if year > max_year:
+            raise forms.ValidationError(
+                f"Year cannot be greater than {max_year}."
+            )
+        return year
+
+
+class StockFilterForm(forms.Form):
+    q = forms.CharField(
+        required=False,
+        label="Search",
+        widget=forms.TextInput(
+            attrs={
+                "class": INPUT_CLASSES,
+                "placeholder": "Search by keyword (brand, model, color)",
             }
         ),
     )

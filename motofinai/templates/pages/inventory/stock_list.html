@@ -1,0 +1,198 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Stock Management{% endblock title %}
+
+{% block head_extras %}
+<style>
+  @media (max-width: 768px) {
+    .responsive-table table {
+      display: none;
+    }
+    .responsive-table .mobile-card-view {
+      display: block !important;
+    }
+  }
+  @media (min-width: 769px) {
+    .responsive-table .mobile-card-view {
+      display: none !important;
+    }
+  }
+</style>
+{% endblock head_extras %}
+
+{% block content %}
+  <section class="mx-auto max-w-6xl px-6 py-12">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-sky-600">Inventory Management</p>
+        <h1 class="mt-1 text-3xl font-semibold text-slate-900">Stock batches</h1>
+        <p class="mt-2 text-sm text-slate-600">
+          Manage motorcycle stock variants, quantities available and sold. Each stock batch represents a model variant with color specifications.
+        </p>
+      </div>
+      {% if can_manage_inventory %}
+        <a
+          href="{% url 'inventory:stock-create' %}"
+          class="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+        >
+          Add stock batch
+        </a>
+      {% endif %}
+    </div>
+
+    <form method="get" class="mt-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="grid gap-4">
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500" for="{{ filter_form.q.id_for_label }}">
+            Search
+          </label>
+          {{ filter_form.q }}
+        </div>
+      </div>
+      <div class="mt-4 flex items-center justify-end gap-2 text-sm">
+        {% if request.GET %}
+          <a href="{% url 'inventory:stock-list' %}" class="rounded-md px-3 py-2 text-slate-500 hover:text-slate-700">
+            Reset
+          </a>
+        {% endif %}
+        <button
+          type="submit"
+          class="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 font-medium text-white transition hover:bg-slate-700"
+        >
+          Apply filters
+        </button>
+      </div>
+    </form>
+
+    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm responsive-table">
+      {% if stocks %}
+        <!-- Desktop Table View -->
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr>
+              <th scope="col" class="px-6 py-3">Stock</th>
+              <th scope="col" class="px-6 py-3 text-right">Available</th>
+              <th scope="col" class="px-6 py-3 text-right">Sold</th>
+              <th scope="col" class="px-6 py-3 text-right">Total</th>
+              <th scope="col" class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            {% for stock in stocks %}
+              <tr class="hover:bg-slate-50 transition">
+                <td class="px-6 py-4">
+                  <p class="font-medium text-slate-900">{{ stock }}</p>
+                  <p class="mt-1 text-xs text-slate-500">
+                    {% if stock.color %}Color: {{ stock.color }}{% else %}No color specified{% endif %}
+                  </p>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">{{ stock.quantity_available }}</span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <span class="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700">{{ stock.quantity_sold }}</span>
+                </td>
+                <td class="px-6 py-4 text-right font-medium text-slate-900">
+                  {{ stock.total_quantity }}
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <a
+                    href="{% url 'inventory:stock-detail' stock.pk %}"
+                    class="text-sm font-semibold text-sky-600 transition hover:text-sky-700"
+                  >
+                    View
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Mobile Card View -->
+        <div class="mobile-card-view space-y-4 p-4">
+          {% for stock in stocks %}
+            <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                  <h3 class="font-semibold text-slate-900">{{ stock }}</h3>
+                  <p class="text-sm text-slate-500 mt-1">
+                    {% if stock.color %}Color: {{ stock.color }}{% else %}No color{% endif %}
+                  </p>
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-3 text-sm mb-3">
+                <div>
+                  <span class="text-slate-500 block text-xs">Available</span>
+                  <span class="font-semibold text-emerald-700">{{ stock.quantity_available }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 block text-xs">Sold</span>
+                  <span class="font-semibold text-slate-700">{{ stock.quantity_sold }}</span>
+                </div>
+                <div>
+                  <span class="text-slate-500 block text-xs">Total</span>
+                  <span class="font-semibold text-slate-900">{{ stock.total_quantity }}</span>
+                </div>
+              </div>
+              <a
+                href="{% url 'inventory:stock-detail' stock.pk %}"
+                class="block w-full text-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-700 transition"
+              >
+                View Details
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="px-6 py-16 text-center">
+          <div class="flex flex-col items-center justify-center">
+            <svg class="h-16 w-16 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m0 0L4 7m8 4v10l8-4v-10L12 11m0 0L4 7" />
+            </svg>
+            <h3 class="mt-4 text-base font-semibold text-slate-900">No stock batches found</h3>
+            {% if request.GET %}
+              <p class="mt-2 max-w-md text-sm text-slate-600">No stock batches match your current filters. Try adjusting your search criteria.</p>
+              <div class="mt-6">
+                <a href="{% url 'inventory:stock-list' %}" class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                  Clear filters
+                </a>
+              </div>
+            {% else %}
+              <p class="mt-2 max-w-md text-sm text-slate-600">Get started by creating stock batches for your motorcycle variants. Each batch can track available and sold quantities.</p>
+              {% if can_manage_inventory %}
+                <div class="mt-6">
+                  <a href="{% url 'inventory:stock-create' %}" class="inline-flex items-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700">
+                    <svg class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create first stock batch
+                  </a>
+                </div>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if is_paginated %}
+      <nav class="mt-6 flex items-center justify-between text-sm text-slate-600" aria-label="Pagination">
+        <div>
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </div>
+        <div class="flex items-center gap-2">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="rounded-md px-3 py-2 text-sky-600 hover:bg-slate-100">
+              Previous
+            </a>
+          {% endif %}
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="rounded-md px-3 py-2 text-sky-600 hover:bg-slate-100">
+              Next
+            </a>
+          {% endif %}
+        </div>
+      </nav>
+    {% endif %}
+  </section>
+{% endblock content %}

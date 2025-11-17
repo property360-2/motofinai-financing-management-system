@@ -1,0 +1,135 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ stock }} · Stock Management{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-slate-500">Stock batch</p>
+        <h1 class="mt-2 text-3xl font-semibold text-slate-900">{{ stock }}</h1>
+        <p class="mt-2 text-sm text-slate-600">
+          Created {{ stock.created_at|date:"F j, Y" }} · Last updated {{ stock.updated_at|date:"F j, Y" }}
+        </p>
+      </div>
+      {% if can_manage_inventory %}
+        <div class="flex items-center gap-2">
+          <a
+            href="{% url 'inventory:stock-update' stock.pk %}"
+            class="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+          >
+            Edit
+          </a>
+          <a
+            href="{% url 'inventory:stock-delete' stock.pk %}"
+            class="inline-flex items-center rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700"
+          >
+            Delete
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="mt-8 grid gap-8 lg:grid-cols-[1fr_1.2fr]">
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <dl class="divide-y divide-slate-200 text-sm">
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Brand</dt>
+            <dd class="col-span-2 text-slate-700">{{ stock.brand }}</dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Model</dt>
+            <dd class="col-span-2 text-slate-700">{{ stock.model_name }}</dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Year</dt>
+            <dd class="col-span-2 text-slate-700">{{ stock.year }}</dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Color</dt>
+            <dd class="col-span-2 text-slate-700">
+              {% if stock.color %}{{ stock.color }}{% else %}<span class="text-slate-400">Not specified</span>{% endif %}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <aside class="space-y-4">
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="border-b border-slate-200 px-6 py-4">
+            <h3 class="text-sm font-semibold text-slate-900">Stock inventory</h3>
+          </div>
+          <dl class="divide-y divide-slate-200 text-sm">
+            <div class="grid grid-cols-2 gap-4 px-6 py-4">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Available</dt>
+              <dd class="text-right">
+                <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">{{ stock.quantity_available }}</span>
+              </dd>
+            </div>
+            <div class="grid grid-cols-2 gap-4 px-6 py-4">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Sold</dt>
+              <dd class="text-right">
+                <span class="inline-flex items-center rounded-full bg-slate-200 px-3 py-1 text-sm font-semibold text-slate-700">{{ stock.quantity_sold }}</span>
+              </dd>
+            </div>
+            <div class="grid grid-cols-2 gap-4 px-6 py-4 bg-slate-50">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Total</dt>
+              <dd class="text-right font-medium text-slate-900">{{ stock.total_quantity }}</dd>
+            </div>
+          </dl>
+        </div>
+      </aside>
+    </div>
+
+    {% if motors %}
+      <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 px-6 py-4">
+          <h3 class="text-sm font-semibold text-slate-900">Associated motors ({{ motors|length }})</h3>
+          <p class="mt-1 text-xs text-slate-600">Individual motorcycle units linked to this stock batch.</p>
+        </div>
+        <div class="divide-y divide-slate-200">
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <tr>
+                <th scope="col" class="px-6 py-3">Motor</th>
+                <th scope="col" class="px-6 py-3">Chassis</th>
+                <th scope="col" class="px-6 py-3">Status</th>
+                <th scope="col" class="px-6 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {% for motor in motors %}
+                <tr class="hover:bg-slate-50 transition">
+                  <td class="px-6 py-4 text-slate-900">{{ motor.display_name }}</td>
+                  <td class="px-6 py-4 text-slate-600">
+                    {% if motor.chassis_number %}{{ motor.chassis_number }}{% else %}<span class="text-slate-400">-</span>{% endif %}
+                  </td>
+                  <td class="px-6 py-4">
+                    {% if motor.status == "available" %}
+                      <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Available</span>
+                    {% elif motor.status == "reserved" %}
+                      <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Reserved</span>
+                    {% elif motor.status == "sold" %}
+                      <span class="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">Sold</span>
+                    {% else %}
+                      <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">Repossessed</span>
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <a href="{% url 'inventory:motor-detail' motor.pk %}" class="text-sm font-semibold text-sky-600 hover:text-sky-700">
+                      View
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% else %}
+      <div class="mt-8 rounded-2xl border border-slate-200 bg-slate-50 px-6 py-8 text-center">
+        <p class="text-sm text-slate-600">No motors have been linked to this stock batch yet.</p>
+      </div>
+    {% endif %}
+  </section>
+{% endblock content %}

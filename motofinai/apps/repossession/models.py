@@ -204,6 +204,18 @@ class RepossessionCase(models.Model):
                 "updated_at",
             ]
         )
+        # Restore stock when loan is recovered
+        motor = self.loan_application.motor
+        if motor and motor.stock:
+            try:
+                motor.stock.increase_available(amount=1)
+            except ValueError:
+                # Log but don't fail if stock restoration has issues
+                self.log_event(
+                    "Warning: Could not restore stock after recovery.",
+                    event_type=RepossessionEvent.EventType.SYSTEM,
+                    user=user,
+                )
         if previous_status != self.status:
             self.log_status_change(previous_status, user=user)
         self.log_event(

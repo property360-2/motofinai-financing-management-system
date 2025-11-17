@@ -221,6 +221,12 @@ class LoanApplication(models.Model):
     def activate(self) -> None:
         if self.status != self.Status.APPROVED:
             raise ValidationError("Only approved applications can be activated.")
+        # Decrease stock when activating loan (motor is being financed/sold)
+        if self.motor and self.motor.stock:
+            try:
+                self.motor.stock.decrease_available(amount=1)
+            except ValueError as e:
+                raise ValidationError(f"Stock management error: {str(e)}")
         self.status = self.Status.ACTIVE
         self.activated_at = timezone.now()
         self.save(update_fields=["status", "activated_at", "updated_at"])

@@ -1,0 +1,47 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Delete {{ object }} · Stock Management{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-2xl px-6 py-12">
+    <div class="rounded-2xl border border-rose-200 bg-rose-50 p-8 shadow-sm">
+      <h1 class="text-2xl font-semibold text-rose-700">Delete stock batch</h1>
+      <p class="mt-3 text-sm text-rose-600">
+        This action cannot be undone. Confirm that this stock batch should be removed before proceeding.
+      </p>
+      <dl class="mt-6 divide-y divide-rose-200 text-sm text-rose-700">
+        <div class="flex items-center justify-between py-2">
+          <dt class="font-medium">Batch</dt>
+          <dd>{{ object }}</dd>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <dt class="font-medium">Year</dt>
+          <dd>{{ object.year }}</dd>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <dt class="font-medium">Available units</dt>
+          <dd>{{ object.quantity_available }}</dd>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <dt class="font-medium">Sold units</dt>
+          <dd>{{ object.quantity_sold }}</dd>
+        </div>
+      </dl>
+      <form method="post" class="mt-6 flex items-center justify-end gap-3">
+        {% csrf_token %}
+        <a
+          href="{% url 'inventory:stock-detail' object.pk %}"
+          class="rounded-md px-4 py-2 text-sm font-medium text-rose-700 hover:text-rose-800"
+        >
+          Cancel
+        </a>
+        <button
+          type="submit"
+          class="inline-flex items-center rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
+        >
+          Delete stock batch
+        </button>
+      </form>
+    </div>
+  </section>
+{% endblock content %}

@@ -68,6 +68,18 @@
             </dd>
           </div>
           <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Stock batch</dt>
+            <dd class="col-span-2">
+              {% if motor.stock %}
+                <a href="{% url 'inventory:stock-detail' motor.stock.pk %}" class="text-sky-600 hover:text-sky-700 font-medium">
+                  {{ motor.stock }}
+                </a>
+              {% else %}
+                <span class="text-slate-400">Not assigned</span>
+              {% endif %}
+            </dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
             <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Notes</dt>
             <dd class="col-span-2 text-slate-700">
               {% if motor.notes %}{{ motor.notes|linebreaksbr }}{% else %}<span class="text-slate-400">No additional notes</span>{% endif %}

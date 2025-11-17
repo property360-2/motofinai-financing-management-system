@@ -7,8 +7,8 @@ from django.db import models
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from .forms import MotorFilterForm, MotorForm
-from .models import Motor
+from .forms import MotorFilterForm, MotorForm, StockFilterForm, StockForm
+from .models import Motor, Stock
 
 
 class InventoryContextMixin:
@@ -104,4 +104,88 @@ class MotorDeleteView(InventoryContextMixin, LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         response = super().delete(request, *args, **kwargs)
         messages.success(request, "Motor removed from inventory.")
+        return response
+
+
+class StockListView(InventoryContextMixin, LoginRequiredMixin, ListView):
+    model = Stock
+    template_name = "pages/inventory/stock_list.html"
+    context_object_name = "stocks"
+    paginate_by = 20
+    required_roles = ("admin", "finance")
+
+    @cached_property
+    def filter_form(self) -> StockFilterForm:
+        return StockFilterForm(self.request.GET or None)
+
+    def get_queryset(self):
+        queryset = (
+            super()
+            .get_queryset()
+            .prefetch_related("motors")
+        )
+        form = self.filter_form
+        if form.is_valid():
+            query = form.cleaned_data.get("q")
+            if query:
+                queryset = queryset.filter(
+                    models.Q(brand__icontains=query)
+                    | models.Q(model_name__icontains=query)
+                    | models.Q(color__icontains=query)
+                )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter_form"] = self.filter_form
+        return context
+
+
+class StockDetailView(InventoryContextMixin, LoginRequiredMixin, DetailView):
+    model = Stock
+    template_name = "pages/inventory/stock_detail.html"
+    context_object_name = "stock"
+    required_roles = ("admin", "finance")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["motors"] = self.object.motors.all()
+        return context
+
+
+class StockCreateView(
+    InventoryContextMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView
+):
+    model = Stock
+    form_class = StockForm
+    template_name = "pages/inventory/stock_form.html"
+    success_message = "Stock batch created."
+    required_roles = ("admin",)
+
+    def get_success_url(self):
+        return reverse("inventory:stock-detail", args=[self.object.pk])
+
+
+class StockUpdateView(
+    InventoryContextMixin, LoginRequiredMixin, SuccessMessageMixin, UpdateView
+):
+    model = Stock
+    form_class = StockForm
+    template_name = "pages/inventory/stock_form.html"
+    success_message = "Stock batch updated."
+    required_roles = ("admin",)
+
+    def get_success_url(self):
+        return reverse("inventory:stock-detail", args=[self.object.pk])
+
+
+class StockDeleteView(InventoryContextMixin, LoginRequiredMixin, DeleteView):
+    model = Stock
+    template_name = "pages/inventory/stock_confirm_delete.html"
+    success_url = reverse_lazy("inventory:stock-list")
+    required_roles = ("admin",)
+
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
+        messages.success(request, "Stock batch removed.")
         return response
