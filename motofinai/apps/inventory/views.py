@@ -43,9 +43,6 @@ class MotorListView(InventoryContextMixin, LoginRequiredMixin, ListView):
         )
         form = self.filter_form
         if form.is_valid():
-            status = form.cleaned_data.get("status")
-            if status:
-                queryset = queryset.filter(status=status)
             query = form.cleaned_data.get("q")
             if query:
                 queryset = queryset.filter(

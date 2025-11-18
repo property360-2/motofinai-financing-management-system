@@ -57,7 +57,7 @@
       <aside class="space-y-4">
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div class="border-b border-slate-200 px-6 py-4">
-            <h3 class="text-sm font-semibold text-slate-900">Stock inventory</h3>
+            <h3 class="text-sm font-semibold text-slate-900">Stock inventory breakdown</h3>
           </div>
           <dl class="divide-y divide-slate-200 text-sm">
             <div class="grid grid-cols-2 gap-4 px-6 py-4">
@@ -67,9 +67,21 @@
               </dd>
             </div>
             <div class="grid grid-cols-2 gap-4 px-6 py-4">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Reserved</dt>
+              <dd class="text-right">
+                <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700">{{ stock.quantity_reserved }}</span>
+              </dd>
+            </div>
+            <div class="grid grid-cols-2 gap-4 px-6 py-4">
               <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Sold</dt>
               <dd class="text-right">
                 <span class="inline-flex items-center rounded-full bg-slate-200 px-3 py-1 text-sm font-semibold text-slate-700">{{ stock.quantity_sold }}</span>
+              </dd>
+            </div>
+            <div class="grid grid-cols-2 gap-4 px-6 py-4">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Repossessed</dt>
+              <dd class="text-right">
+                <span class="inline-flex items-center rounded-full bg-rose-100 px-3 py-1 text-sm font-semibold text-rose-700">{{ stock.quantity_repossessed }}</span>
               </dd>
             </div>
             <div class="grid grid-cols-2 gap-4 px-6 py-4 bg-slate-50">
@@ -93,7 +105,6 @@
               <tr>
                 <th scope="col" class="px-6 py-3">Motor</th>
                 <th scope="col" class="px-6 py-3">Chassis</th>
-                <th scope="col" class="px-6 py-3">Status</th>
                 <th scope="col" class="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -103,17 +114,6 @@
                   <td class="px-6 py-4 text-slate-900">{{ motor.display_name }}</td>
                   <td class="px-6 py-4 text-slate-600">
                     {% if motor.chassis_number %}{{ motor.chassis_number }}{% else %}<span class="text-slate-400">-</span>{% endif %}
-                  </td>
-                  <td class="px-6 py-4">
-                    {% if motor.status == "available" %}
-                      <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Available</span>
-                    {% elif motor.status == "reserved" %}
-                      <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Reserved</span>
-                    {% elif motor.status == "sold" %}
-                      <span class="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">Sold</span>
-                    {% else %}
-                      <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">Repossessed</span>
-                    {% endif %}
                   </td>
                   <td class="px-6 py-4 text-right">
                     <a href="{% url 'inventory:motor-detail' motor.pk %}" class="text-sm font-semibold text-sky-600 hover:text-sky-700">
