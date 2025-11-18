@@ -32,12 +32,6 @@ class Motor(models.Model):
         choices=Status.choices,
         default=Status.AVAILABLE,
     )
-    image = models.ImageField(
-        upload_to="inventory/motors/",
-        blank=True,
-        null=True,
-        help_text="Motorcycle photo stored via configured media storage.",
-    )
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
