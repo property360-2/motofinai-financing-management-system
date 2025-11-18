@@ -71,8 +71,10 @@
           <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
             <tr>
               <th scope="col" class="px-6 py-3">Stock</th>
-              <th scope="col" class="px-6 py-3 text-right">Available</th>
-              <th scope="col" class="px-6 py-3 text-right">Sold</th>
+              <th scope="col" class="px-6 py-3 text-center">Available</th>
+              <th scope="col" class="px-6 py-3 text-center">Reserved</th>
+              <th scope="col" class="px-6 py-3 text-center">Sold</th>
+              <th scope="col" class="px-6 py-3 text-center">Repossessed</th>
               <th scope="col" class="px-6 py-3 text-right">Total</th>
               <th scope="col" class="px-6 py-3 text-right">Actions</th>
             </tr>
@@ -86,22 +88,36 @@
                     {% if stock.color %}Color: {{ stock.color }}{% else %}No color specified{% endif %}
                   </p>
                 </td>
-                <td class="px-6 py-4 text-right">
+                <td class="px-6 py-4 text-center">
                   <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">{{ stock.quantity_available }}</span>
                 </td>
-                <td class="px-6 py-4 text-right">
+                <td class="px-6 py-4 text-center">
+                  <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">{{ stock.quantity_reserved }}</span>
+                </td>
+                <td class="px-6 py-4 text-center">
                   <span class="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700">{{ stock.quantity_sold }}</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-1 text-xs font-semibold text-rose-700">{{ stock.quantity_repossessed }}</span>
                 </td>
                 <td class="px-6 py-4 text-right font-medium text-slate-900">
                   {{ stock.total_quantity }}
                 </td>
-                <td class="px-6 py-4 text-right">
+                <td class="px-6 py-4 text-right space-x-2 flex justify-end">
                   <a
                     href="{% url 'inventory:stock-detail' stock.pk %}"
                     class="text-sm font-semibold text-sky-600 transition hover:text-sky-700"
                   >
                     View
                   </a>
+                  {% if can_manage_inventory %}
+                    <a
+                      href="{% url 'inventory:stock-update' stock.pk %}"
+                      class="text-sm font-semibold text-slate-600 transition hover:text-slate-700"
+                    >
+                      Edit
+                    </a>
+                  {% endif %}
                 </td>
               </tr>
             {% endfor %}
@@ -120,26 +136,40 @@
                   </p>
                 </div>
               </div>
-              <div class="grid grid-cols-3 gap-3 text-sm mb-3">
-                <div>
+              <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+                <div class="bg-emerald-50 rounded p-2">
                   <span class="text-slate-500 block text-xs">Available</span>
                   <span class="font-semibold text-emerald-700">{{ stock.quantity_available }}</span>
                 </div>
-                <div>
+                <div class="bg-amber-50 rounded p-2">
+                  <span class="text-slate-500 block text-xs">Reserved</span>
+                  <span class="font-semibold text-amber-700">{{ stock.quantity_reserved }}</span>
+                </div>
+                <div class="bg-slate-100 rounded p-2">
                   <span class="text-slate-500 block text-xs">Sold</span>
                   <span class="font-semibold text-slate-700">{{ stock.quantity_sold }}</span>
                 </div>
-                <div>
-                  <span class="text-slate-500 block text-xs">Total</span>
-                  <span class="font-semibold text-slate-900">{{ stock.total_quantity }}</span>
+                <div class="bg-rose-50 rounded p-2">
+                  <span class="text-slate-500 block text-xs">Repossessed</span>
+                  <span class="font-semibold text-rose-700">{{ stock.quantity_repossessed }}</span>
                 </div>
               </div>
-              <a
-                href="{% url 'inventory:stock-detail' stock.pk %}"
-                class="block w-full text-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-700 transition"
-              >
-                View Details
-              </a>
+              <div class="flex gap-2">
+                <a
+                  href="{% url 'inventory:stock-detail' stock.pk %}"
+                  class="flex-1 text-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-700 transition"
+                >
+                  View
+                </a>
+                {% if can_manage_inventory %}
+                  <a
+                    href="{% url 'inventory:stock-update' stock.pk %}"
+                    class="flex-1 text-center rounded-md bg-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-300 transition"
+                  >
+                    Edit
+                  </a>
+                {% endif %}
+              </div>
             </div>
           {% endfor %}
         </div>

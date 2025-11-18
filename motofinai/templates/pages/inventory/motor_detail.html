@@ -6,7 +6,7 @@
   <section class="mx-auto max-w-5xl px-6 py-12">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p class="text-sm uppercase tracking-wide text-slate-500">Inventory record</p>
+        <p class="text-sm uppercase tracking-wide text-slate-500">Motor inventory record</p>
         <h1 class="mt-2 text-3xl font-semibold text-slate-900">{{ motor.display_name }}</h1>
         <p class="mt-2 text-sm text-slate-600">
           Added {{ motor.created_at|date:"F j, Y" }} · Last updated {{ motor.updated_at|date:"F j, Y" }}
@@ -16,15 +16,21 @@
         <div class="flex items-center gap-2">
           <a
             href="{% url 'inventory:motor-update' motor.pk %}"
-            class="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+            class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
           >
-            Edit
+            <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit motor
           </a>
           <a
             href="{% url 'inventory:motor-delete' motor.pk %}"
-            class="inline-flex items-center rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700"
+            class="inline-flex items-center rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
           >
-            Delete
+            <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Remove motor
           </a>
         </div>
       {% endif %}
