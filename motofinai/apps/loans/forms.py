@@ -177,3 +177,47 @@ class LoanDocumentUploadForm(forms.ModelForm):
         if uploaded.size <= 0:
             raise forms.ValidationError("Uploaded document appears to be empty.")
         return uploaded
+
+
+class LoanApprovalForm(forms.Form):
+    """Form for approving loan applications with optional custom terms."""
+
+    custom_interest_rate = forms.DecimalField(
+        required=False,
+        min_value=Decimal("0.00"),
+        decimal_places=2,
+        help_text="Leave blank to use the financing term's interest rate",
+        widget=forms.NumberInput(
+            attrs={
+                "class": INPUT_CLASSES,
+                "min": "0",
+                "step": "0.01",
+                "placeholder": "e.g., 12.50 for 12.5%",
+            }
+        ),
+    )
+    custom_term_years = forms.IntegerField(
+        required=False,
+        min_value=1,
+        max_value=10,
+        help_text="Leave blank to use the financing term's duration",
+        widget=forms.NumberInput(
+            attrs={
+                "class": INPUT_CLASSES,
+                "min": "1",
+                "max": "10",
+                "step": "1",
+                "placeholder": "e.g., 3 for 3 years",
+            }
+        ),
+    )
+    approval_notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "class": INPUT_CLASSES,
+                "rows": "4",
+                "placeholder": "Optional notes about this approval decision",
+            }
+        ),
+    )

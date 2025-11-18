@@ -24,6 +24,7 @@ from django.views.generic import (
 
 from .forms import (
     FinancingTermForm,
+    LoanApprovalForm,
     LoanDocumentUploadForm,
     LoanEmploymentForm,
     LoanMotorSelectionForm,
@@ -361,22 +362,61 @@ class LoanApplicationDocumentsView(LoginRequiredMixin, TemplateView):
         return self.render_to_response(context, status=400)
 
 
-class LoanApplicationApproveView(LoginRequiredMixin, View):
-    required_roles = ("admin",)
+class LoanApplicationApproveView(LoginRequiredMixin, DetailView):
+    """Approve a loan application with optional custom terms."""
+
+    model = LoanApplication
+    template_name = "pages/loans/application_approve.html"
+    context_object_name = "application"
+    required_roles = ("admin", "finance")
+
+    def get_queryset(self):
+        return super().get_queryset().filter(status=LoanApplication.Status.PENDING)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = self.get_form()
+        return context
+
+    def get_form(self):
+        if self.request.method == "POST":
+            return LoanApprovalForm(self.request.POST)
+        return LoanApprovalForm()
 
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         application = get_object_or_404(LoanApplication, pk=pk)
-        try:
-            application.approve()
-        except ValidationError as exc:
-            messages.error(request, "; ".join(exc.messages))
+
+        if application.status != LoanApplication.Status.PENDING:
+            messages.error(request, "Only pending applications can be approved.")
+            return redirect("loans:detail", pk=pk)
+
+        form = LoanApprovalForm(request.POST)
+        if form.is_valid():
+            custom_interest_rate = form.cleaned_data.get("custom_interest_rate")
+            custom_term_years = form.cleaned_data.get("custom_term_years")
+
+            try:
+                application.approve(
+                    approved_by=request.user,
+                    custom_interest_rate=custom_interest_rate,
+                    custom_term_years=custom_term_years,
+                )
+                messages.success(
+                    request, "Loan application approved and payment schedule generated."
+                )
+                return redirect("loans:detail", pk=pk)
+            except ValidationError as exc:
+                messages.error(request, "; ".join(exc.messages))
+                return self.get(request, pk=pk)
         else:
-            messages.success(request, "Loan application approved and schedule generated.")
-        return redirect("loans:detail", pk=pk)
+            # Form has errors, re-render with errors
+            context = self.get_context_data(object=application)
+            context["form"] = form
+            return self.render_to_response(context)
 
 
 class LoanApplicationActivateView(LoginRequiredMixin, View):
-    required_roles = ("admin",)
+    required_roles = ("admin", "finance")
 
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         application = get_object_or_404(LoanApplication, pk=pk)
@@ -385,7 +425,7 @@ class LoanApplicationActivateView(LoginRequiredMixin, View):
         except ValidationError as exc:
             messages.error(request, "; ".join(exc.messages))
         else:
-            messages.success(request, "Loan marked as active.")
+            messages.success(request, "Loan marked as active and motorcycle reserved.")
         return redirect("loans:detail", pk=pk)
 
 

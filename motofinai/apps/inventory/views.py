@@ -3,8 +3,12 @@ from functools import cached_property
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.http import HttpResponseForbidden
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from .forms import MotorFilterForm, MotorForm, StockFilterForm, StockForm
@@ -186,3 +190,126 @@ class StockDeleteView(InventoryContextMixin, LoginRequiredMixin, DeleteView):
         response = super().delete(request, *args, **kwargs)
         messages.success(request, "Stock batch removed.")
         return response
+
+
+class MotorApprovalListView(InventoryContextMixin, LoginRequiredMixin, ListView):
+    """List motorcycles pending approval for finance officers."""
+
+    model = Motor
+    template_name = "pages/inventory/motor_approval_list.html"
+    context_object_name = "motors"
+    paginate_by = 20
+    required_roles = ("admin", "finance")
+
+    @cached_property
+    def filter_form(self) -> MotorFilterForm:
+        return MotorFilterForm(self.request.GET or None)
+
+    def get_queryset(self):
+        queryset = (
+            super()
+            .get_queryset()
+            .filter(approval_status=Motor.ApprovalStatus.PENDING)
+            .select_related("approved_by")
+            .order_by("-created_at")
+        )
+        form = self.filter_form
+        if form.is_valid():
+            query = form.cleaned_data.get("q")
+            if query:
+                queryset = queryset.filter(
+                    models.Q(brand__icontains=query)
+                    | models.Q(model_name__icontains=query)
+                    | models.Q(type__icontains=query)
+                    | models.Q(chassis_number__icontains=query)
+                )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter_form"] = self.filter_form
+        # Count pending approvals
+        context["pending_count"] = Motor.objects.filter(
+            approval_status=Motor.ApprovalStatus.PENDING
+        ).count()
+        return context
+
+
+class MotorApprovalDetailView(InventoryContextMixin, LoginRequiredMixin, DetailView):
+    """View details of a motorcycle pending approval."""
+
+    model = Motor
+    template_name = "pages/inventory/motor_approval_detail.html"
+    context_object_name = "motor"
+    required_roles = ("admin", "finance")
+
+    def get_queryset(self):
+        # Can view pending or already approved/rejected motors
+        return super().get_queryset().filter(
+            approval_status__in=[
+                Motor.ApprovalStatus.PENDING,
+                Motor.ApprovalStatus.APPROVED,
+                Motor.ApprovalStatus.REJECTED,
+            ]
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        motor = self.object
+        # Show loan applications for this motor
+        context["reserved_applications"] = motor.get_reserved_applications()
+        context["sold_applications"] = motor.get_sold_applications()
+        return context
+
+
+class MotorApproveView(LoginRequiredMixin, View):
+    """Approve a motorcycle for financing."""
+
+    required_roles = ("admin", "finance")
+
+    def post(self, request, pk):
+        motor = get_object_or_404(Motor, pk=pk)
+
+        if motor.approval_status != Motor.ApprovalStatus.PENDING:
+            messages.error(request, "Only pending motors can be approved.")
+            return redirect("inventory:motor-approval-detail", pk=motor.pk)
+
+        notes = request.POST.get("approval_notes", "").strip()
+
+        try:
+            motor.approve(approved_by=request.user, notes=notes)
+            messages.success(
+                request, f"Motorcycle '{motor.display_name}' has been approved."
+            )
+        except ValidationError as e:
+            messages.error(request, f"Error approving motorcycle: {e}")
+
+        return redirect("inventory:motor-approval-detail", pk=motor.pk)
+
+
+class MotorRejectView(LoginRequiredMixin, View):
+    """Reject a motorcycle for financing."""
+
+    required_roles = ("admin", "finance")
+
+    def post(self, request, pk):
+        motor = get_object_or_404(Motor, pk=pk)
+
+        if motor.approval_status != Motor.ApprovalStatus.PENDING:
+            messages.error(request, "Only pending motors can be rejected.")
+            return redirect("inventory:motor-approval-detail", pk=motor.pk)
+
+        notes = request.POST.get("rejection_notes", "").strip()
+        if not notes:
+            messages.error(request, "Please provide a reason for rejection.")
+            return redirect("inventory:motor-approval-detail", pk=motor.pk)
+
+        try:
+            motor.reject(approved_by=request.user, notes=notes)
+            messages.warning(
+                request, f"Motorcycle '{motor.display_name}' has been rejected."
+            )
+        except ValidationError as e:
+            messages.error(request, f"Error rejecting motorcycle: {e}")
+
+        return redirect("inventory:motor-approval-list")
