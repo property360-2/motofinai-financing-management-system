@@ -19,7 +19,6 @@ class MotorForm(forms.ModelForm):
             "brand",
             "model_name",
             "year",
-            "status",
             "quantity",
             "color",
             "purchase_price",
@@ -28,11 +27,10 @@ class MotorForm(forms.ModelForm):
             "notes",
         ]
         widgets = {
-            "type": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Scooter"}),
+            "type": forms.Select(attrs={"class": INPUT_CLASSES}),
             "brand": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Honda"}),
             "model_name": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Click 125i"}),
             "year": forms.NumberInput(attrs={"class": INPUT_CLASSES, "min": 1900}),
-            "status": forms.Select(attrs={"class": INPUT_CLASSES}),
             "quantity": forms.NumberInput(attrs={"class": INPUT_CLASSES, "min": 1}),
             "color": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Matte Black"}),
             "purchase_price": forms.NumberInput(
@@ -62,11 +60,6 @@ class MotorForm(forms.ModelForm):
 
 
 class MotorFilterForm(forms.Form):
-    status = forms.ChoiceField(
-        required=False,
-        choices=[("", "All statuses"), *Motor.Status.choices],
-        widget=forms.Select(attrs={"class": INPUT_CLASSES}),
-    )
     q = forms.CharField(
         required=False,
         label="Search",

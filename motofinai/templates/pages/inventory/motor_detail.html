@@ -35,21 +35,7 @@
         <dl class="divide-y divide-slate-200 text-sm">
           <div class="grid grid-cols-3 gap-4 px-6 py-4">
             <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Type</dt>
-            <dd class="col-span-2 text-slate-700">{{ motor.type }}</dd>
-          </div>
-          <div class="grid grid-cols-3 gap-4 px-6 py-4">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</dt>
-            <dd class="col-span-2">
-              {% if motor.status == "available" %}
-                <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">Available</span>
-              {% elif motor.status == "reserved" %}
-                <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">Reserved</span>
-              {% elif motor.status == "sold" %}
-                <span class="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">Sold</span>
-              {% else %}
-                <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">Repossessed</span>
-              {% endif %}
-            </dd>
+            <dd class="col-span-2 text-slate-700">{{ motor.type_display }}</dd>
           </div>
           <div class="grid grid-cols-3 gap-4 px-6 py-4">
             <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Quantity</dt>
@@ -96,7 +82,10 @@
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm text-sm text-slate-600">
           <h2 class="text-sm font-semibold text-slate-900">Financing readiness</h2>
           <p class="mt-2">
-            Details captured here flow into loan applications once Phase 4 is active. Ensure purchase prices and statuses remain up to date for accurate financing terms.
+            Details captured here flow into loan applications once Phase 4 is active. Ensure purchase prices and stock allocation remain up to date for accurate financing terms.
+            {% if motor.stock %}
+              View the <a href="{% url 'inventory:stock-detail' motor.stock.pk %}" class="text-sky-600 hover:text-sky-700 font-medium">stock batch</a> to see availability status across all units.
+            {% endif %}
           </p>
         </div>
       </aside>

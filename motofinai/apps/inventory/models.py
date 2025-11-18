@@ -5,13 +5,15 @@ from django.db import models
 
 
 class Stock(models.Model):
-    """Represents a batch or variant of motorcycles in inventory."""
+    """Represents a batch or variant of motorcycles in inventory with status tracking."""
     brand = models.CharField(max_length=100)
     model_name = models.CharField("model", max_length=120)
     year = models.PositiveIntegerField(validators=[MinValueValidator(1900)])
     color = models.CharField(max_length=50, blank=True)
     quantity_available = models.PositiveIntegerField(default=0)
+    quantity_reserved = models.PositiveIntegerField(default=0)
     quantity_sold = models.PositiveIntegerField(default=0)
+    quantity_repossessed = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -25,39 +27,78 @@ class Stock(models.Model):
 
     @property
     def total_quantity(self) -> int:
-        """Returns total quantity (available + sold)."""
-        return self.quantity_available + self.quantity_sold
+        """Returns total quantity across all statuses."""
+        return self.quantity_available + self.quantity_reserved + self.quantity_sold + self.quantity_repossessed
 
-    def decrease_available(self, amount: int = 1) -> None:
-        """Decrease available quantity and increase sold quantity."""
+    def mark_as_reserved(self, amount: int = 1) -> None:
+        """Mark units as reserved."""
         if self.quantity_available < amount:
-            raise ValueError(f"Insufficient stock. Available: {self.quantity_available}, Requested: {amount}")
+            raise ValueError(f"Insufficient available stock. Available: {self.quantity_available}, Requested: {amount}")
         self.quantity_available -= amount
-        self.quantity_sold += amount
+        self.quantity_reserved += amount
         self.save()
 
-    def increase_available(self, amount: int = 1) -> None:
-        """Increase available quantity (e.g., when repossessing)."""
+    def mark_as_sold(self, amount: int = 1) -> None:
+        """Mark units as sold (from available or reserved)."""
+        if self.quantity_available >= amount:
+            self.quantity_available -= amount
+            self.quantity_sold += amount
+        elif self.quantity_reserved >= amount:
+            self.quantity_reserved -= amount
+            self.quantity_sold += amount
+        else:
+            raise ValueError(f"Insufficient stock for sale. Available: {self.quantity_available}, Reserved: {self.quantity_reserved}, Requested: {amount}")
+        self.save()
+
+    def mark_as_repossessed(self, amount: int = 1) -> None:
+        """Mark sold units as repossessed."""
         if self.quantity_sold < amount:
-            raise ValueError(f"Cannot return more than sold. Sold: {self.quantity_sold}, Requested: {amount}")
+            raise ValueError(f"Cannot repossess more than sold. Sold: {self.quantity_sold}, Requested: {amount}")
         self.quantity_sold -= amount
+        self.quantity_repossessed += amount
+        self.save()
+
+    def return_to_available(self, amount: int = 1) -> None:
+        """Return repossessed units back to available."""
+        if self.quantity_repossessed < amount:
+            raise ValueError(f"Cannot return more than repossessed. Repossessed: {self.quantity_repossessed}, Requested: {amount}")
+        self.quantity_repossessed -= amount
+        self.quantity_available += amount
+        self.save()
+
+    def cancel_reservation(self, amount: int = 1) -> None:
+        """Cancel reserved units and return to available."""
+        if self.quantity_reserved < amount:
+            raise ValueError(f"Cannot cancel more than reserved. Reserved: {self.quantity_reserved}, Requested: {amount}")
+        self.quantity_reserved -= amount
         self.quantity_available += amount
         self.save()
 
 
 class MotorQuerySet(models.QuerySet):
-    def available(self):
-        return self.filter(status=Motor.Status.AVAILABLE)
+    """Custom QuerySet for Motor model."""
+    pass
 
 
 class Motor(models.Model):
-    class Status(models.TextChoices):
-        AVAILABLE = "available", "Available"
-        RESERVED = "reserved", "Reserved"
-        SOLD = "sold", "Sold"
-        REPOSSESSED = "repossessed", "Repossessed"
+    class Type(models.TextChoices):
+        SCOOTER = "scooter", "Scooter"
+        UNDERBONE = "underbone", "Underbone"
+        STANDARD = "standard", "Standard"
+        CRUISER = "cruiser", "Cruiser"
+        SPORT = "sport", "Sport"
+        TOURING = "touring", "Touring"
+        ADVENTURE = "adventure", "Adventure"
+        MOPED = "moped", "Moped"
+        CAPPING = "capping", "Capping"
+        TRICYCLE = "tricycle", "Tricycle"
 
-    type = models.CharField(max_length=100, help_text="Motorcycle category (e.g. Scooter, Underbone).")
+    type = models.CharField(
+        max_length=20,
+        choices=Type.choices,
+        default=Type.SCOOTER,
+        help_text="Motorcycle category",
+    )
     brand = models.CharField(max_length=100)
     model_name = models.CharField("model", max_length=120)
     year = models.PositiveIntegerField(validators=[MinValueValidator(1900)])
@@ -75,11 +116,6 @@ class Motor(models.Model):
         max_digits=12,
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0.00"))],
-    )
-    status = models.CharField(
-        max_length=20,
-        choices=Status.choices,
-        default=Status.AVAILABLE,
     )
     quantity = models.PositiveIntegerField(default=1, help_text="Number of units in inventory.")
     notes = models.TextField(blank=True)
@@ -100,5 +136,6 @@ class Motor(models.Model):
         return f"{self.year} {self.brand} {self.model_name}".strip()
 
     @property
-    def is_available(self) -> bool:
-        return self.status == self.Status.AVAILABLE
+    def type_display(self) -> str:
+        """Get human-readable type label."""
+        return self.get_type_display()
