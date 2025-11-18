@@ -5,10 +5,10 @@ from .models import Motor, Stock
 
 @admin.register(Motor)
 class MotorAdmin(admin.ModelAdmin):
-    list_display = ("display_name", "type", "quantity", "purchase_price", "stock", "created_at")
+    list_display = ("display_name", "type", "quantity", "purchase_price", "motor_status", "stock", "created_at")
     list_filter = ("type", "brand", "year", "stock")
     search_fields = ("brand", "model_name", "type", "chassis_number")
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at", "motor_status")
     fieldsets = (
         (None, {"fields": ("type", "brand", "model_name", "year")}),
         (
@@ -24,8 +24,23 @@ class MotorAdmin(admin.ModelAdmin):
                 )
             },
         ),
+        ("Status", {"fields": ("motor_status",), "description": "Motor status is derived from associated loan applications"}),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
+
+    def motor_status(self, obj):
+        """Display motor status as a colored badge."""
+        status = obj.status
+        colors = {
+            'available': '#10b981',  # Green
+            'reserved': '#f59e0b',   # Amber
+            'sold': '#6b7280',       # Gray
+            'repossessed': '#ef4444' # Red
+        }
+        return f'<span style="background-color: {colors.get(status, "#999")}; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">{status.upper()}</span>'
+
+    motor_status.short_description = 'Status'
+    motor_status.allow_tags = True
 
 
 @admin.register(Stock)
