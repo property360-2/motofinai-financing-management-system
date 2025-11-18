@@ -18,7 +18,6 @@ class MotorAdmin(admin.ModelAdmin):
                     "color",
                     "purchase_price",
                     "chassis_number",
-                    "image",
                     "notes",
                 )
             },

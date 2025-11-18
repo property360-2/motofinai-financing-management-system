@@ -77,20 +77,6 @@
       </div>
 
       <aside class="space-y-4">
-        {% if motor.image %}
-          <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <img
-              src="{{ motor.image.url }}"
-              alt="Motor image"
-              class="h-64 w-full object-cover"
-            />
-          </div>
-        {% else %}
-          <div class="flex h-64 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 text-center text-sm text-slate-500">
-            No image uploaded for this motor.
-          </div>
-        {% endif %}
-
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm text-sm text-slate-600">
           <h2 class="text-sm font-semibold text-slate-900">Financing readiness</h2>
           <p class="mt-2">
