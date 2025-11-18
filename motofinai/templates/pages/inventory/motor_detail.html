@@ -79,8 +79,127 @@
       </div>
 
       <aside class="space-y-4">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 class="text-sm font-semibold text-slate-900 mb-4">Unit status breakdown</h2>
+          <div class="space-y-3">
+            <!-- Available -->
+            <div class="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+              <div class="flex items-center gap-3">
+                <span class="inline-flex items-center rounded-full bg-emerald-100 w-8 h-8 justify-center text-sm font-semibold text-emerald-700">{{ motor.get_available_count }}</span>
+                <span class="text-sm font-medium text-slate-900">Available</span>
+              </div>
+              {% if motor.get_available_count > 0 %}
+                <button class="text-xs font-semibold text-emerald-700 hover:text-emerald-800" onclick="document.getElementById('available-details').classList.toggle('hidden')">
+                  View
+                </button>
+              {% else %}
+                <span class="text-xs text-slate-500">-</span>
+              {% endif %}
+            </div>
+
+            <!-- Reserved -->
+            <div class="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <div class="flex items-center gap-3">
+                <span class="inline-flex items-center rounded-full bg-amber-100 w-8 h-8 justify-center text-sm font-semibold text-amber-700">{{ motor.get_reserved_count }}</span>
+                <span class="text-sm font-medium text-slate-900">Reserved</span>
+              </div>
+              {% if motor.get_reserved_count > 0 %}
+                <button class="text-xs font-semibold text-amber-700 hover:text-amber-800" onclick="document.getElementById('reserved-details').classList.toggle('hidden')">
+                  View
+                </button>
+              {% else %}
+                <span class="text-xs text-slate-500">-</span>
+              {% endif %}
+            </div>
+
+            <!-- Sold -->
+            <div class="flex items-center justify-between rounded-lg border border-slate-300 bg-slate-50 px-4 py-3">
+              <div class="flex items-center gap-3">
+                <span class="inline-flex items-center rounded-full bg-slate-200 w-8 h-8 justify-center text-sm font-semibold text-slate-700">{{ motor.get_sold_count }}</span>
+                <span class="text-sm font-medium text-slate-900">Sold</span>
+              </div>
+              {% if motor.get_sold_count > 0 %}
+                <button class="text-xs font-semibold text-slate-700 hover:text-slate-800" onclick="document.getElementById('sold-details').classList.toggle('hidden')">
+                  View
+                </button>
+              {% else %}
+                <span class="text-xs text-slate-500">-</span>
+              {% endif %}
+            </div>
+
+            <!-- Repossessed -->
+            <div class="flex items-center justify-between rounded-lg border border-rose-200 bg-rose-50 px-4 py-3">
+              <div class="flex items-center gap-3">
+                <span class="inline-flex items-center rounded-full bg-rose-100 w-8 h-8 justify-center text-sm font-semibold text-rose-700">{{ motor.get_repossessed_count }}</span>
+                <span class="text-sm font-medium text-slate-900">Repossessed</span>
+              </div>
+              {% if motor.get_repossessed_count > 0 %}
+                <button class="text-xs font-semibold text-rose-700 hover:text-rose-800" onclick="document.getElementById('repossessed-details').classList.toggle('hidden')">
+                  View
+                </button>
+              {% else %}
+                <span class="text-xs text-slate-500">-</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Reserved Details Modal -->
+        {% if motor.get_reserved_count > 0 %}
+          <div id="reserved-details" class="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-6 py-4">
+              <h3 class="text-sm font-semibold text-slate-900">Reserved by customers</h3>
+            </div>
+            <div class="divide-y divide-slate-200">
+              {% for loan in motor.get_reserved_applications %}
+                <div class="px-6 py-4">
+                  <p class="font-medium text-slate-900">{{ loan.applicant_full_name }}</p>
+                  <p class="text-xs text-slate-600 mt-1">{{ loan.applicant_email }} · {{ loan.applicant_phone }}</p>
+                  <p class="text-xs text-slate-500 mt-2">Status: <span class="font-semibold">{{ loan.get_status_display }}</span></p>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Sold Details Modal -->
+        {% if motor.get_sold_count > 0 %}
+          <div id="sold-details" class="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-6 py-4">
+              <h3 class="text-sm font-semibold text-slate-900">Sold to customers</h3>
+            </div>
+            <div class="divide-y divide-slate-200">
+              {% for loan in motor.get_sold_applications %}
+                <div class="px-6 py-4">
+                  <p class="font-medium text-slate-900">{{ loan.applicant_full_name }}</p>
+                  <p class="text-xs text-slate-600 mt-1">{{ loan.applicant_email }} · {{ loan.applicant_phone }}</p>
+                  <p class="text-xs text-slate-500 mt-2">Status: <span class="font-semibold">{{ loan.get_status_display }}</span></p>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Repossessed Details Modal -->
+        {% if motor.get_repossessed_count > 0 %}
+          <div id="repossessed-details" class="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 px-6 py-4">
+              <h3 class="text-sm font-semibold text-slate-900">Repossession details</h3>
+            </div>
+            <div class="divide-y divide-slate-200">
+              {% for case in motor.get_repossessed_applications %}
+                <div class="px-6 py-4">
+                  <p class="font-medium text-slate-900">{{ case.loan_application.applicant_full_name }}</p>
+                  <p class="text-xs text-slate-600 mt-1">{{ case.loan_application.applicant_email }} · {{ case.loan_application.applicant_phone }}</p>
+                  <p class="text-xs text-slate-500 mt-2">Repossession date: <span class="font-semibold">{{ case.created_at|date:"M d, Y" }}</span></p>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm text-sm text-slate-600">
-          <h2 class="text-sm font-semibold text-slate-900">Financing readiness</h2>
+          <h2 class="text-sm font-semibold text-slate-900 mb-2">Financing readiness</h2>
           <p class="mt-2">
             Details captured here flow into loan applications once Phase 4 is active. Ensure purchase prices and stock allocation remain up to date for accurate financing terms.
             {% if motor.stock %}
