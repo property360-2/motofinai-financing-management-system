@@ -139,3 +139,68 @@ class Motor(models.Model):
     def type_display(self) -> str:
         """Get human-readable type label."""
         return self.get_type_display()
+
+    @property
+    def status(self) -> str:
+        """Derive motor status from associated loan applications."""
+        if not hasattr(self, '_status_cache'):
+            # Check for repossession first
+            try:
+                from motofinai.apps.repossession.models import RepossessionCase
+                if RepossessionCase.objects.filter(loan_application__motor=self).exists():
+                    self._status_cache = 'repossessed'
+                    return self._status_cache
+            except (ImportError, Exception):
+                pass
+
+            # Check loan application statuses
+            from motofinai.apps.loans.models import LoanApplication
+
+            # Check for active/completed (sold)
+            if self.loan_applications.filter(status__in=['active', 'completed']).exists():
+                self._status_cache = 'sold'
+            # Check for pending/approved (reserved)
+            elif self.loan_applications.filter(status__in=['pending', 'approved']).exists():
+                self._status_cache = 'reserved'
+            # No loan applications (available)
+            else:
+                self._status_cache = 'available'
+
+        return self._status_cache
+
+    def get_available_count(self) -> int:
+        """Count motors without loan applications."""
+        from motofinai.apps.loans.models import LoanApplication
+        return 1 if not self.loan_applications.exists() else 0
+
+    def get_reserved_count(self) -> int:
+        """Count motors with pending or approved loan applications."""
+        return self.loan_applications.filter(status__in=['pending', 'approved']).count()
+
+    def get_sold_count(self) -> int:
+        """Count motors with active or completed loan applications."""
+        return self.loan_applications.filter(status__in=['active', 'completed']).count()
+
+    def get_repossessed_count(self) -> int:
+        """Count motors with repossession cases."""
+        try:
+            from motofinai.apps.repossession.models import RepossessionCase
+            return RepossessionCase.objects.filter(loan_application__motor=self).count()
+        except (ImportError, Exception):
+            return 0
+
+    def get_reserved_applications(self):
+        """Get pending or approved loan applications."""
+        return self.loan_applications.filter(status__in=['pending', 'approved']).select_related('financing_term')
+
+    def get_sold_applications(self):
+        """Get active or completed loan applications."""
+        return self.loan_applications.filter(status__in=['active', 'completed']).select_related('financing_term')
+
+    def get_repossessed_applications(self):
+        """Get repossession cases for this motor."""
+        try:
+            from motofinai.apps.repossession.models import RepossessionCase
+            return RepossessionCase.objects.filter(loan_application__motor=self).select_related('loan_application')
+        except (ImportError, Exception):
+            return []
