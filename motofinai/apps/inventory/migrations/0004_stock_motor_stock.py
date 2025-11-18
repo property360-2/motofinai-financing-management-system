@@ -12,6 +12,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Drop the inventory_stock table if it already exists (from the old 0002_stock_motor_stock migration)
+        migrations.RunSQL(
+            sql="DROP TABLE IF EXISTS inventory_stock;",
+            reverse_sql="",  # No reverse operation needed
+            state_operations=[],
+        ),
         migrations.CreateModel(
             name='Stock',
             fields=[
