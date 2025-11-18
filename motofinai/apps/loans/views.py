@@ -416,7 +416,7 @@ class LoanApplicationApproveView(LoginRequiredMixin, DetailView):
 
 
 class LoanApplicationActivateView(LoginRequiredMixin, View):
-    required_roles = ("admin",)
+    required_roles = ("admin", "finance")
 
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         application = get_object_or_404(LoanApplication, pk=pk)
@@ -425,7 +425,7 @@ class LoanApplicationActivateView(LoginRequiredMixin, View):
         except ValidationError as exc:
             messages.error(request, "; ".join(exc.messages))
         else:
-            messages.success(request, "Loan marked as active.")
+            messages.success(request, "Loan marked as active and motorcycle reserved.")
         return redirect("loans:detail", pk=pk)
 
 

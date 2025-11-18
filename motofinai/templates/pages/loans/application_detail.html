@@ -83,19 +83,31 @@
 
         <div class="mt-6 flex flex-wrap gap-2 text-sm">
           {% if application.status == 'pending' %}
-            <form method="post" action="{% url 'loans:approve' application.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="rounded-md bg-sky-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-700">Approve &amp; build schedule</button>
-            </form>
+            <a href="{% url 'loans:approve' application.pk %}" class="rounded-md bg-sky-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-700">
+              <svg class="inline mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Approve &amp; build schedule
+            </a>
           {% elif application.status == 'approved' %}
-            <form method="post" action="{% url 'loans:activate' application.pk %}">
+            <form method="post" action="{% url 'loans:activate' application.pk %}" style="display:inline;">
               {% csrf_token %}
-              <button type="submit" class="rounded-md bg-sky-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-700">Mark as active</button>
+              <button type="submit" class="rounded-md bg-sky-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-700">
+                <svg class="inline mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Mark as active
+              </button>
             </form>
           {% elif application.status == 'active' %}
-            <form method="post" action="{% url 'loans:complete' application.pk %}">
+            <form method="post" action="{% url 'loans:complete' application.pk %}" style="display:inline;">
               {% csrf_token %}
-              <button type="submit" class="rounded-md bg-emerald-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-emerald-700">Mark as completed</button>
+              <button type="submit" class="rounded-md bg-emerald-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-emerald-700">
+                <svg class="inline mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Mark as completed
+              </button>
             </form>
           {% endif %}
         </div>
