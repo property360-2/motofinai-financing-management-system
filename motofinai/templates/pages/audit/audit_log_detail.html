@@ -1,0 +1,113 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Audit Log Details · System Activity{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-3xl px-6 py-12">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-slate-500">Audit Log Entry</p>
+        <h1 class="mt-2 text-3xl font-semibold text-slate-900">{{ log.action }}</h1>
+        <p class="mt-2 text-sm text-slate-600">
+          Recorded on {{ log.created_at|date:"F j, Y \a\t H:i:s" }}
+        </p>
+      </div>
+      <div>
+        <a
+          href="{% url 'audit:list' %}"
+          class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+        >
+          <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to logs
+        </a>
+      </div>
+    </div>
+
+    <div class="mt-8 space-y-4">
+      <!-- Main Details Card -->
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <dl class="divide-y divide-slate-200 text-sm">
+          <!-- Action -->
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Action</dt>
+            <dd class="col-span-2">
+              <span class="inline-flex items-center rounded-full bg-sky-100 px-3 py-1 text-sm font-semibold text-sky-700">
+                {{ log.action }}
+              </span>
+            </dd>
+          </div>
+
+          <!-- User/Actor -->
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">User</dt>
+            <dd class="col-span-2">
+              {% if log.actor %}
+                <div class="font-medium text-slate-900">{{ log.actor.get_full_name|default:log.actor.username }}</div>
+                <div class="text-xs text-slate-600">{{ log.actor.email }}</div>
+                <div class="mt-1 text-xs text-slate-500">ID: {{ log.actor.id }}</div>
+              {% else %}
+                <span class="text-slate-400">System (no user)</span>
+              {% endif %}
+            </dd>
+          </div>
+
+          <!-- Timestamp -->
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Timestamp</dt>
+            <dd class="col-span-2 text-slate-700">
+              <div class="font-medium">{{ log.created_at|date:"F j, Y" }}</div>
+              <div class="text-xs text-slate-600 mt-1">{{ log.created_at|time:"H:i:s" }} UTC</div>
+            </dd>
+          </div>
+
+          <!-- IP Address -->
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">IP Address</dt>
+            <dd class="col-span-2">
+              {% if log.ip_address %}
+                <code class="block rounded bg-slate-100 px-2 py-1 text-sm text-slate-800">{{ log.ip_address }}</code>
+              {% else %}
+                <span class="text-slate-400">Not recorded</span>
+              {% endif %}
+            </dd>
+          </div>
+
+          <!-- User Agent -->
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">User Agent</dt>
+            <dd class="col-span-2">
+              {% if log.user_agent %}
+                <code class="block rounded bg-slate-100 px-2 py-1 text-xs text-slate-800 overflow-auto max-h-24">{{ log.user_agent }}</code>
+              {% else %}
+                <span class="text-slate-400">Not recorded</span>
+              {% endif %}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Metadata Card -->
+      {% if log.metadata %}
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="border-b border-slate-200 px-6 py-4">
+            <h2 class="text-sm font-semibold text-slate-900">Additional Metadata</h2>
+          </div>
+          <div class="px-6 py-4">
+            <pre class="rounded bg-slate-50 p-4 text-xs text-slate-700 overflow-auto max-h-64">{{ log.metadata }}</pre>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Related Actions Info -->
+    <div class="mt-8 rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 text-sm text-slate-600">
+      <h3 class="text-sm font-semibold text-slate-900 mb-2">About this audit log</h3>
+      <p>
+        This log entry records important system activities for security and compliance monitoring. The action name indicates the type of activity,
+        the user field shows who performed it, and the timestamp indicates when it occurred.
+      </p>
+    </div>
+  </section>
+{% endblock content %}

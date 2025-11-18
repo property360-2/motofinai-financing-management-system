@@ -1,0 +1,236 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Audit Logs · System Activity{% endblock title %}
+
+{% block head_extras %}
+<style>
+  @media (max-width: 768px) {
+    .responsive-table table {
+      display: none;
+    }
+    .responsive-table .mobile-card-view {
+      display: block !important;
+    }
+  }
+  @media (min-width: 769px) {
+    .responsive-table .mobile-card-view {
+      display: none !important;
+    }
+  }
+</style>
+{% endblock head_extras %}
+
+{% block content %}
+  <section class="mx-auto max-w-6xl px-6 py-12">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-sky-600">System Activity</p>
+        <h1 class="mt-1 text-3xl font-semibold text-slate-900">Audit Logs</h1>
+        <p class="mt-2 text-sm text-slate-600">
+          Complete record of system activities and user actions for compliance and security monitoring.
+        </p>
+      </div>
+    </div>
+
+    <form method="get" class="mt-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500" for="{{ filter_form.q.id_for_label }}">
+            Search
+          </label>
+          <input
+            type="text"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search by action, username, or email..."
+            class="mt-2 block w-full rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          />
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500" for="action-filter">
+            Action
+          </label>
+          <input
+            type="text"
+            name="action"
+            id="action-filter"
+            value="{{ request.GET.action }}"
+            placeholder="Filter by action..."
+            class="mt-2 block w-full rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          />
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500" for="user-filter">
+            User
+          </label>
+          <select
+            name="user"
+            id="user-filter"
+            class="mt-2 block w-full rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          >
+            <option value="">All users</option>
+            {% for user in users %}
+              <option value="{{ user.id }}" {% if request.GET.user|add:"" == user.id|add:"" %}selected{% endif %}>
+                {{ user.username }} ({{ user.get_full_name|default:user.email }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center justify-end gap-2 text-sm">
+        {% if request.GET %}
+          <a href="{% url 'audit:list' %}" class="rounded-md px-3 py-2 text-slate-500 hover:text-slate-700">
+            Reset
+          </a>
+        {% endif %}
+        <button
+          type="submit"
+          class="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 font-medium text-white transition hover:bg-slate-700"
+        >
+          Apply filters
+        </button>
+      </div>
+    </form>
+
+    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm responsive-table">
+      {% if logs %}
+        <!-- Desktop Table View -->
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr>
+              <th scope="col" class="px-6 py-3">Action</th>
+              <th scope="col" class="px-6 py-3">User</th>
+              <th scope="col" class="px-6 py-3">IP Address</th>
+              <th scope="col" class="px-6 py-3">Timestamp</th>
+              <th scope="col" class="px-6 py-3 text-right">Details</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            {% for log in logs %}
+              <tr class="hover:bg-slate-50 transition">
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-700">
+                    {{ log.action }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  {% if log.actor %}
+                    <div class="font-medium text-slate-900">{{ log.actor.get_full_name|default:log.actor.username }}</div>
+                    <div class="text-xs text-slate-500">{{ log.actor.email }}</div>
+                  {% else %}
+                    <span class="text-slate-400">System</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                  {% if log.ip_address %}
+                    <code class="text-xs text-slate-600">{{ log.ip_address }}</code>
+                  {% else %}
+                    <span class="text-slate-400">-</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 text-slate-600">
+                  <div class="font-medium">{{ log.created_at|date:"M d, Y" }}</div>
+                  <div class="text-xs text-slate-500">{{ log.created_at|time:"H:i:s" }}</div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <a
+                    href="{% url 'audit:detail' log.pk %}"
+                    class="text-sm font-semibold text-sky-600 transition hover:text-sky-700"
+                  >
+                    View
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Mobile Card View -->
+        <div class="mobile-card-view space-y-4 p-4">
+          {% for log in logs %}
+            <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition">
+              <div class="mb-3">
+                <span class="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-700">
+                  {{ log.action }}
+                </span>
+              </div>
+              <div class="mb-3 space-y-2 text-sm">
+                {% if log.actor %}
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">User</p>
+                    <p class="font-medium text-slate-900">{{ log.actor.get_full_name|default:log.actor.username }}</p>
+                    <p class="text-xs text-slate-500">{{ log.actor.email }}</p>
+                  </div>
+                {% else %}
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">User</p>
+                    <p class="text-slate-400">System</p>
+                  </div>
+                {% endif %}
+
+                {% if log.ip_address %}
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">IP Address</p>
+                    <p class="text-xs text-slate-600"><code>{{ log.ip_address }}</code></p>
+                  </div>
+                {% endif %}
+
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Timestamp</p>
+                  <p class="text-xs text-slate-600">{{ log.created_at|date:"M d, Y H:i:s" }}</p>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <a
+                  href="{% url 'audit:detail' log.pk %}"
+                  class="flex-1 text-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-700 transition"
+                >
+                  View Details
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="px-6 py-16 text-center">
+          <div class="flex flex-col items-center justify-center">
+            <svg class="h-16 w-16 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="mt-4 text-base font-semibold text-slate-900">No audit logs found</h3>
+            {% if request.GET %}
+              <p class="mt-2 max-w-md text-sm text-slate-600">No audit logs match your current filters. Try adjusting your search criteria.</p>
+              <div class="mt-6">
+                <a href="{% url 'audit:list' %}" class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                  Clear filters
+                </a>
+              </div>
+            {% else %}
+              <p class="mt-2 max-w-md text-sm text-slate-600">System activity logs will appear here as actions are performed in the application.</p>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if is_paginated %}
+      <nav class="mt-6 flex items-center justify-between text-sm text-slate-600" aria-label="Pagination">
+        <div>
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </div>
+        <div class="flex items-center gap-2">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}{% if request.GET.user %}&user={{ request.GET.user }}{% endif %}" class="rounded-md px-3 py-2 text-sky-600 hover:bg-slate-100">
+              Previous
+            </a>
+          {% endif %}
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.action %}&action={{ request.GET.action }}{% endif %}{% if request.GET.user %}&user={{ request.GET.user }}{% endif %}" class="rounded-md px-3 py-2 text-sky-600 hover:bg-slate-100">
+              Next
+            </a>
+          {% endif %}
+        </div>
+      </nav>
+    {% endif %}
+  </section>
+{% endblock content %}
