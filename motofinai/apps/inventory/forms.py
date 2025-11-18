@@ -20,6 +20,7 @@ class MotorForm(forms.ModelForm):
             "model_name",
             "year",
             "status",
+            "quantity",
             "color",
             "purchase_price",
             "chassis_number",
@@ -33,6 +34,7 @@ class MotorForm(forms.ModelForm):
             "model_name": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Click 125i"}),
             "year": forms.NumberInput(attrs={"class": INPUT_CLASSES, "min": 1900}),
             "status": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "quantity": forms.NumberInput(attrs={"class": INPUT_CLASSES, "min": 1}),
             "color": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Matte Black"}),
             "purchase_price": forms.NumberInput(
                 attrs={"class": INPUT_CLASSES, "step": "0.01", "min": "0"}

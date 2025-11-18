@@ -14,13 +14,12 @@
         {% if object %}Update motor{% else %}Add motor{% endif %}
       </h1>
       <p class="text-sm text-slate-600">
-        Store the core details required for financing evaluations. Images are stored using the configured media backend.
+        Store the core details required for financing evaluations.
       </p>
     </div>
 
     <form
       method="post"
-      enctype="multipart/form-data"
       class="mt-8 space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
     >
       {% csrf_token %}
@@ -32,7 +31,7 @@
 
       <div class="grid gap-6 md:grid-cols-2">
         {% for field in form %}
-          <div class="{% if field.name == 'notes' or field.name == 'image' %}md:col-span-2{% endif %}">
+          <div class="{% if field.name == 'notes' %}md:col-span-2{% endif %}">
             <label class="text-xs font-semibold uppercase tracking-wide text-slate-500" for="{{ field.id_for_label }}">
               {{ field.label }}
             </label>
