@@ -161,7 +161,30 @@ class LoanApplication(models.Model):
         related_name="submitted_loan_applications",
     )
     submitted_at = models.DateTimeField(auto_now_add=True)
+    # Approval & custom terms fields
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approved_loan_applications",
+        help_text="Finance officer who approved this loan",
+    )
     approved_at = models.DateTimeField(blank=True, null=True)
+    custom_interest_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0.00"))],
+        help_text="Custom interest rate if different from financing term",
+    )
+    custom_term_years = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1)],
+        help_text="Custom loan duration in years if different from financing term",
+    )
     activated_at = models.DateTimeField(blank=True, null=True)
     completed_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -189,9 +212,10 @@ class LoanApplication(models.Model):
         if principal <= Decimal("0"):
             return Decimal("0.00")
 
-        term_years = Decimal(self.financing_term.term_years)
-        total_months = self.financing_term.total_months
-        annual_rate = (self.interest_rate or Decimal("0.00")) / Decimal("100")
+        # Use custom terms if provided, otherwise use financing term
+        term_years = Decimal(self.custom_term_years or self.financing_term.term_years)
+        total_months = int(term_years * 12)
+        annual_rate = (self.custom_interest_rate or self.interest_rate or Decimal("0.00")) / Decimal("100")
 
         total_interest = (principal * annual_rate * term_years).quantize(
             Decimal("0.01"),
@@ -208,13 +232,23 @@ class LoanApplication(models.Model):
             self.save(update_fields=["monthly_payment", "updated_at"])
         return payment
 
-    def approve(self) -> None:
+    def approve(self, approved_by=None, custom_interest_rate=None, custom_term_years=None) -> None:
+        """Approve the loan application with optional custom terms."""
         if self.status != self.Status.PENDING:
             raise ValidationError("Only pending applications can be approved.")
+
+        # Set custom terms if provided
+        if custom_interest_rate is not None:
+            self.custom_interest_rate = custom_interest_rate
+        if custom_term_years is not None:
+            self.custom_term_years = custom_term_years
+
+        # Update monthly payment with custom terms (if set)
         self.update_monthly_payment()
         self.status = self.Status.APPROVED
+        self.approved_by = approved_by
         self.approved_at = timezone.now()
-        self.save(update_fields=["status", "approved_at", "updated_at"])
+        self.save(update_fields=["status", "approved_at", "approved_by", "custom_interest_rate", "custom_term_years", "updated_at"])
         self.generate_payment_schedule()
         self.evaluate_risk()
 

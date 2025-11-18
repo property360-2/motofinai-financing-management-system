@@ -1,0 +1,190 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Approve Loan Application · Finance{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-4xl px-6 py-12">
+    <div class="mb-8">
+      <p class="text-sm uppercase tracking-wide text-sky-600">Loan Approval</p>
+      <h1 class="mt-2 text-3xl font-semibold text-slate-900">Approve Loan Application</h1>
+      <p class="mt-2 text-sm text-slate-600">
+        Review application details and customize payment terms if needed
+      </p>
+    </div>
+
+    <div class="grid gap-8">
+      <!-- Applicant Info -->
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+          <h2 class="text-sm font-semibold text-slate-900">Applicant Information</h2>
+        </div>
+        <dl class="divide-y divide-slate-200">
+          <div class="grid grid-cols-2 gap-4 px-6 py-4 sm:grid-cols-3">
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Full Name</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ application.applicant_full_name }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ application.applicant_email }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Phone</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ application.applicant_phone }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Employment Status</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ application.get_employment_status_display }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Monthly Income</dt>
+              <dd class="mt-2 font-medium text-slate-900">₱{{ application.monthly_income|floatformat:2 }}</dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Motorcycle & Financing Details -->
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+          <h2 class="text-sm font-semibold text-slate-900">Motorcycle & Financing</h2>
+        </div>
+        <dl class="divide-y divide-slate-200">
+          <div class="grid grid-cols-2 gap-4 px-6 py-4 sm:grid-cols-3">
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Motorcycle</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ application.motor.display_name }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Price</dt>
+              <dd class="mt-2 font-medium text-slate-900">₱{{ application.motor.purchase_price|floatformat:2 }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Down Payment</dt>
+              <dd class="mt-2 font-medium text-slate-900">₱{{ application.down_payment|floatformat:2 }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Loan Amount</dt>
+              <dd class="mt-2 font-medium text-slate-900">₱{{ application.loan_amount|floatformat:2 }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Principal</dt>
+              <dd class="mt-2 font-medium text-slate-900">₱{{ application.principal_amount|floatformat:2 }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Default Term</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ application.financing_term.term_years }} years @ {{ application.financing_term.interest_rate }}%</dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Custom Terms Form -->
+      <form method="post" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        {% csrf_token %}
+        <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+          <h2 class="text-sm font-semibold text-slate-900">Customize Payment Terms (Optional)</h2>
+          <p class="mt-1 text-sm text-slate-600">Leave fields blank to use the default financing term</p>
+        </div>
+
+        <div class="space-y-6 p-6">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="{{ form.custom_interest_rate.id_for_label }}" class="block text-sm font-semibold text-slate-900">
+                Interest Rate (%)
+              </label>
+              <div class="relative mt-2">
+                {{ form.custom_interest_rate }}
+                {% if form.custom_interest_rate.help_text %}
+                  <p class="mt-1 text-xs text-slate-500">{{ form.custom_interest_rate.help_text }}</p>
+                {% endif %}
+              </div>
+              {% if form.custom_interest_rate.errors %}
+                <div class="mt-1 text-sm text-red-600">{{ form.custom_interest_rate.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div>
+              <label for="{{ form.custom_term_years.id_for_label }}" class="block text-sm font-semibold text-slate-900">
+                Loan Duration (Years)
+              </label>
+              <div class="relative mt-2">
+                {{ form.custom_term_years }}
+                {% if form.custom_term_years.help_text %}
+                  <p class="mt-1 text-xs text-slate-500">{{ form.custom_term_years.help_text }}</p>
+                {% endif %}
+              </div>
+              {% if form.custom_term_years.errors %}
+                <div class="mt-1 text-sm text-red-600">{{ form.custom_term_years.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div>
+            <label for="{{ form.approval_notes.id_for_label }}" class="block text-sm font-semibold text-slate-900">
+              Approval Notes
+            </label>
+            <div class="mt-2">
+              {{ form.approval_notes }}
+            </div>
+            {% if form.approval_notes.errors %}
+              <div class="mt-1 text-sm text-red-600">{{ form.approval_notes.errors }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Payment Schedule Preview -->
+          <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <h3 class="font-semibold text-blue-900">Payment Schedule Preview</h3>
+            <dl class="mt-3 space-y-2 text-sm text-blue-800">
+              <div class="flex justify-between">
+                <dt>Principal Amount:</dt>
+                <dd>₱{{ application.principal_amount|floatformat:2 }}</dd>
+              </div>
+              <div class="flex justify-between">
+                <dt>Term:</dt>
+                <dd>
+                  {% if form.custom_term_years.value %}
+                    {{ form.custom_term_years.value }} years
+                  {% else %}
+                    {{ application.financing_term.term_years }} years
+                  {% endif %}
+                </dd>
+              </div>
+              <div class="flex justify-between">
+                <dt>Interest Rate:</dt>
+                <dd>
+                  {% if form.custom_interest_rate.value %}
+                    {{ form.custom_interest_rate.value }}%
+                  {% else %}
+                    {{ application.financing_term.interest_rate }}%
+                  {% endif %}
+                </dd>
+              </div>
+              <div class="border-t border-blue-200 pt-2 font-semibold">
+                <div class="flex justify-between">
+                  <dt>Estimated Monthly Payment:</dt>
+                  <dd>₱{{ application.monthly_payment|floatformat:2 }}</dd>
+                </div>
+              </div>
+            </dl>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button
+              type="submit"
+              class="flex-1 rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white transition hover:bg-sky-700"
+            >
+              Approve & Generate Schedule
+            </button>
+            <a
+              href="{% url 'loans:detail' application.pk %}"
+              class="rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Cancel
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+{% endblock %}

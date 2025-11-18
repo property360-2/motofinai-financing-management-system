@@ -1,0 +1,226 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ motor.display_name }} · Approval Review{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-4xl px-6 py-12">
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-slate-500">
+          {% if motor.approval_status == 'pending' %}
+            <span class="text-yellow-600">Pending Review</span>
+          {% elif motor.approval_status == 'approved' %}
+            <span class="text-emerald-600">Approved</span>
+          {% else %}
+            <span class="text-red-600">Rejected</span>
+          {% endif %}
+        </p>
+        <h1 class="mt-2 text-3xl font-semibold text-slate-900">{{ motor.display_name }}</h1>
+      </div>
+      <a href="{% url 'inventory:motor-approval-list' %}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+        Back to queue
+      </a>
+    </div>
+
+    <div class="grid gap-8">
+      <!-- Motorcycle Details -->
+      <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+          <h2 class="text-sm font-semibold text-slate-900">Motorcycle Details</h2>
+        </div>
+        <dl class="divide-y divide-slate-200">
+          <div class="grid grid-cols-2 gap-4 px-6 py-4 sm:grid-cols-3">
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Type</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ motor.type_display }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Year</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ motor.year }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Color</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ motor.color|default:"Not specified" }}</dd>
+            </div>
+            <div class="sm:col-span-2">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Chassis Number</dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ motor.chassis_number|default:"Not provided" }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Purchase Price</dt>
+              <dd class="mt-2 font-medium text-slate-900">₱{{ motor.purchase_price|floatformat:2 }}</dd>
+            </div>
+          </div>
+          {% if motor.notes %}
+            <div class="px-6 py-4">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Notes</dt>
+              <dd class="mt-2 text-sm text-slate-700">{{ motor.notes }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+      </div>
+
+      <!-- Active Loan Applications -->
+      {% if reserved_applications or sold_applications %}
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+            <h2 class="text-sm font-semibold text-slate-900">Associated Loan Applications</h2>
+          </div>
+          <div class="divide-y divide-slate-200 px-6 py-4">
+            {% if reserved_applications %}
+              <div class="mb-6 pb-6">
+                <h3 class="mb-3 font-semibold text-slate-900">Reserved ({{ reserved_applications|length }})</h3>
+                <ul class="space-y-2">
+                  {% for app in reserved_applications %}
+                    <li class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+                      <div>
+                        <p class="font-medium text-slate-900">{{ app.applicant_full_name }}</p>
+                        <p class="text-sm text-slate-500">Application #{{ app.id }}</p>
+                      </div>
+                      <a href="{% url 'loans:detail' app.pk %}" class="text-sm font-semibold text-sky-600 hover:text-sky-700">
+                        View
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+            {% if sold_applications %}
+              <div>
+                <h3 class="mb-3 font-semibold text-slate-900">Sold ({{ sold_applications|length }})</h3>
+                <ul class="space-y-2">
+                  {% for app in sold_applications %}
+                    <li class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+                      <div>
+                        <p class="font-medium text-slate-900">{{ app.applicant_full_name }}</p>
+                        <p class="text-sm text-slate-500">Application #{{ app.id }}</p>
+                      </div>
+                      <a href="{% url 'loans:detail' app.pk %}" class="text-sm font-semibold text-sky-600 hover:text-sky-700">
+                        View
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Approval Status -->
+      {% if motor.approval_status != 'pending' %}
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+            <h2 class="text-sm font-semibold text-slate-900">
+              {% if motor.approval_status == 'approved' %}
+                Approval Details
+              {% else %}
+                Rejection Details
+              {% endif %}
+            </h2>
+          </div>
+          <dl class="divide-y divide-slate-200">
+            <div class="px-6 py-4">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {% if motor.approval_status == 'approved' %}
+                  Approved By
+                {% else %}
+                  Rejected By
+                {% endif %}
+              </dt>
+              <dd class="mt-2 font-medium text-slate-900">
+                {{ motor.approved_by.get_full_name|default:motor.approved_by.username }}
+              </dd>
+            </div>
+            <div class="px-6 py-4">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {% if motor.approval_status == 'approved' %}
+                  Date Approved
+                {% else %}
+                  Date Rejected
+                {% endif %}
+              </dt>
+              <dd class="mt-2 font-medium text-slate-900">{{ motor.approved_at|date:"F j, Y \a\t H:i" }}</dd>
+            </div>
+            {% if motor.approval_notes %}
+              <div class="px-6 py-4">
+                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Notes</dt>
+                <dd class="mt-2 text-sm text-slate-700">{{ motor.approval_notes }}</dd>
+              </div>
+            {% endif %}
+          </dl>
+        </div>
+      {% endif %}
+
+      <!-- Approval Form (if pending) -->
+      {% if motor.approval_status == 'pending' %}
+        <div class="space-y-4">
+          <!-- Approve Form -->
+          <div class="overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
+            <div class="border-b border-emerald-200 bg-emerald-50 px-6 py-4">
+              <h2 class="text-sm font-semibold text-emerald-900">Approve Motorcycle</h2>
+            </div>
+            <form method="post" action="{% url 'inventory:motor-approve' motor.pk %}" class="space-y-4 p-6">
+              {% csrf_token %}
+              <p class="text-sm text-slate-600">
+                This motorcycle is approved and can be used for customer financing.
+              </p>
+              <div>
+                <label for="id_approve_notes" class="block text-sm font-semibold text-slate-900">Approval Notes (Optional)</label>
+                <textarea
+                  name="approval_notes"
+                  id="id_approve_notes"
+                  rows="3"
+                  placeholder="e.g., Condition assessment, special remarks..."
+                  class="mt-2 block w-full rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white transition hover:bg-emerald-700"
+              >
+                <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Approve Motorcycle
+              </button>
+            </form>
+          </div>
+
+          <!-- Reject Form -->
+          <div class="overflow-hidden rounded-2xl border border-red-200 bg-white shadow-sm">
+            <div class="border-b border-red-200 bg-red-50 px-6 py-4">
+              <h2 class="text-sm font-semibold text-red-900">Reject Motorcycle</h2>
+            </div>
+            <form method="post" action="{% url 'inventory:motor-reject' motor.pk %}" class="space-y-4 p-6" onsubmit="return confirm('Are you sure you want to reject this motorcycle? This action cannot be undone.');">
+              {% csrf_token %}
+              <p class="text-sm text-slate-600">
+                This motorcycle cannot be financed at this time.
+              </p>
+              <div>
+                <label for="id_reject_notes" class="block text-sm font-semibold text-red-900">Reason for Rejection (Required)</label>
+                <textarea
+                  name="rejection_notes"
+                  id="id_reject_notes"
+                  rows="3"
+                  required
+                  placeholder="Please explain why this motorcycle is being rejected..."
+                  class="mt-2 block w-full rounded-lg border border-red-300 px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700"
+              >
+                <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Reject Motorcycle
+              </button>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

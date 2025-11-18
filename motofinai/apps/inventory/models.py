@@ -93,6 +93,11 @@ class Motor(models.Model):
         CAPPING = "capping", "Capping"
         TRICYCLE = "tricycle", "Tricycle"
 
+    class ApprovalStatus(models.TextChoices):
+        PENDING = "pending", "Pending Approval"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
     type = models.CharField(
         max_length=20,
         choices=Type.choices,
@@ -119,6 +124,30 @@ class Motor(models.Model):
     )
     quantity = models.PositiveIntegerField(default=1, help_text="Number of units in inventory.")
     notes = models.TextField(blank=True)
+    # Approval workflow fields
+    approval_status = models.CharField(
+        max_length=20,
+        choices=ApprovalStatus.choices,
+        default=ApprovalStatus.PENDING,
+        help_text="Motorcycle approval status for financing",
+    )
+    approved_by = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approved_motors",
+        help_text="Finance officer who approved this motorcycle",
+    )
+    approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When this motorcycle was approved",
+    )
+    approval_notes = models.TextField(
+        blank=True,
+        help_text="Notes from the approving finance officer",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -204,3 +233,25 @@ class Motor(models.Model):
             return RepossessionCase.objects.filter(loan_application__motor=self).select_related('loan_application')
         except (ImportError, Exception):
             return []
+
+    def approve(self, approved_by, notes: str = "") -> None:
+        """Approve the motorcycle for financing."""
+        from django.utils import timezone
+        if self.approval_status != self.ApprovalStatus.PENDING:
+            raise ValueError(f"Only pending motors can be approved. Current status: {self.approval_status}")
+        self.approval_status = self.ApprovalStatus.APPROVED
+        self.approved_by = approved_by
+        self.approved_at = timezone.now()
+        self.approval_notes = notes
+        self.save()
+
+    def reject(self, approved_by, notes: str = "") -> None:
+        """Reject the motorcycle for financing."""
+        from django.utils import timezone
+        if self.approval_status != self.ApprovalStatus.PENDING:
+            raise ValueError(f"Only pending motors can be rejected. Current status: {self.approval_status}")
+        self.approval_status = self.ApprovalStatus.REJECTED
+        self.approved_by = approved_by
+        self.approved_at = timezone.now()
+        self.approval_notes = notes
+        self.save()

@@ -1,0 +1,130 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Motorcycle Approval Queue · Finance{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-6xl px-6 py-12">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-sky-600">Approval Queue</p>
+        <h1 class="mt-1 text-3xl font-semibold text-slate-900">Motorcycles Pending Approval</h1>
+        <p class="mt-2 text-sm text-slate-600">
+          Review and approve motorcycles for customer financing
+        </p>
+      </div>
+      {% if pending_count > 0 %}
+        <div class="rounded-lg bg-yellow-50 border border-yellow-200 px-4 py-3">
+          <p class="text-sm font-semibold text-yellow-900">
+            {{ pending_count }} motorcycle{{ pending_count|pluralize }} awaiting approval
+          </p>
+        </div>
+      {% endif %}
+    </div>
+
+    <form method="get" class="mt-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex gap-4 flex-col sm:flex-row">
+        <div class="flex-1">
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500" for="id_q">
+            Search
+          </label>
+          <input
+            type="text"
+            name="q"
+            id="id_q"
+            value="{{ filter_form.q.value|default:'' }}"
+            placeholder="Search by brand, model, type, or chassis number..."
+            class="mt-2 block w-full rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          />
+        </div>
+        <div class="flex items-end gap-2">
+          {% if request.GET %}
+            <a href="{% url 'inventory:motor-approval-list' %}" class="rounded-md px-3 py-2 text-slate-500 hover:text-slate-700">
+              Reset
+            </a>
+          {% endif %}
+          <button
+            type="submit"
+            class="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 font-medium text-white transition hover:bg-slate-700"
+          >
+            Search
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {% if motors %}
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr>
+              <th scope="col" class="px-6 py-3">Motorcycle</th>
+              <th scope="col" class="px-6 py-3">Type</th>
+              <th scope="col" class="px-6 py-3">Year</th>
+              <th scope="col" class="px-6 py-3">Price</th>
+              <th scope="col" class="px-6 py-3">Added</th>
+              <th scope="col" class="px-6 py-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            {% for motor in motors %}
+              <tr class="hover:bg-slate-50 transition">
+                <td class="px-6 py-4">
+                  <div class="font-medium text-slate-900">{{ motor.display_name }}</div>
+                  {% if motor.chassis_number %}
+                    <div class="text-xs text-slate-500">{{ motor.chassis_number }}</div>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                    {{ motor.type_display }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-slate-600">{{ motor.year }}</td>
+                <td class="px-6 py-4 text-slate-600">₱{{ motor.purchase_price|floatformat:2 }}</td>
+                <td class="px-6 py-4 text-slate-600">
+                  <div class="text-sm">{{ motor.created_at|date:"M d, Y" }}</div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <a
+                    href="{% url 'inventory:motor-approval-detail' motor.pk %}"
+                    class="text-sm font-semibold text-sky-600 transition hover:text-sky-700"
+                  >
+                    Review
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="px-6 py-16 text-center">
+          <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h3 class="mt-4 text-base font-semibold text-slate-900">No motorcycles pending approval</h3>
+          <p class="mt-2 text-sm text-slate-600">All motorcycles have been reviewed and approved.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if is_paginated %}
+      <nav class="mt-6 flex items-center justify-between text-sm text-slate-600">
+        <div>
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </div>
+        <div class="flex items-center gap-2">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="rounded-md px-3 py-2 text-sky-600 hover:bg-slate-100">
+              Previous
+            </a>
+          {% endif %}
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="rounded-md px-3 py-2 text-sky-600 hover:bg-slate-100">
+              Next
+            </a>
+          {% endif %}
+        </div>
+      </nav>
+    {% endif %}
+  </section>
+{% endblock %}
