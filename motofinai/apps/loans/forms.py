@@ -82,7 +82,7 @@ class LoanEmploymentForm(forms.Form):
 
 class LoanMotorSelectionForm(forms.Form):
     motor = forms.ModelChoiceField(
-        queryset=Motor.objects.filter(status=Motor.Status.AVAILABLE),
+        queryset=Motor.objects.all(),
         widget=forms.Select(attrs={"class": INPUT_CLASSES}),
     )
     financing_term = forms.ModelChoiceField(

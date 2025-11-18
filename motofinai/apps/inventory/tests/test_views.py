@@ -24,11 +24,10 @@ class InventoryViewTests(TestCase):
 
     def _motor_payload(self, **overrides):
         payload = {
-            "type": "Scooter",
+            "type": "scooter",
             "brand": "Honda",
             "model_name": "Click 125i",
             "year": date.today().year,
-            "status": Motor.Status.AVAILABLE,
             "color": "Black",
             "purchase_price": "95000.00",
             "chassis_number": "CHASSIS-123",
@@ -58,21 +57,19 @@ class InventoryViewTests(TestCase):
 
     def test_finance_can_view_list_and_filter(self):
         Motor.objects.create(
-            type="Scooter",
+            type="scooter",
             brand="Honda",
             model_name="Click",
             year=date.today().year,
-            status=Motor.Status.AVAILABLE,
             color="Black",
             purchase_price=Decimal("90000.00"),
             chassis_number="CHASSIS-001",
         )
         Motor.objects.create(
-            type="Underbone",
+            type="underbone",
             brand="Yamaha",
             model_name="Sniper",
             year=date.today().year,
-            status=Motor.Status.SOLD,
             color="Blue",
             purchase_price=Decimal("115000.00"),
             chassis_number="CHASSIS-002",
@@ -80,7 +77,7 @@ class InventoryViewTests(TestCase):
         self.client.force_login(self.finance)
         response = self.client.get(
             reverse("inventory:motor-list"),
-            data={"status": Motor.Status.SOLD, "q": "Yamaha"},
+            data={"q": "Yamaha"},
         )
         self.assertEqual(response.status_code, 200)
         motors = list(response.context["motors"])
@@ -89,11 +86,10 @@ class InventoryViewTests(TestCase):
 
     def test_admin_can_delete_motor(self):
         motor = Motor.objects.create(
-            type="Scooter",
+            type="scooter",
             brand="Honda",
             model_name="Grazia",
             year=date.today().year,
-            status=Motor.Status.AVAILABLE,
             color="Red",
             purchase_price=Decimal("98000.00"),
             chassis_number="CHASSIS-DELETE",
