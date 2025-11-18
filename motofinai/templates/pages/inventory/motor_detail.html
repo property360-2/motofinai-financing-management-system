@@ -52,6 +52,10 @@
             </dd>
           </div>
           <div class="grid grid-cols-3 gap-4 px-6 py-4">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Quantity</dt>
+            <dd class="col-span-2 text-slate-700">{{ motor.quantity }} unit{{ motor.quantity|pluralize }}</dd>
+          </div>
+          <div class="grid grid-cols-3 gap-4 px-6 py-4">
             <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Purchase price</dt>
             <dd class="col-span-2 font-medium text-slate-900">&#8369;{{ motor.purchase_price|floatformat:2 }}</dd>
           </div>

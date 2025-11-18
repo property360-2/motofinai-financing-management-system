@@ -79,6 +79,7 @@
               <th scope="col" class="px-6 py-3">Motor</th>
               <th scope="col" class="px-6 py-3">Type</th>
               <th scope="col" class="px-6 py-3">Status</th>
+              <th scope="col" class="px-6 py-3 text-center">Quantity</th>
               <th scope="col" class="px-6 py-3 text-right">Purchase price</th>
               <th scope="col" class="px-6 py-3 text-right">Actions</th>
             </tr>
@@ -104,6 +105,7 @@
                     <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700">Repossessed</span>
                   {% endif %}
                 </td>
+                <td class="px-6 py-4 text-center text-slate-600">{{ motor.quantity }}</td>
                 <td class="px-6 py-4 text-right font-medium text-slate-900">
                   &#8369;{{ motor.purchase_price|floatformat:2 }}
                 </td>
@@ -149,9 +151,13 @@
                   <span class="font-medium text-slate-900 ml-1">{{ motor.type }}</span>
                 </div>
                 <div class="text-right">
-                  <span class="text-slate-500">Price:</span>
-                  <span class="font-medium text-slate-900 ml-1">&#8369;{{ motor.purchase_price|floatformat:2 }}</span>
+                  <span class="text-slate-500">Qty:</span>
+                  <span class="font-medium text-slate-900 ml-1">{{ motor.quantity }}</span>
                 </div>
+              </div>
+              <div class="mb-3">
+                <span class="text-slate-500 text-sm">Price:</span>
+                <span class="font-medium text-slate-900 ml-1">&#8369;{{ motor.purchase_price|floatformat:2 }}</span>
               </div>
               <a
                 href="{% url 'inventory:motor-detail' motor.pk %}"
