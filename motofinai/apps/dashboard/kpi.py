@@ -179,27 +179,38 @@ class DashboardKPI:
     def get_inventory_kpis():
         """Calculate inventory-related KPIs"""
         Motor = apps.get_model('inventory', 'Motor')
+        LoanApplication = apps.get_model('loans', 'LoanApplication')
 
         total_units = Motor.objects.count()
 
-        status_counts = Motor.objects.values('status').annotate(
-            count=Count('id')
-        )
+        # Count motors by deriving status from loan applications
+        available_count = 0
+        reserved_count = 0
+        sold_count = 0
+        repossessed_count = 0
 
-        # Convert to dict
+        for motor in Motor.objects.all():
+            status = motor.status  # This is derived from loan applications
+            if status == 'available':
+                available_count += 1
+            elif status == 'reserved':
+                reserved_count += 1
+            elif status == 'sold':
+                sold_count += 1
+            elif status == 'repossessed':
+                repossessed_count += 1
+
         status_distribution = {
-            'available': 0,
-            'reserved': 0,
-            'sold': 0,
-            'repossessed': 0,
+            'available': available_count,
+            'reserved': reserved_count,
+            'sold': sold_count,
+            'repossessed': repossessed_count,
         }
-        for item in status_counts:
-            status_distribution[item['status']] = item['count']
 
-        # Total inventory value (available + reserved)
-        total_value = Motor.objects.filter(
-            status__in=['available', 'reserved']
-        ).aggregate(total=Sum('purchase_price'))['total'] or Decimal('0')
+        # Total inventory value (all motors)
+        total_value = Motor.objects.aggregate(
+            total=Sum('purchase_price')
+        )['total'] or Decimal('0')
 
         # Average motor price
         avg_price = Motor.objects.aggregate(

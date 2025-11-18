@@ -276,8 +276,8 @@ class InventoryReport(BaseReport):
                 motor.chassis_number,
                 motor.color,
                 float(motor.purchase_price),
-                motor.get_status_display(),
-                motor.calculated_at.strftime('%Y-%m-%d %H:%M'),
+                motor.status.title(),  # Use derived status property
+                motor.created_at.strftime('%Y-%m-%d %H:%M'),  # Use created_at instead
             ])
 
         cls.auto_adjust_column_width(ws)
