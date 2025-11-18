@@ -25,7 +25,6 @@ class MotorForm(forms.ModelForm):
             "purchase_price",
             "chassis_number",
             "stock",
-            "image",
             "notes",
         ]
         widgets = {
@@ -43,7 +42,6 @@ class MotorForm(forms.ModelForm):
                 attrs={"class": INPUT_CLASSES, "placeholder": "Optional chassis/VIN"}
             ),
             "stock": forms.Select(attrs={"class": INPUT_CLASSES}),
-            "image": forms.ClearableFileInput(attrs={"class": INPUT_CLASSES}),
             "notes": forms.Textarea(
                 attrs={
                     "class": INPUT_CLASSES,
