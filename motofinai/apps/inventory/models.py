@@ -32,6 +32,7 @@ class Motor(models.Model):
         choices=Status.choices,
         default=Status.AVAILABLE,
     )
+    quantity = models.PositiveIntegerField(default=1, help_text="Number of units in inventory.")
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
