@@ -68,19 +68,19 @@ class DashboardKPI:
         pending_amount = PaymentSchedule.objects.filter(
             due_date__gte=month_start,
             due_date__lt=month_end,
-            status='pending'
+            status='due'
         ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
 
         # Overdue payments
         today = timezone.now().date()
         overdue_amount = PaymentSchedule.objects.filter(
             due_date__lt=today,
-            status='pending'
+            status='overdue'
         ).aggregate(total=Sum('total_amount'))['total'] or Decimal('0')
 
         overdue_count = PaymentSchedule.objects.filter(
             due_date__lt=today,
-            status='pending'
+            status='overdue'
         ).count()
 
         # Collection rate (paid / (paid + pending + overdue))

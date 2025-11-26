@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db.models import Sum
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -43,9 +44,18 @@ class RepossessionCaseListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         queryset = self.get_queryset()
+
+        # Add pagination
+        paginator = Paginator(queryset, 20)  # 20 items per page
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
         context.update(
             {
-                "cases": queryset,
+                "cases": page_obj,
+                "page_obj": page_obj,
+                "is_paginated": page_obj.has_other_pages(),
+                "paginator": paginator,
                 "summary": self.get_summary(),
                 "status_choices": RepossessionCase.Status.choices,
             }

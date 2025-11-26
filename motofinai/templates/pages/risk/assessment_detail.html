@@ -63,6 +63,13 @@
         class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
       >
         {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
         <h2 class="text-lg font-semibold text-slate-900">Recalculate</h2>
         <p class="mt-1 text-sm text-slate-600">Adjust bureau results or underwriting notes, then recompute the score.</p>
         <div class="mt-4 space-y-4">

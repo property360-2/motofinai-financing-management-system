@@ -529,15 +529,30 @@
           const toast = document.createElement('div');
           toast.id = toastId;
           toast.className = 'toast-enter pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border p-4 shadow-lg ' + (colorMap[type] || colorMap.info);
-          toast.innerHTML = `
-            <div class="flex-shrink-0">${iconMap[type] || iconMap.info}</div>
-            <div class="flex-1 text-sm font-medium text-slate-900">${message}</div>
-            <button type="button" class="flex-shrink-0 text-slate-400 hover:text-slate-600 transition" onclick="this.parentElement.remove()">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          `;
+
+          // Create icon container
+          const iconContainer = document.createElement('div');
+          iconContainer.className = 'flex-shrink-0';
+          iconContainer.innerHTML = iconMap[type] || iconMap.info;
+
+          // Create message container - use textContent to prevent XSS
+          const messageContainer = document.createElement('div');
+          messageContainer.className = 'flex-1 text-sm font-medium text-slate-900';
+          messageContainer.textContent = message; // Safe from XSS
+
+          // Create close button
+          const closeButton = document.createElement('button');
+          closeButton.type = 'button';
+          closeButton.className = 'flex-shrink-0 text-slate-400 hover:text-slate-600 transition';
+          closeButton.innerHTML = '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>';
+          closeButton.addEventListener('click', function() {
+            toast.remove();
+          });
+
+          // Assemble toast
+          toast.appendChild(iconContainer);
+          toast.appendChild(messageContainer);
+          toast.appendChild(closeButton);
 
           toastContainer.appendChild(toast);
 

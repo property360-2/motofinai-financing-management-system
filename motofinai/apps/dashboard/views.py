@@ -72,21 +72,21 @@ class LoanOfficerDashboardView(LoginRequiredMixin, TemplateView):
             status='approved'
         ).select_related('applicant', 'motor').order_by('-created_at')[:10]
 
-        recent_under_review = LoanApplication.objects.filter(
-            status='under_review'
+        recent_active = LoanApplication.objects.filter(
+            status='active'
         ).select_related('applicant', 'motor').order_by('-created_at')[:10]
 
         # Get repossession alerts categorized by risk
         high_risk_repos = RepossessionCase.objects.filter(
-            status='ACTIVE'
+            status='active'
         ).select_related('loan__applicant', 'loan__motor').order_by('-created_at')[:10]
 
         medium_risk_repos = RepossessionCase.objects.filter(
-            status='REMINDER'
+            status='reminder'
         ).select_related('loan__applicant', 'loan__motor').order_by('-created_at')[:10]
 
         low_risk_repos = RepossessionCase.objects.filter(
-            status='WARNING'
+            status='warning'
         ).select_related('loan__applicant', 'loan__motor').order_by('-created_at')[:10]
 
         context.update({
@@ -95,7 +95,7 @@ class LoanOfficerDashboardView(LoginRequiredMixin, TemplateView):
             'current_month': timezone.now().strftime('%B %Y'),
             'recent_pending': recent_pending,
             'recent_approved': recent_approved,
-            'recent_under_review': recent_under_review,
+            'recent_active': recent_active,
             'high_risk_repos': high_risk_repos,
             'medium_risk_repos': medium_risk_repos,
             'low_risk_repos': low_risk_repos,

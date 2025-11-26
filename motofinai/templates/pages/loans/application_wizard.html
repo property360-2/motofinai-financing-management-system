@@ -46,7 +46,14 @@
     </div>
 
     <form method="post" class="mt-8 space-y-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-      {% csrf_token %}
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
       <input type="hidden" name="current_step" value="{{ current_step }}" />
 
       {% if form.non_field_errors %}
@@ -73,7 +80,7 @@
               <p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>
             {% endif %}
             {% if field.errors %}
-              <p class="mt-1 text-xs text-red-600">{{ field.errors|striptags }}</p>
+              <p class="mt-1 text-xs text-red-600" role="alert">{{ field.errors|striptags }}</p>
             {% endif %}
           </div>
         {% endfor %}

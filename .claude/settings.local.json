@@ -3,7 +3,11 @@
     "allow": [
       "Bash(dir:*)",
       "Bash(find:*)",
-      "Bash(python manage.py:*)"
+      "Bash(python manage.py:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(python fix_contrast.py:*)",
+      "Bash(python add_aria_alerts.py:*)",
+      "Bash(python -m py_compile:*)"
     ],
     "deny": [],
     "ask": []

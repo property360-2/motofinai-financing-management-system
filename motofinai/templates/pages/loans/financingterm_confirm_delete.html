@@ -21,6 +21,13 @@
       </dl>
       <form method="post" class="mt-6 flex items-center justify-end gap-3">
         {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
         <a
           href="{% url 'terms:list' %}"
           class="rounded-md px-4 py-2 text-sm font-medium text-rose-700 hover:text-rose-800"

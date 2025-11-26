@@ -26,7 +26,7 @@
       <div>
         <p class="text-sm uppercase tracking-wide text-sky-600">Inventory Management</p>
         <h1 class="mt-1 text-3xl font-semibold text-slate-900">Stock batches</h1>
-        <p class="mt-2 text-sm text-slate-600">
+        <p class="mt-2 text-sm text-slate-700">
           Manage motorcycle stock variants, quantities available and sold. Each stock batch represents a model variant with color specifications.
         </p>
       </div>
@@ -51,7 +51,7 @@
       </div>
       <div class="mt-4 flex items-center justify-end gap-2 text-sm">
         {% if request.GET %}
-          <a href="{% url 'inventory:stock-list' %}" class="rounded-md px-3 py-2 text-slate-500 hover:text-slate-700">
+          <a href="{% url 'inventory:stock-list' %}" class="rounded-md px-3 py-2 text-slate-700 hover:text-slate-900">
             Reset
           </a>
         {% endif %}
@@ -113,7 +113,7 @@
                   {% if can_manage_inventory %}
                     <a
                       href="{% url 'inventory:stock-update' stock.pk %}"
-                      class="text-sm font-semibold text-slate-600 transition hover:text-slate-700"
+                      class="text-sm font-semibold text-slate-700 transition hover:text-slate-900"
                     >
                       Edit
                     </a>
@@ -131,7 +131,7 @@
               <div class="flex items-start justify-between mb-3">
                 <div class="flex-1">
                   <h3 class="font-semibold text-slate-900">{{ stock }}</h3>
-                  <p class="text-sm text-slate-500 mt-1">
+                  <p class="text-sm text-slate-700 mt-1">
                     {% if stock.color %}Color: {{ stock.color }}{% else %}No color{% endif %}
                   </p>
                 </div>
@@ -181,14 +181,14 @@
             </svg>
             <h3 class="mt-4 text-base font-semibold text-slate-900">No stock batches found</h3>
             {% if request.GET %}
-              <p class="mt-2 max-w-md text-sm text-slate-600">No stock batches match your current filters. Try adjusting your search criteria.</p>
+              <p class="mt-2 max-w-md text-sm text-slate-700">No stock batches match your current filters. Try adjusting your search criteria.</p>
               <div class="mt-6">
                 <a href="{% url 'inventory:stock-list' %}" class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
                   Clear filters
                 </a>
               </div>
             {% else %}
-              <p class="mt-2 max-w-md text-sm text-slate-600">Get started by creating stock batches for your motorcycle variants. Each batch can track available and sold quantities.</p>
+              <p class="mt-2 max-w-md text-sm text-slate-700">Get started by creating stock batches for your motorcycle variants. Each batch can track available and sold quantities.</p>
               {% if can_manage_inventory %}
                 <div class="mt-6">
                   <a href="{% url 'inventory:stock-create' %}" class="inline-flex items-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700">
@@ -206,7 +206,7 @@
     </div>
 
     {% if is_paginated %}
-      <nav class="mt-6 flex items-center justify-between text-sm text-slate-600" aria-label="Pagination">
+      <nav class="mt-6 flex items-center justify-between text-sm text-slate-700" aria-label="Pagination">
         <div>
           Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
         </div>

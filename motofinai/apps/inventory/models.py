@@ -74,6 +74,22 @@ class Stock(models.Model):
         self.quantity_available += amount
         self.save()
 
+    def decrease_available(self, amount: int = 1) -> None:
+        """Decrease available stock and mark as sold."""
+        if self.quantity_available < amount:
+            raise ValueError(f"Insufficient available stock. Available: {self.quantity_available}, Requested: {amount}")
+        self.quantity_available -= amount
+        self.quantity_sold += amount
+        self.save()
+
+    def increase_available(self, amount: int = 1) -> None:
+        """Increase available stock (typically from returning sold items)."""
+        if self.quantity_sold < amount:
+            raise ValueError(f"Cannot return more than sold. Sold: {self.quantity_sold}, Requested: {amount}")
+        self.quantity_sold -= amount
+        self.quantity_available += amount
+        self.save()
+
 
 class MotorQuerySet(models.QuerySet):
     """Custom QuerySet for Motor model."""

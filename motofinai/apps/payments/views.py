@@ -9,6 +9,7 @@ import json
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.db.models import Count, Q, Sum
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -151,13 +152,22 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
         schedules = self.get_queryset()
         start_date, end_date = self.get_date_range()
 
+        # Add pagination
+        paginator = Paginator(schedules, 25)  # 25 items per page
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
         # Convert chart data to JSON for template
         chart_data = self.get_chart_data()
         chart_data_json = mark_safe(json.dumps(chart_data))
 
+        # Note: Summary uses all schedules, not just paginated ones
         context.update(
             {
-                "schedules": schedules,
+                "schedules": page_obj,
+                "page_obj": page_obj,
+                "is_paginated": page_obj.has_other_pages(),
+                "paginator": paginator,
                 "summary": self.get_summary(schedules),
                 "loans": LoanApplication.objects.order_by("-submitted_at")[:20],
                 "chart_data": chart_data_json,

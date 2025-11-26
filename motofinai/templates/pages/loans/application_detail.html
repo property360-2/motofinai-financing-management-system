@@ -91,7 +91,14 @@
             </a>
           {% elif application.status == 'approved' %}
             <form method="post" action="{% url 'loans:activate' application.pk %}" style="display:inline;">
-              {% csrf_token %}
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
               <button type="submit" class="rounded-md bg-sky-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-700">
                 <svg class="inline mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -101,7 +108,14 @@
             </form>
           {% elif application.status == 'active' %}
             <form method="post" action="{% url 'loans:complete' application.pk %}" style="display:inline;">
-              {% csrf_token %}
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
               <button type="submit" class="rounded-md bg-emerald-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-emerald-700">
                 <svg class="inline mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -193,7 +207,9 @@
         <h2 class="text-lg font-semibold text-slate-900">Payment schedule</h2>
         <p class="mt-1 text-sm text-slate-600">Generated after approval to outline due dates and amortization.</p>
       </div>
-      <div class="overflow-x-auto">
+
+      <!-- Desktop Table View -->
+      <div class="hidden lg:block overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-200 text-sm">
           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
@@ -222,6 +238,48 @@
             {% endfor %}
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Card View -->
+      <div class="block lg:hidden p-4">
+        {% for schedule in schedules %}
+        <div class="mb-4 rounded-lg border border-slate-200 p-4">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Installment #{{ schedule.sequence }}</span>
+              <p class="mt-1 text-sm font-medium text-slate-900">₱{{ schedule.total_amount }}</p>
+            </div>
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+              {% if schedule.status == 'paid' %}bg-green-100 text-green-700
+              {% elif schedule.status == 'overdue' %}bg-red-100 text-red-700
+              {% else %}bg-amber-100 text-amber-700{% endif %}">
+              {{ schedule.get_status_display }}
+            </span>
+          </div>
+          <dl class="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <dt class="font-semibold text-slate-500">Due Date</dt>
+              <dd class="text-slate-900">{{ schedule.due_date|date:"M d, Y" }}</dd>
+            </div>
+            <div>
+              <dt class="font-semibold text-slate-500">Principal</dt>
+              <dd class="text-slate-900">₱{{ schedule.principal_amount }}</dd>
+            </div>
+            <div>
+              <dt class="font-semibold text-slate-500">Interest</dt>
+              <dd class="text-slate-900">₱{{ schedule.interest_amount }}</dd>
+            </div>
+            <div>
+              <dt class="font-semibold text-slate-500">Total Due</dt>
+              <dd class="font-medium text-slate-900">₱{{ schedule.total_amount }}</dd>
+            </div>
+          </dl>
+        </div>
+        {% empty %}
+        <div class="py-6 text-center text-sm text-slate-500">
+          No payment schedule yet. Approve the application to generate installments.
+        </div>
+        {% endfor %}
       </div>
     </section>
   </div>

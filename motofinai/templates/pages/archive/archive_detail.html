@@ -1,0 +1,173 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Archive Detail - {{ archive.module }} #{{ archive.record_id }}{% endblock title %}
+
+{% block content %}
+  <section class="mx-auto max-w-5xl px-6 py-12">
+    <!-- Header -->
+    <div class="mb-6">
+      <a
+        href="{% url 'archive:list' %}"
+        class="inline-flex items-center text-sm font-medium text-sky-600 hover:text-sky-800"
+      >
+        <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Archives
+      </a>
+    </div>
+
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-sky-600">Archive Detail</p>
+        <h1 class="mt-1 text-3xl font-semibold text-slate-900">
+          {{ archive.module|title }} #{{ archive.record_id }}
+        </h1>
+        <p class="mt-2 text-sm text-slate-700">
+          Archived on {{ archive.created_at|date:"F d, Y \a\t g:i A" }}
+        </p>
+      </div>
+      {% if archive.status == 'archived' %}
+        <span class="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700">
+          Archived
+        </span>
+      {% elif archive.status == 'restored' %}
+        <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
+          Restored
+        </span>
+      {% endif %}
+    </div>
+
+    <!-- Archive Information -->
+    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+        <h2 class="text-lg font-semibold text-slate-900">Archive Information</h2>
+      </div>
+      <div class="px-6 py-4">
+        <dl class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Module</dt>
+            <dd class="mt-1">
+              <span class="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-sm font-medium text-sky-700">
+                {{ archive.module|title }}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Record ID</dt>
+            <dd class="mt-1 text-sm font-medium text-slate-900">#{{ archive.record_id }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Archived By</dt>
+            <dd class="mt-1 text-sm text-slate-900">
+              {{ archive.archived_by.get_full_name|default:archive.archived_by.username }}
+              <span class="text-slate-500">({{ archive.archived_by.role|title }})</span>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Archived Date</dt>
+            <dd class="mt-1 text-sm text-slate-900">{{ archive.created_at|date:"F d, Y \a\t g:i A" }}</dd>
+          </div>
+          {% if archive.restored_at %}
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Restored Date</dt>
+              <dd class="mt-1 text-sm text-slate-900">{{ archive.restored_at|date:"F d, Y \a\t g:i A" }}</dd>
+            </div>
+          {% endif %}
+          {% if archive.reason %}
+            <div class="sm:col-span-2">
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Reason for Archiving</dt>
+              <dd class="mt-1 text-sm text-slate-900">{{ archive.reason }}</dd>
+            </div>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
+
+    <!-- Data Snapshot -->
+    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+        <h2 class="text-lg font-semibold text-slate-900">Data Snapshot</h2>
+        <p class="mt-1 text-sm text-slate-600">
+          Original record data at the time of archiving
+        </p>
+      </div>
+      <div class="px-6 py-4">
+        <div class="overflow-x-auto">
+          <pre class="rounded-lg bg-slate-900 p-4 text-xs text-slate-100"><code>{{ archive.data_snapshot|safe }}</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    {% if user_can_restore and archive.status == 'archived' %}
+      <div class="mt-8 overflow-hidden rounded-2xl border border-amber-200 bg-amber-50 shadow-sm">
+        <div class="px-6 py-4">
+          <h2 class="text-lg font-semibold text-amber-900">Restore This Record</h2>
+          <p class="mt-2 text-sm text-amber-700">
+            This will recreate the record in the {{ archive.module }} module using the data snapshot below.
+            The archive will be marked as "restored" and the record will be available in the original module.
+          </p>
+          <p class="mt-2 text-sm text-amber-700">
+            <strong>Warning:</strong> If a record with ID #{{ archive.record_id }} already exists in {{ archive.module }},
+            the restoration will fail. You must delete or resolve conflicts with existing records first.
+          </p>
+          <form method="post" action="{% url 'archive:restore' archive.pk %}" class="mt-4" onsubmit="return confirm('Are you sure you want to restore this record? This will recreate the record in the {{ archive.module }} module.');">
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
+            <button
+              type="submit"
+              class="inline-flex items-center rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
+            >
+              <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Restore Record
+            </button>
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if archive.status == 'restored' %}
+      <div class="mt-8 overflow-hidden rounded-2xl border border-green-200 bg-green-50 shadow-sm">
+        <div class="px-6 py-4">
+          <div class="flex items-start">
+            <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-green-900">Archive Restored</h3>
+              <p class="mt-1 text-sm text-green-700">
+                This archive has been marked as restored{% if archive.restored_at %} on {{ archive.restored_at|date:"F d, Y \a\t g:i A" }}{% endif %}.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- JSON Formatter Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const preElement = document.querySelector('pre code');
+      if (preElement) {
+        try {
+          const rawText = preElement.textContent;
+          const jsonData = JSON.parse(rawText);
+          preElement.textContent = JSON.stringify(jsonData, null, 2);
+        } catch (e) {
+          // If JSON parsing fails, keep original content
+          console.warn('Failed to parse JSON:', e);
+        }
+      }
+    });
+  </script>
+{% endblock content %}

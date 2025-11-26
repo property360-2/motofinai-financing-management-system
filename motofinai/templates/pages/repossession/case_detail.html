@@ -86,7 +86,14 @@
       {% if case.is_open %}
         <div class="mt-8 grid gap-6 md:grid-cols-2">
           <form method="post" action="{% url 'repossession:send-reminder' case.pk %}" class="space-y-3">
-            {% csrf_token %}
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
             <h3 class="text-base font-semibold text-slate-900">Record reminder</h3>
             <p class="text-sm text-slate-600">Log a follow-up reminder sent to the borrower.</p>
             {% if reminder_form.non_field_errors %}
@@ -110,7 +117,14 @@
           </form>
 
           <form method="post" action="{% url 'repossession:close-case' case.pk %}" class="space-y-3">
-            {% csrf_token %}
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
             <h3 class="text-base font-semibold text-slate-900">Close case</h3>
             <p class="text-sm text-slate-600">Archive the case once the loan is resolved or repossession completed.</p>
             {% if close_form.non_field_errors %}

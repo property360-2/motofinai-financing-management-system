@@ -8,7 +8,7 @@
       <div>
         <p class="text-sm uppercase tracking-wide text-sky-600">Approval Queue</p>
         <h1 class="mt-1 text-3xl font-semibold text-slate-900">Motorcycles Pending Approval</h1>
-        <p class="mt-2 text-sm text-slate-600">
+        <p class="mt-2 text-sm text-slate-700">
           Review and approve motorcycles for customer financing
         </p>
       </div>
@@ -38,7 +38,7 @@
         </div>
         <div class="flex items-end gap-2">
           {% if request.GET %}
-            <a href="{% url 'inventory:motor-approval-list' %}" class="rounded-md px-3 py-2 text-slate-500 hover:text-slate-700">
+            <a href="{% url 'inventory:motor-approval-list' %}" class="rounded-md px-3 py-2 text-slate-700 hover:text-slate-900">
               Reset
             </a>
           {% endif %}
@@ -79,9 +79,9 @@
                     {{ motor.type_display }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-slate-600">{{ motor.year }}</td>
-                <td class="px-6 py-4 text-slate-600">₱{{ motor.purchase_price|floatformat:2 }}</td>
-                <td class="px-6 py-4 text-slate-600">
+                <td class="px-6 py-4 text-slate-700">{{ motor.year }}</td>
+                <td class="px-6 py-4 text-slate-700">₱{{ motor.purchase_price|floatformat:2 }}</td>
+                <td class="px-6 py-4 text-slate-700">
                   <div class="text-sm">{{ motor.created_at|date:"M d, Y" }}</div>
                 </td>
                 <td class="px-6 py-4 text-right">

@@ -161,7 +161,14 @@
               <h2 class="text-sm font-semibold text-emerald-900">Approve Motorcycle</h2>
             </div>
             <form method="post" action="{% url 'inventory:motor-approve' motor.pk %}" class="space-y-4 p-6">
-              {% csrf_token %}
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
               <p class="text-sm text-slate-600">
                 This motorcycle is approved and can be used for customer financing.
               </p>
@@ -193,7 +200,14 @@
               <h2 class="text-sm font-semibold text-red-900">Reject Motorcycle</h2>
             </div>
             <form method="post" action="{% url 'inventory:motor-reject' motor.pk %}" class="space-y-4 p-6" onsubmit="return confirm('Are you sure you want to reject this motorcycle? This action cannot be undone.');">
-              {% csrf_token %}
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
               <p class="text-sm text-slate-600">
                 This motorcycle cannot be financed at this time.
               </p>

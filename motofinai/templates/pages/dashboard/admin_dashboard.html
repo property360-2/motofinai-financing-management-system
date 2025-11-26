@@ -315,7 +315,9 @@
     <!-- Recent Activities -->
     <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h2>
-        <div class="overflow-x-auto">
+
+        <!-- Desktop Table View -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -352,6 +354,30 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="block md:hidden space-y-4">
+            {% for activity in kpis.recent_activities %}
+            <div class="border border-gray-200 rounded-lg p-4">
+                <div class="flex items-start justify-between mb-2">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {{ activity.action }}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                        {{ activity.created_at|date:"M d, H:i" }}
+                    </span>
+                </div>
+                <div class="mt-2">
+                    <p class="text-sm font-medium text-gray-900">{{ activity.actor.email|default:"System" }}</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ activity.description|truncatewords:15 }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-6 text-sm text-gray-500">
+                No recent activities
+            </div>
+            {% endfor %}
         </div>
     </div>
 

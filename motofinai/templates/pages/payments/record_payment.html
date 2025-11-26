@@ -42,7 +42,14 @@
         </dl>
 
         <form method="post" class="mt-6 space-y-5">
-          {% csrf_token %}
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
           {% if form.non_field_errors %}
             <div class="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
               {{ form.non_field_errors|join:', ' }}

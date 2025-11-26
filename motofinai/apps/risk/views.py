@@ -7,6 +7,7 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Avg, Count, Q
 from django.http import HttpRequest, HttpResponse
@@ -129,6 +130,12 @@ class RiskAssessmentDashboardView(LoginRequiredMixin, TemplateView):
         assessments = self.get_queryset()
         start_date, end_date = self.get_date_range()
 
+        # Add pagination
+        paginator = Paginator(assessments, 20)  # 20 items per page
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        # Calculate statistics on ALL assessments (not just paginated)
         distribution = assessments.by_level()
         avg_score = assessments.aggregate(avg=models.Avg("score"))["avg"] or 0
 
@@ -138,7 +145,10 @@ class RiskAssessmentDashboardView(LoginRequiredMixin, TemplateView):
 
         context.update(
             {
-                "assessments": assessments,
+                "assessments": page_obj,
+                "page_obj": page_obj,
+                "is_paginated": page_obj.has_other_pages(),
+                "paginator": paginator,
                 "distribution": distribution,
                 "total_assessments": assessments.count(),
                 "high_risk_count": distribution.get(RiskAssessment.RiskLevel.HIGH, 0),

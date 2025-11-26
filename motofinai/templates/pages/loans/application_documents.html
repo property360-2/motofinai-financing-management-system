@@ -17,6 +17,13 @@
       <p class="mt-1 text-sm text-slate-600">Accepts PDF, JPEG, or PNG files with a short description for identification.</p>
       <form method="post" enctype="multipart/form-data" class="mt-4 space-y-4">
         {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
         <div class="grid gap-4 md:grid-cols-2">
           <div>
             <label class="mb-1 block text-sm font-medium text-slate-700" for="id_document_type">Document type</label>
@@ -76,7 +83,14 @@
                 <td class="px-4 py-3 text-slate-600">{{ document.uploaded_at|date:"M d, Y H:i" }}</td>
                 <td class="px-4 py-3 text-right">
                   <form method="post" action="{% url 'loans:document-delete' application.pk document.pk %}" onsubmit="return confirm('Remove this document?');">
-                    {% csrf_token %}
+        {% csrf_token %}
+
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
                     <button type="submit" class="text-xs font-semibold text-rose-600 hover:text-rose-700">Remove</button>
                   </form>
                 </td>

@@ -1,0 +1,43 @@
+Dear {{ applicant_name }},
+
+{% if is_overdue %}
+URGENT: OVERDUE PAYMENT NOTICE
+
+This is an urgent reminder that your payment for installment #{{ sequence }} is now {{ days_overdue }} day{{ days_overdue|pluralize }} overdue.
+{% else %}
+PAYMENT REMINDER
+
+This is a friendly reminder that your payment for installment #{{ sequence }} is due in {{ days_until_due }} day{{ days_until_due|pluralize }}.
+{% endif %}
+
+Payment Details:
+--------------------------------------------------
+Motorcycle Model: {{ motor_model }}
+Installment Number: #{{ sequence }}
+Due Date: {{ due_date|date:"F d, Y" }}
+Amount Due: ₱{{ amount }}
+{% if is_overdue %}
+Days Overdue: {{ days_overdue }} day{{ days_overdue|pluralize }}
+{% endif %}
+
+{% if is_overdue %}
+IMPORTANT: Please settle this payment as soon as possible to avoid additional penalties and potential repossession proceedings. If you are experiencing financial difficulties, please contact our finance department immediately to discuss payment arrangements.
+{% else %}
+To ensure uninterrupted service and avoid late fees, please arrange payment before the due date.
+{% endif %}
+
+Payment Methods:
+--------------------------------------------------
+Please contact our office for payment options and instructions.
+
+If you have already made this payment, please disregard this notice.
+
+For questions or concerns, please contact our finance department.
+
+Thank you for your business.
+
+Best regards,
+MotofinAI Finance Team
+
+--------------------------------------------------
+This is an automated reminder. Please do not reply to this email.

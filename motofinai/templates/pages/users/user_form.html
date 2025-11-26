@@ -7,8 +7,8 @@
     <div class="mb-8">
       <p class="text-sm uppercase tracking-wide text-sky-600">User Management</p>
       <h1 class="mt-1 text-3xl font-semibold text-slate-900">{{ form_title }}</h1>
-      <p class="mt-2 text-sm text-slate-600">
-        {% if object %}
+      <p class="mt-2 text-sm text-slate-700">
+          {% if object %}
           Update user account information, role, and status.
         {% else %}
           Create a new user account for the system.
@@ -20,8 +20,15 @@
       <form method="post" novalidate>
         {% csrf_token %}
 
+        <!-- ARIA live region for form errors -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          {% if form.errors %}
+            Form has {{ form.errors|length }} error{{ form.errors|length|pluralize }}. Please review and correct the highlighted fields.
+          {% endif %}
+        </div>
+
         {% if form.non_field_errors %}
-          <div class="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-800">
+          <div class="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-800" role="alert">
             {{ form.non_field_errors }}
           </div>
         {% endif %}
@@ -34,7 +41,7 @@
             </label>
             {{ form.username }}
             {% if form.username.errors %}
-              <p class="mt-1 text-xs text-red-600">{{ form.username.errors.0 }}</p>
+              <p class="mt-1 text-xs text-red-600" role="alert">{{ form.username.errors.0 }}</p>
             {% endif %}
             {% if form.username.help_text %}
               <p class="mt-1 text-xs text-slate-500">{{ form.username.help_text }}</p>
@@ -48,7 +55,7 @@
             </label>
             {{ form.email }}
             {% if form.email.errors %}
-              <p class="mt-1 text-xs text-red-600">{{ form.email.errors.0 }}</p>
+              <p class="mt-1 text-xs text-red-600" role="alert">{{ form.email.errors.0 }}</p>
             {% endif %}
           </div>
 
@@ -60,7 +67,7 @@
               </label>
               {{ form.first_name }}
               {% if form.first_name.errors %}
-                <p class="mt-1 text-xs text-red-600">{{ form.first_name.errors.0 }}</p>
+                <p class="mt-1 text-xs text-red-600" role="alert">{{ form.first_name.errors.0 }}</p>
               {% endif %}
             </div>
 
@@ -70,7 +77,7 @@
               </label>
               {{ form.last_name }}
               {% if form.last_name.errors %}
-                <p class="mt-1 text-xs text-red-600">{{ form.last_name.errors.0 }}</p>
+                <p class="mt-1 text-xs text-red-600" role="alert">{{ form.last_name.errors.0 }}</p>
               {% endif %}
             </div>
           </div>
@@ -83,7 +90,7 @@
               </label>
               {{ form.password1 }}
               {% if form.password1.errors %}
-                <p class="mt-1 text-xs text-red-600">{{ form.password1.errors.0 }}</p>
+                <p class="mt-1 text-xs text-red-600" role="alert">{{ form.password1.errors.0 }}</p>
               {% endif %}
               {% if form.password1.help_text %}
                 <p class="mt-1 text-xs text-slate-500">{{ form.password1.help_text }}</p>
@@ -96,7 +103,7 @@
               </label>
               {{ form.password2 }}
               {% if form.password2.errors %}
-                <p class="mt-1 text-xs text-red-600">{{ form.password2.errors.0 }}</p>
+                <p class="mt-1 text-xs text-red-600" role="alert">{{ form.password2.errors.0 }}</p>
               {% endif %}
               {% if form.password2.help_text %}
                 <p class="mt-1 text-xs text-slate-500">{{ form.password2.help_text }}</p>
@@ -111,7 +118,7 @@
             </label>
             {{ form.role }}
             {% if form.role.errors %}
-              <p class="mt-1 text-xs text-red-600">{{ form.role.errors.0 }}</p>
+              <p class="mt-1 text-xs text-red-600" role="alert">{{ form.role.errors.0 }}</p>
             {% endif %}
             <p class="mt-1 text-xs text-slate-500">
               Admin: Full system access. Finance: Loan and payment management.
@@ -132,7 +139,7 @@
                   <p class="text-xs text-slate-500">{{ form.is_active.help_text }}</p>
                 {% endif %}
                 {% if form.is_active.errors %}
-                  <p class="text-xs text-red-600">{{ form.is_active.errors.0 }}</p>
+                  <p class="text-xs text-red-600" role="alert">{{ form.is_active.errors.0 }}</p>
                 {% endif %}
               </div>
             </div>
@@ -149,7 +156,7 @@
                   <p class="text-xs text-slate-500">{{ form.is_staff.help_text }}</p>
                 {% endif %}
                 {% if form.is_staff.errors %}
-                  <p class="text-xs text-red-600">{{ form.is_staff.errors.0 }}</p>
+                  <p class="text-xs text-red-600" role="alert">{{ form.is_staff.errors.0 }}</p>
                 {% endif %}
               </div>
             </div>

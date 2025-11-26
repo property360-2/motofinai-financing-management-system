@@ -9,6 +9,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView
 
 from .models import Archive
+from .services import restore_record, ArchiveRestoreError
 
 
 class ArchiveListView(LoginRequiredMixin, ListView):
@@ -75,13 +76,29 @@ class ArchiveRestoreView(LoginRequiredMixin, View):
 
         if archive.status == Archive.Status.RESTORED:
             messages.warning(request, "This record has already been restored.")
-        else:
+            return redirect("archive:detail", pk=pk)
+
+        try:
+            # Attempt to restore the record from the data snapshot
+            restored_instance = restore_record(
+                module=archive.module,
+                data_snapshot=archive.data_snapshot,
+                original_record_id=archive.record_id,
+            )
+
+            # Mark the archive as restored
             archive.restore()
+
             messages.success(
                 request,
-                f"Archive for {archive.module} #{archive.record_id} marked as restored. "
-                "Note: This only updates the archive status. You may need to manually "
-                "recreate the record in the original module if needed."
+                f"Successfully restored {archive.module} record #{archive.record_id}. "
+                f"The record has been recreated in the {archive.module} module."
+            )
+
+        except ArchiveRestoreError as e:
+            messages.error(
+                request,
+                f"Failed to restore record: {str(e)}"
             )
 
         return redirect("archive:detail", pk=pk)

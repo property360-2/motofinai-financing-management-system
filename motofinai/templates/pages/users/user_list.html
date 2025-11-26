@@ -26,7 +26,7 @@
       <div>
         <p class="text-sm uppercase tracking-wide text-sky-600">User Management</p>
         <h1 class="mt-1 text-3xl font-semibold text-slate-900">System Users</h1>
-        <p class="mt-2 text-sm text-slate-600">
+        <p class="mt-2 text-sm text-slate-700">
           Manage user accounts, roles, and access permissions. Only admins can manage users.
         </p>
       </div>
@@ -63,7 +63,7 @@
       </div>
       <div class="mt-4 flex items-center justify-end gap-2 text-sm">
         {% if request.GET %}
-          <a href="{% url 'users:user-list' %}" class="rounded-md px-3 py-2 text-slate-500 hover:text-slate-700">
+          <a href="{% url 'users:user-list' %}" class="rounded-md px-3 py-2 text-slate-700 hover:text-slate-900">
             Reset
           </a>
         {% endif %}
@@ -118,7 +118,7 @@
                     <span class="inline-flex items-center rounded-full bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700">Inactive</span>
                   {% endif %}
                 </td>
-                <td class="px-6 py-4 text-slate-600">
+                <td class="px-6 py-4 text-slate-700">
                   {{ user_obj.date_joined|date:"M d, Y" }}
                 </td>
                 <td class="px-6 py-4 text-right">
@@ -132,7 +132,7 @@
                     {% if can_manage_users %}
                       <a
                         href="{% url 'users:user-edit' user_obj.pk %}"
-                        class="text-sm font-semibold text-slate-600 transition hover:text-slate-700"
+                        class="text-sm font-semibold text-slate-700 transition hover:text-slate-900"
                       >
                         Edit
                       </a>
@@ -156,9 +156,9 @@
                       <span class="ml-2 inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">Superuser</span>
                     {% endif %}
                   </h3>
-                  <p class="text-sm text-slate-500 mt-1">@{{ user_obj.username }}</p>
+                  <p class="text-sm text-slate-700 mt-1">@{{ user_obj.username }}</p>
                   {% if user_obj.email %}
-                    <p class="text-sm text-slate-500">{{ user_obj.email }}</p>
+                    <p class="text-sm text-slate-700">{{ user_obj.email }}</p>
                   {% endif %}
                 </div>
                 <div>
@@ -171,7 +171,7 @@
               </div>
               <div class="grid grid-cols-2 gap-3 text-sm mb-3">
                 <div>
-                  <span class="text-slate-500">Role:</span>
+                  <span class="text-slate-700">Role:</span>
                   {% if user_obj.role == "admin" %}
                     <span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 ml-1">Admin</span>
                   {% elif user_obj.role == "finance" %}
@@ -179,7 +179,7 @@
                   {% endif %}
                 </div>
                 <div class="text-right">
-                  <span class="text-slate-500">Joined:</span>
+                  <span class="text-slate-700">Joined:</span>
                   <span class="font-medium text-slate-900 ml-1">{{ user_obj.date_joined|date:"M d, Y" }}</span>
                 </div>
               </div>
@@ -210,14 +210,14 @@
             </svg>
             <h3 class="mt-4 text-base font-semibold text-slate-900">No users found</h3>
             {% if request.GET %}
-              <p class="mt-2 max-w-md text-sm text-slate-600">No users match your current filters. Try adjusting your search criteria.</p>
+              <p class="mt-2 max-w-md text-sm text-slate-700">No users match your current filters. Try adjusting your search criteria.</p>
               <div class="mt-6">
                 <a href="{% url 'users:user-list' %}" class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
                   Clear filters
                 </a>
               </div>
             {% else %}
-              <p class="mt-2 max-w-md text-sm text-slate-600">Get started by adding users to the system.</p>
+              <p class="mt-2 max-w-md text-sm text-slate-700">Get started by adding users to the system.</p>
               {% if can_manage_users %}
                 <div class="mt-6">
                   <a href="{% url 'users:user-create' %}" class="inline-flex items-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700">
@@ -235,7 +235,7 @@
     </div>
 
     {% if is_paginated %}
-      <nav class="mt-6 flex items-center justify-between text-sm text-slate-600" aria-label="Pagination">
+      <nav class="mt-6 flex items-center justify-between text-sm text-slate-700" aria-label="Pagination">
         <div>
           Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
         </div>

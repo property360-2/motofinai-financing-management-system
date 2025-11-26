@@ -26,7 +26,7 @@
       <div>
         <p class="text-sm uppercase tracking-wide text-sky-600">System Activity</p>
         <h1 class="mt-1 text-3xl font-semibold text-slate-900">Audit Logs</h1>
-        <p class="mt-2 text-sm text-slate-600">
+        <p class="mt-2 text-sm text-slate-700">
           Complete record of system activities and user actions for compliance and security monitoring.
         </p>
       </div>
@@ -79,7 +79,7 @@
       </div>
       <div class="mt-4 flex items-center justify-end gap-2 text-sm">
         {% if request.GET %}
-          <a href="{% url 'audit:list' %}" class="rounded-md px-3 py-2 text-slate-500 hover:text-slate-700">
+          <a href="{% url 'audit:list' %}" class="rounded-md px-3 py-2 text-slate-700 hover:text-slate-900">
             Reset
           </a>
         {% endif %}
@@ -128,7 +128,7 @@
                     <span class="text-slate-400">-</span>
                   {% endif %}
                 </td>
-                <td class="px-6 py-4 text-slate-600">
+                <td class="px-6 py-4 text-slate-700">
                   <div class="font-medium">{{ log.created_at|date:"M d, Y" }}</div>
                   <div class="text-xs text-slate-500">{{ log.created_at|time:"H:i:s" }}</div>
                 </td>
@@ -199,14 +199,14 @@
             </svg>
             <h3 class="mt-4 text-base font-semibold text-slate-900">No audit logs found</h3>
             {% if request.GET %}
-              <p class="mt-2 max-w-md text-sm text-slate-600">No audit logs match your current filters. Try adjusting your search criteria.</p>
+              <p class="mt-2 max-w-md text-sm text-slate-700">No audit logs match your current filters. Try adjusting your search criteria.</p>
               <div class="mt-6">
                 <a href="{% url 'audit:list' %}" class="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
                   Clear filters
                 </a>
               </div>
             {% else %}
-              <p class="mt-2 max-w-md text-sm text-slate-600">System activity logs will appear here as actions are performed in the application.</p>
+              <p class="mt-2 max-w-md text-sm text-slate-700">System activity logs will appear here as actions are performed in the application.</p>
             {% endif %}
           </div>
         </div>
@@ -214,7 +214,7 @@
     </div>
 
     {% if is_paginated %}
-      <nav class="mt-6 flex items-center justify-between text-sm text-slate-600" aria-label="Pagination">
+      <nav class="mt-6 flex items-center justify-between text-sm text-slate-700" aria-label="Pagination">
         <div>
           Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
         </div>

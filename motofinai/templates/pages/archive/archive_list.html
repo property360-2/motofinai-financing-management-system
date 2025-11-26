@@ -1,0 +1,268 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Archive{% endblock title %}
+
+{% block head_extras %}
+<style>
+  @media (max-width: 768px) {
+    .responsive-table table {
+      display: none;
+    }
+    .responsive-table .mobile-card-view {
+      display: block !important;
+    }
+  }
+  @media (min-width: 769px) {
+    .responsive-table .mobile-card-view {
+      display: none !important;
+    }
+  }
+</style>
+{% endblock head_extras %}
+
+{% block content %}
+  <section class="mx-auto max-w-6xl px-6 py-12">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-wide text-sky-600">Archive Management</p>
+        <h1 class="mt-1 text-3xl font-semibold text-slate-900">Archived Records</h1>
+        <p class="mt-2 text-sm text-slate-700">
+          View and manage archived records from all modules. Admin users can restore archived records.
+        </p>
+      </div>
+    </div>
+
+    <!-- Module Statistics -->
+    {% if module_stats %}
+      <div class="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {% for stat in module_stats %}
+          <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ stat.module }}</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900">{{ stat.count }}</p>
+            <p class="mt-1 text-xs text-slate-600">Archived records</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Filters -->
+    <form method="get" class="mt-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500" for="module-filter">
+            Module
+          </label>
+          <select
+            id="module-filter"
+            name="module"
+            class="mt-1 block w-full rounded-lg border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          >
+            <option value="">All Modules</option>
+            {% for stat in module_stats %}
+              <option value="{{ stat.module }}" {% if request.GET.module == stat.module %}selected{% endif %}>
+                {{ stat.module|title }} ({{ stat.count }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500" for="status-filter">
+            Status
+          </label>
+          <select
+            id="status-filter"
+            name="status"
+            class="mt-1 block w-full rounded-lg border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          >
+            <option value="">All Statuses</option>
+            {% for value, label in status_choices %}
+              <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="mt-4 flex items-center justify-end gap-2 text-sm">
+        {% if request.GET %}
+          <a href="{% url 'archive:list' %}" class="rounded-md px-3 py-2 text-slate-700 hover:text-slate-900">
+            Reset
+          </a>
+        {% endif %}
+        <button
+          type="submit"
+          class="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 font-medium text-white transition hover:bg-slate-700"
+        >
+          Apply filters
+        </button>
+      </div>
+    </form>
+
+    <!-- Archives List -->
+    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm responsive-table">
+      {% if archives %}
+        <!-- Desktop Table View -->
+        <table class="min-w-full divide-y divide-slate-200 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr>
+              <th scope="col" class="px-6 py-3">Module</th>
+              <th scope="col" class="px-6 py-3">Record ID</th>
+              <th scope="col" class="px-6 py-3">Archived By</th>
+              <th scope="col" class="px-6 py-3">Status</th>
+              <th scope="col" class="px-6 py-3">Archived Date</th>
+              <th scope="col" class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            {% for archive in archives %}
+              <tr class="hover:bg-slate-50 transition">
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-700">
+                    {{ archive.module|title }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="font-medium text-slate-900">#{{ archive.record_id }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  <p class="text-slate-900">{{ archive.archived_by.get_full_name|default:archive.archived_by.username }}</p>
+                </td>
+                <td class="px-6 py-4">
+                  {% if archive.status == 'archived' %}
+                    <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                      Archived
+                    </span>
+                  {% elif archive.status == 'restored' %}
+                    <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                      Restored
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 text-slate-700">
+                  {{ archive.created_at|date:"M d, Y" }}
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <a
+                    href="{% url 'archive:detail' archive.pk %}"
+                    class="text-sky-600 hover:text-sky-800 font-medium"
+                  >
+                    View Details
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Mobile Card View -->
+        <div class="mobile-card-view hidden p-4">
+          {% for archive in archives %}
+            <div class="mb-4 rounded-lg border border-slate-200 p-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ archive.module|title }}</p>
+                  <p class="mt-1 text-lg font-semibold text-slate-900">#{{ archive.record_id }}</p>
+                </div>
+                {% if archive.status == 'archived' %}
+                  <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                    Archived
+                  </span>
+                {% elif archive.status == 'restored' %}
+                  <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                    Restored
+                  </span>
+                {% endif %}
+              </div>
+              <dl class="mt-4 space-y-2 text-sm">
+                <div>
+                  <dt class="font-semibold text-slate-500">Archived By:</dt>
+                  <dd class="text-slate-900">{{ archive.archived_by.get_full_name|default:archive.archived_by.username }}</dd>
+                </div>
+                <div>
+                  <dt class="font-semibold text-slate-500">Date:</dt>
+                  <dd class="text-slate-900">{{ archive.created_at|date:"M d, Y g:i A" }}</dd>
+                </div>
+                {% if archive.reason %}
+                  <div>
+                    <dt class="font-semibold text-slate-500">Reason:</dt>
+                    <dd class="text-slate-900">{{ archive.reason }}</dd>
+                  </div>
+                {% endif %}
+              </dl>
+              <div class="mt-4">
+                <a
+                  href="{% url 'archive:detail' archive.pk %}"
+                  class="block w-full rounded-lg bg-sky-600 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-sky-700"
+                >
+                  View Details
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+          <div class="border-t border-slate-200 bg-slate-50 px-6 py-4">
+            <nav class="flex items-center justify-between text-sm">
+              <div class="flex-1">
+                <p class="text-slate-600">
+                  Showing
+                  <span class="font-medium">{{ page_obj.start_index }}</span>
+                  to
+                  <span class="font-medium">{{ page_obj.end_index }}</span>
+                  of
+                  <span class="font-medium">{{ paginator.count }}</span>
+                  results
+                </p>
+              </div>
+              <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                  <a
+                    href="?page={{ page_obj.previous_page_number }}{% if request.GET.module %}&module={{ request.GET.module }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
+                    class="rounded-md border border-slate-300 bg-white px-3 py-2 font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Previous
+                  </a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                  <a
+                    href="?page={{ page_obj.next_page_number }}{% if request.GET.module %}&module={{ request.GET.module }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
+                    class="rounded-md border border-slate-300 bg-white px-3 py-2 font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Next
+                  </a>
+                {% endif %}
+              </div>
+            </nav>
+          </div>
+        {% endif %}
+      {% else %}
+        <!-- Empty State -->
+        <div class="px-6 py-16 text-center">
+          <svg class="mx-auto h-16 w-16 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-slate-900">No archived records</h3>
+          <p class="mt-2 text-sm text-slate-700">
+          {% if request.GET %}
+              No records match your filters. Try adjusting your search criteria.
+            {% else %}
+              There are no archived records in the system yet.
+            {% endif %}
+          </p>
+          {% if request.GET %}
+            <div class="mt-6">
+              <a
+                href="{% url 'archive:list' %}"
+                class="inline-flex items-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700"
+              >
+                Clear Filters
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock content %}
