@@ -6,6 +6,7 @@ from .views import (
     LoanApplicationCompleteView,
     LoanApplicationDetailView,
     LoanApplicationDocumentsView,
+    LoanApplicationExportView,
     LoanApplicationListView,
     LoanApplicationWizard,
     LoanDocumentDeleteView,
@@ -15,6 +16,7 @@ app_name = "loans"
 
 urlpatterns = [
     path("", LoanApplicationListView.as_view(), name="list"),
+    path("export/", LoanApplicationExportView.as_view(), name="export"),
     path("new/", LoanApplicationWizard.as_view(), name="new"),
     path("<int:pk>/", LoanApplicationDetailView.as_view(), name="detail"),
     path("<int:pk>/documents/", LoanApplicationDocumentsView.as_view(), name="documents"),

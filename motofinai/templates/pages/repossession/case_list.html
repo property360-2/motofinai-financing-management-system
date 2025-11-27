@@ -36,15 +36,60 @@
       </div>
     </dl>
 
-    <div class="mt-8 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+    <!-- Search Bar -->
+    <div class="mt-6">
+      <form method="get" action="{% url 'repossession:case-list' %}" class="flex gap-2">
+        <div class="flex-1">
+          <label for="search" class="sr-only">Search repossession cases</label>
+          <input
+            type="search"
+            name="search"
+            id="search"
+            value="{{ search_query }}"
+            placeholder="Search by applicant name, email, phone, or motorcycle..."
+            class="block w-full rounded-md border border-slate-300 px-4 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          />
+        </div>
+        {% if request.GET.status %}
+        <input type="hidden" name="status" value="{{ request.GET.status }}" />
+        {% endif %}
+        <button
+          type="submit"
+          class="inline-flex items-center gap-2 rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          Search
+        </button>
+        {% if search_query %}
+        <a
+          href="{% url 'repossession:case-list' %}{% if request.GET.status %}?status={{ request.GET.status }}{% endif %}"
+          class="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear
+        </a>
+        {% endif %}
+      </form>
+      {% if search_query %}
+      <p class="mt-2 text-sm text-slate-600">
+        Showing results for <span class="font-semibold">"{{ search_query }}"</span>
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-600">
       <span class="font-semibold text-slate-700">Filter:</span>
       <a
-        href="{% url 'repossession:case-list' %}"
+        href="{% url 'repossession:case-list' %}{% if search_query %}?search={{ search_query }}{% endif %}"
         class="rounded-full px-3 py-1 {% if not request.GET.status %}bg-sky-100 text-sky-700{% else %}hover:bg-slate-100{% endif %}"
       >All</a>
       {% for value, label in status_choices %}
         <a
-          href="{% url 'repossession:case-list' %}?status={{ value }}"
+          href="{% url 'repossession:case-list' %}?status={{ value }}{% if search_query %}&search={{ search_query }}{% endif %}"
           class="rounded-full px-3 py-1 {% if request.GET.status == value %}bg-sky-100 text-sky-700{% else %}hover:bg-slate-100{% endif %}"
         >{{ label }}</a>
       {% endfor %}

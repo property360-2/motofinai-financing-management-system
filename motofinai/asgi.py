@@ -1,5 +1,5 @@
 """
-ASGI config for motofinai project.
+ASGI config for DC Financing Corporation project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

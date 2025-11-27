@@ -1,7 +1,7 @@
 # UX/UI Improvements Summary
 
 ## Overview
-This document outlines all the UX/UI improvements made to the MotofinAI Financing Management System to enhance usability, accessibility, and visual appeal.
+This document outlines all the UX/UI improvements made to the DC Financing Corporation Financing Management System to enhance usability, accessibility, and visual appeal.
 
 ---
 

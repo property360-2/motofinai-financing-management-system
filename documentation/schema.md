@@ -1,4 +1,4 @@
-## 🗄️ **MotofinAI Database Schema (v4 – with Central Archive Table)**
+## 🗄️ **DC Financing Corporation Database Schema (v4 – with Central Archive Table)**
 
 ### 🧩 **1. users**
 

@@ -63,6 +63,11 @@ class ArchiveDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["user_can_restore"] = self.request.user.is_admin
+        context["breadcrumbs"] = [
+            {"label": "Archive", "url": reverse("archive:list")},
+            {"label": "Archives", "url": reverse("archive:list")},
+            {"label": f"{self.object.module.title()} #{self.object.record_id}"},
+        ]
         return context
 
 

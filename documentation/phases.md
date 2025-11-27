@@ -1,4 +1,4 @@
-# ⚙️ MotofinAI – Financing & Inventory Management System
+# ⚙️ DC Financing Corporation – Financing & Inventory Management System
 
 ### 🧭 Development Phases (Django Edition)
 

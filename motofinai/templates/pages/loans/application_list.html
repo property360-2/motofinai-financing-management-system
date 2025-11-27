@@ -9,23 +9,136 @@
         <h1 class="text-2xl font-semibold text-slate-900">Loan applications</h1>
         <p class="mt-1 text-sm text-slate-600">Track submissions and progress through approval.</p>
       </div>
-      <a
-        href="{% url 'loans:new' %}"
-        class="inline-flex items-center justify-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
-      >
-        New application
-      </a>
+      <div class="flex gap-2">
+        <a
+          href="{% url 'loans:export' %}{% if search_query %}?search={{ search_query }}{% endif %}"
+          class="inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Export CSV
+        </a>
+        <a
+          href="{% url 'loans:new' %}"
+          class="inline-flex items-center justify-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
+        >
+          New application
+        </a>
+      </div>
     </div>
 
-    <div class="mt-8 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <!-- Search Bar -->
+    <div class="mt-6">
+      <form method="get" action="{% url 'loans:list' %}" class="flex gap-2">
+        <div class="flex-1">
+          <label for="search" class="sr-only">Search loan applications</label>
+          <input
+            type="search"
+            name="search"
+            id="search"
+            value="{{ search_query }}"
+            placeholder="Search by applicant name, email, phone, or motorcycle..."
+            class="block w-full rounded-md border border-slate-300 px-4 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+          />
+        </div>
+        <button
+          type="submit"
+          class="inline-flex items-center gap-2 rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          Search
+        </button>
+        {% if search_query %}
+        <a
+          href="{% url 'loans:list' %}"
+          class="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear
+        </a>
+        {% endif %}
+      </form>
+      {% if search_query %}
+      <p class="mt-2 text-sm text-slate-600">
+        Showing results for <span class="font-semibold">"{{ search_query }}"</span>
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
-            <th scope="col" class="px-4 py-3">Applicant</th>
-            <th scope="col" class="px-4 py-3">Motorcycle</th>
+            <th scope="col" class="px-4 py-3">
+              <a href="?sort=name&order={% if current_sort == 'name' and current_order == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="group inline-flex items-center gap-1 hover:text-slate-700">
+                Applicant
+                <span class="flex-shrink-0">
+                  {% if current_sort == 'name' %}
+                    {% if current_order == 'asc' %}
+                      <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                    {% else %}
+                      <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M15 10l-5 5-5-5h10z"/></svg>
+                    {% endif %}
+                  {% else %}
+                    <svg class="h-3 w-3 opacity-0 group-hover:opacity-50" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                  {% endif %}
+                </span>
+              </a>
+            </th>
+            <th scope="col" class="px-4 py-3">
+              <a href="?sort=motorcycle&order={% if current_sort == 'motorcycle' and current_order == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="group inline-flex items-center gap-1 hover:text-slate-700">
+                Motorcycle
+                <span class="flex-shrink-0">
+                  {% if current_sort == 'motorcycle' %}
+                    {% if current_order == 'asc' %}
+                      <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                    {% else %}
+                      <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M15 10l-5 5-5-5h10z"/></svg>
+                    {% endif %}
+                  {% else %}
+                    <svg class="h-3 w-3 opacity-0 group-hover:opacity-50" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                  {% endif %}
+                </span>
+              </a>
+            </th>
             <th scope="col" class="px-4 py-3">Term</th>
-            <th scope="col" class="px-4 py-3">Monthly payment</th>
-            <th scope="col" class="px-4 py-3">Status</th>
+            <th scope="col" class="px-4 py-3">
+              <a href="?sort=monthly&order={% if current_sort == 'monthly' and current_order == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="group inline-flex items-center gap-1 hover:text-slate-700">
+                Monthly payment
+                <span class="flex-shrink-0">
+                  {% if current_sort == 'monthly' %}
+                    {% if current_order == 'asc' %}
+                      <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                    {% else %}
+                      <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M15 10l-5 5-5-5h10z"/></svg>
+                    {% endif %}
+                  {% else %}
+                    <svg class="h-3 w-3 opacity-0 group-hover:opacity-50" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                  {% endif %}
+                </span>
+              </a>
+            </th>
+            <th scope="col" class="px-4 py-3">
+              <a href="?sort=status&order={% if current_sort == 'status' and current_order == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" class="group inline-flex items-center gap-1 hover:text-slate-700">
+                Status
+                <span class="flex-shrink-0">
+                  {% if current_sort == 'status' %}
+                    {% if current_order == 'asc' %}
+                      <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                    {% else %}
+                      <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M15 10l-5 5-5-5h10z"/></svg>
+                    {% endif %}
+                  {% else %}
+                    <svg class="h-3 w-3 opacity-0 group-hover:opacity-50" fill="currentColor" viewBox="0 0 20 20"><path d="M5 10l5-5 5 5H5z"/></svg>
+                  {% endif %}
+                </span>
+              </a>
+            </th>
             <th scope="col" class="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>

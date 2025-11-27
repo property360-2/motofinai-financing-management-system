@@ -1,7 +1,7 @@
 {% extends 'layouts/base.html' %}
 {% load static %}
 
-{% block title %}{{ page_title }} - MotofinAI{% endblock %}
+{% block title %}{{ page_title }} - DC Financing Corporation{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-slate-50">
@@ -64,7 +64,8 @@
                 {# Tab Content - Pending #}
                 <div id="pending-panel" class="application-panel">
                     {% if recent_pending %}
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-slate-50">
                                 <tr>
@@ -93,6 +94,37 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="block md:hidden space-y-4">
+                        {% for app in recent_pending %}
+                        <div class="border border-slate-200 rounded-lg p-4 space-y-3 bg-white hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-slate-900">{{ app.applicant_full_name }}</p>
+                                    <p class="text-xs text-slate-500 mt-1">{{ app.applicant_email }}</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-500 uppercase">Motorcycle</p>
+                                    <p class="text-slate-900 mt-1">{{ app.motor.model }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-500 uppercase">Loan Amount</p>
+                                    <p class="font-semibold text-slate-900 mt-1">₱{{ app.loan_amount|floatformat:2 }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-500 uppercase">Date</p>
+                                    <p class="text-slate-900 mt-1">{{ app.created_at|date:"M d, Y" }}</p>
+                                </div>
+                                <div class="flex items-end">
+                                    <a href="{% url 'loans:application_detail' app.id %}" class="text-sm font-medium text-sky-600 hover:text-sky-900 transition-colors">View Details →</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% else %}
                     <div class="text-center py-12">
                         <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +139,8 @@
                 {# Tab Content - Approved #}
                 <div id="approved-panel" class="application-panel hidden">
                     {% if recent_approved %}
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-slate-50">
                                 <tr>
@@ -136,6 +169,37 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="block md:hidden space-y-4">
+                        {% for app in recent_approved %}
+                        <div class="border border-emerald-200 rounded-lg p-4 space-y-3 bg-emerald-50 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-slate-900">{{ app.applicant_full_name }}</p>
+                                    <p class="text-xs text-slate-600 mt-1">{{ app.applicant_email }}</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Motorcycle</p>
+                                    <p class="text-slate-900 mt-1">{{ app.motor.model }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Loan Amount</p>
+                                    <p class="font-semibold text-emerald-700 mt-1">₱{{ app.loan_amount|floatformat:2 }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Date</p>
+                                    <p class="text-slate-900 mt-1">{{ app.created_at|date:"M d, Y" }}</p>
+                                </div>
+                                <div class="flex items-end">
+                                    <a href="{% url 'loans:application_detail' app.id %}" class="text-sm font-medium text-sky-600 hover:text-sky-900 transition-colors">View Details →</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% else %}
                     <div class="text-center py-12">
                         <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +214,8 @@
                 {# Tab Content - Under Review #}
                 <div id="under-review-panel" class="application-panel hidden">
                     {% if recent_under_review %}
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-slate-50">
                                 <tr>
@@ -178,6 +243,37 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="block md:hidden space-y-4">
+                        {% for app in recent_under_review %}
+                        <div class="border border-amber-200 rounded-lg p-4 space-y-3 bg-amber-50 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-slate-900">{{ app.applicant_full_name }}</p>
+                                    <p class="text-xs text-slate-600 mt-1">{{ app.applicant_email }}</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Motorcycle</p>
+                                    <p class="text-slate-900 mt-1">{{ app.motor.model }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Loan Amount</p>
+                                    <p class="font-semibold text-amber-700 mt-1">₱{{ app.loan_amount|floatformat:2 }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Date</p>
+                                    <p class="text-slate-900 mt-1">{{ app.created_at|date:"M d, Y" }}</p>
+                                </div>
+                                <div class="flex items-end">
+                                    <a href="{% url 'loans:application_detail' app.id %}" class="text-sm font-medium text-sky-600 hover:text-sky-900 transition-colors">View Details →</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                     {% else %}
                     <div class="text-center py-12">
@@ -236,7 +332,8 @@
                 {# Tab Content - High Risk #}
                 <div id="high-risk-panel" class="repos-panel">
                     {% if high_risk_repos %}
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-slate-50">
                                 <tr>
@@ -269,6 +366,36 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="block md:hidden space-y-4">
+                        {% for case in high_risk_repos %}
+                        <div class="border border-rose-200 rounded-lg p-4 space-y-3 bg-rose-50 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-slate-900">{{ case.loan.applicant_full_name }}</p>
+                                    <p class="text-xs text-slate-600 mt-1">{{ case.loan.applicant_email }}</p>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
+                                    {{ case.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Motorcycle</p>
+                                    <p class="text-slate-900 mt-1">{{ case.loan.motor.model }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Overdue Amount</p>
+                                    <p class="font-semibold text-rose-700 mt-1">₱{{ case.total_overdue_amount|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-rose-200">
+                                <a href="{% url 'repossession:case_detail' case.id %}" class="text-sm font-medium text-sky-600 hover:text-sky-900 transition-colors">View Details →</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% else %}
                     <div class="text-center py-12">
                         <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,7 +410,8 @@
                 {# Tab Content - Medium Risk #}
                 <div id="medium-risk-panel" class="repos-panel hidden">
                     {% if medium_risk_repos %}
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-slate-50">
                                 <tr>
@@ -316,6 +444,36 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="block md:hidden space-y-4">
+                        {% for case in medium_risk_repos %}
+                        <div class="border border-amber-200 rounded-lg p-4 space-y-3 bg-amber-50 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-slate-900">{{ case.loan.applicant_full_name }}</p>
+                                    <p class="text-xs text-slate-600 mt-1">{{ case.loan.applicant_email }}</p>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                                    {{ case.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Motorcycle</p>
+                                    <p class="text-slate-900 mt-1">{{ case.loan.motor.model }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Overdue Amount</p>
+                                    <p class="font-semibold text-amber-700 mt-1">₱{{ case.total_overdue_amount|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-amber-200">
+                                <a href="{% url 'repossession:case_detail' case.id %}" class="text-sm font-medium text-sky-600 hover:text-sky-900 transition-colors">View Details →</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% else %}
                     <div class="text-center py-12">
                         <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,7 +488,8 @@
                 {# Tab Content - Low Risk #}
                 <div id="low-risk-panel" class="repos-panel hidden">
                     {% if low_risk_repos %}
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-slate-50">
                                 <tr>
@@ -362,6 +521,36 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Mobile Card View -->
+                    <div class="block md:hidden space-y-4">
+                        {% for case in low_risk_repos %}
+                        <div class="border border-emerald-200 rounded-lg p-4 space-y-3 bg-emerald-50 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="text-sm font-semibold text-slate-900">{{ case.loan.applicant_full_name }}</p>
+                                    <p class="text-xs text-slate-600 mt-1">{{ case.loan.applicant_email }}</p>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                    {{ case.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Motorcycle</p>
+                                    <p class="text-slate-900 mt-1">{{ case.loan.motor.model }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-slate-600 uppercase">Overdue Amount</p>
+                                    <p class="font-semibold text-emerald-700 mt-1">₱{{ case.total_overdue_amount|floatformat:2 }}</p>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-emerald-200">
+                                <a href="{% url 'repossession:case_detail' case.id %}" class="text-sm font-medium text-sky-600 hover:text-sky-900 transition-colors">View Details →</a>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                     {% else %}
                     <div class="text-center py-12">

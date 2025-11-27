@@ -24,3 +24,4 @@ theme/static_src/.turbo/
 .vscode/
 .idea/
 .DS_Store
+nul

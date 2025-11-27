@@ -4,8 +4,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="MotofinAI - Motorcycle Financing Management System" />
-    <title>{% block title %}MotofinAI{% endblock title %}</title>
+    <meta name="description" content="DC Financing Corporation - Motorcycle Financing Management System" />
+    <title>{% block title %}DC Financing Corporation{% endblock title %}</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏍️</text></svg>" />
     <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}" />
     {% block head_extras %}{% endblock head_extras %}
@@ -196,9 +196,9 @@
       <header class="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm" role="banner">
         <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 lg:px-6">
           <div class="flex items-center gap-4">
-            <a href="{% url 'home' %}" class="flex items-center gap-2 text-lg font-bold text-slate-900 transition hover:text-sky-600" aria-label="MotofinAI Home">
+            <a href="{% url 'home' %}" class="flex items-center gap-2 text-lg font-bold text-slate-900 transition hover:text-sky-600" aria-label="DC Financing Corporation Home">
               <span aria-hidden="true">🏍️</span>
-              <span>MotofinAI</span>
+              <span>DC Financing Corporation</span>
             </a>
           </div>
 
@@ -207,18 +207,20 @@
             {% if request.user.is_authenticated %}
               {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "finance" %}
                 {% if request.user.is_admin %}
-                <a href="{% url 'dashboard:admin' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700" aria-label="Admin Dashboard">Dashboard</a>
+                <a href="{% url 'dashboard:admin' %}" class="font-medium transition {% if request.resolver_match.namespace == 'dashboard' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" aria-label="Admin Dashboard" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
                 {% elif request.user.is_finance %}
-                <a href="{% url 'dashboard:finance' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700" aria-label="Finance Dashboard">Dashboard</a>
+                <a href="{% url 'dashboard:finance' %}" class="font-medium transition {% if request.resolver_match.namespace == 'dashboard' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" aria-label="Finance Dashboard" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
                 {% endif %}
-                <a href="{% url 'inventory:motor-list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Inventory</a>
-                <a href="{% url 'loans:list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Loans</a>
-                <a href="{% url 'payments:schedule-list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Payments</a>
-                <a href="{% url 'risk:dashboard' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Risk</a>
-                <a href="{% url 'repossession:case-list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Repossession</a>
-                <a href="{% url 'terms:list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Terms</a>
+                <a href="{% url 'inventory:motor-list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'inventory' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'inventory' %}aria-current="page"{% endif %}>Inventory</a>
+                <a href="{% url 'loans:list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'loans' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'loans' %}aria-current="page"{% endif %}>Loans</a>
+                <a href="{% url 'payments:schedule-list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'payments' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'payments' %}aria-current="page"{% endif %}>Payments</a>
+                <a href="{% url 'risk:dashboard' %}" class="font-medium transition {% if request.resolver_match.namespace == 'risk' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'risk' %}aria-current="page"{% endif %}>Risk</a>
+                <a href="{% url 'repossession:case-list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'repossession' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'repossession' %}aria-current="page"{% endif %}>Repossession</a>
+                <a href="{% url 'terms:list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'terms' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'terms' %}aria-current="page"{% endif %}>Terms</a>
                 {% if request.user.is_admin %}
-                <a href="{% url 'users:user-list' %}" class="font-medium text-slate-600 transition hover:text-sky-700 focus:text-sky-700">Users</a>
+                <a href="{% url 'users:user-list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'users' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'users' %}aria-current="page"{% endif %}>Users</a>
+                <a href="{% url 'archive:list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'archive' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'archive' %}aria-current="page"{% endif %}>Archive</a>
+                <a href="{% url 'audit:list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'audit' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'audit' %}aria-current="page"{% endif %}>Audit Log</a>
                 {% endif %}
               {% endif %}
               <div class="flex items-center gap-4 pl-4 border-l border-slate-200">
@@ -260,18 +262,20 @@
               </div>
               {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "finance" %}
                 {% if request.user.is_admin %}
-                <a href="{% url 'dashboard:admin' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Dashboard</a>
+                <a href="{% url 'dashboard:admin' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'dashboard' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
                 {% elif request.user.is_finance %}
-                <a href="{% url 'dashboard:finance' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Dashboard</a>
+                <a href="{% url 'dashboard:finance' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'dashboard' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
                 {% endif %}
-                <a href="{% url 'inventory:motor-list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Inventory</a>
-                <a href="{% url 'loans:list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Loans</a>
-                <a href="{% url 'payments:schedule-list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Payments</a>
-                <a href="{% url 'risk:dashboard' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Risk</a>
-                <a href="{% url 'repossession:case-list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Repossession</a>
-                <a href="{% url 'terms:list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">Financing Terms</a>
+                <a href="{% url 'inventory:motor-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'inventory' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'inventory' %}aria-current="page"{% endif %}>Inventory</a>
+                <a href="{% url 'loans:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'loans' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'loans' %}aria-current="page"{% endif %}>Loans</a>
+                <a href="{% url 'payments:schedule-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'payments' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'payments' %}aria-current="page"{% endif %}>Payments</a>
+                <a href="{% url 'risk:dashboard' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'risk' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'risk' %}aria-current="page"{% endif %}>Risk</a>
+                <a href="{% url 'repossession:case-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'repossession' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'repossession' %}aria-current="page"{% endif %}>Repossession</a>
+                <a href="{% url 'terms:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'terms' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'terms' %}aria-current="page"{% endif %}>Financing Terms</a>
                 {% if request.user.is_admin %}
-                <a href="{% url 'users:user-list' %}" class="block rounded-md px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900">User Management</a>
+                <a href="{% url 'users:user-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'users' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'users' %}aria-current="page"{% endif %}>User Management</a>
+                <a href="{% url 'archive:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'archive' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'archive' %}aria-current="page"{% endif %}>Archive</a>
+                <a href="{% url 'audit:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'audit' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'audit' %}aria-current="page"{% endif %}>Audit Log</a>
                 {% endif %}
               {% endif %}
               <a href="{% url 'users:logout' %}" class="block rounded-md px-3 py-2 mt-2 text-base font-medium text-white bg-sky-600 hover:bg-sky-700">Sign out</a>
@@ -325,7 +329,7 @@
         <div class="mx-auto max-w-7xl px-4 lg:px-6">
           <div class="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
             <div class="text-sm text-slate-600">
-              &copy; {% now 'Y' %} MotofinAI. All rights reserved.
+              &copy; {% now 'Y' %} DC Financing Corporation. All rights reserved.
             </div>
             <div class="flex items-center gap-6 text-sm text-slate-600">
               {% if request.user.is_authenticated and request.user.is_admin %}

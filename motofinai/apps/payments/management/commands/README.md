@@ -65,7 +65,7 @@ EMAIL_PORT=587
 EMAIL_USE_TLS=true
 EMAIL_HOST_USER=your-email@example.com
 EMAIL_HOST_PASSWORD=your-password
-DEFAULT_FROM_EMAIL=noreply@motofinai.com
+DEFAULT_FROM_EMAIL=noreply@dcfinancingcorp.com
 ```
 
 ## Scheduling

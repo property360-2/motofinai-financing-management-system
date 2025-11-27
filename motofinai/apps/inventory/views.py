@@ -69,6 +69,15 @@ class MotorDetailView(InventoryContextMixin, LoginRequiredMixin, DetailView):
     context_object_name = "motor"
     required_roles = ("admin", "finance")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["breadcrumbs"] = [
+            {"label": "Inventory", "url": reverse("inventory:motor-list")},
+            {"label": "Motorcycles", "url": reverse("inventory:motor-list")},
+            {"label": self.object.display_name},
+        ]
+        return context
+
 
 class MotorCreateView(
     InventoryContextMixin, LoginRequiredMixin, SuccessMessageMixin, CreateView

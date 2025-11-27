@@ -1,5 +1,5 @@
 """
-WSGI config for motofinai project.
+WSGI config for DC Financing Corporation project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

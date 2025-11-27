@@ -4,7 +4,7 @@ from typing import Any, Dict
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -23,9 +23,24 @@ class RepossessionCaseListView(LoginRequiredMixin, TemplateView):
             "loan_application",
             "loan_application__motor",
         )
+
+        # Status filter
         status = self.request.GET.get("status")
         if status in dict(RepossessionCase.Status.choices):
             queryset = queryset.filter(status=status)
+
+        # Search functionality
+        search = self.request.GET.get("search", "").strip()
+        if search:
+            queryset = queryset.filter(
+                Q(loan_application__applicant_first_name__icontains=search)
+                | Q(loan_application__applicant_last_name__icontains=search)
+                | Q(loan_application__applicant_email__icontains=search)
+                | Q(loan_application__applicant_phone__icontains=search)
+                | Q(loan_application__motor__brand__icontains=search)
+                | Q(loan_application__motor__model__icontains=search)
+            )
+
         return queryset
 
     def get_summary(self) -> Dict[str, Any]:
@@ -58,6 +73,7 @@ class RepossessionCaseListView(LoginRequiredMixin, TemplateView):
                 "paginator": paginator,
                 "summary": self.get_summary(),
                 "status_choices": RepossessionCase.Status.choices,
+                "search_query": self.request.GET.get("search", ""),
             }
         )
         return context
@@ -82,6 +98,12 @@ class RepossessionCaseDetailView(LoginRequiredMixin, DetailView):
         loan = self.object.loan_application
         risk_assessment = getattr(loan, "risk_assessment", None)
         context["risk_assessment"] = risk_assessment
+        # Breadcrumbs
+        context["breadcrumbs"] = [
+            {"label": "Repossession", "url": reverse("repossession:case-list")},
+            {"label": "Cases", "url": reverse("repossession:case-list")},
+            {"label": f"Case #{self.object.pk}"},
+        ]
         return context
 
 

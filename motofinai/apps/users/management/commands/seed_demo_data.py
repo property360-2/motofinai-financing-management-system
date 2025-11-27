@@ -1,5 +1,5 @@
 """
-Seed comprehensive demo data for the MotoFinAI financing system.
+Seed comprehensive demo data for the DC Financing Corporation financing system.
 
 This command populates the database with realistic test data including:
 - Test users with different roles (admin, finance)
@@ -27,7 +27,7 @@ User = get_user_model()
 
 
 class Command(BaseCommand):
-    help = "Seed demo data for the MotoFinAI system including users, inventory, loans, and payments."
+    help = "Seed demo data for the DC Financing Corporation system including users, inventory, loans, and payments."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -79,7 +79,7 @@ class Command(BaseCommand):
         admin, created = User.objects.get_or_create(
             username="admin_demo",
             defaults={
-                "email": "admin@motofinai.demo",
+                "email": "admin@dcfinancing.demo",
                 "first_name": "Admin",
                 "last_name": "User",
                 "role": User.Roles.ADMIN,
@@ -99,7 +99,7 @@ class Command(BaseCommand):
         finance_user, created = User.objects.get_or_create(
             username="finance_demo",
             defaults={
-                "email": "finance@motofinai.demo",
+                "email": "finance@dcfinancing.demo",
                 "first_name": "Finance",
                 "last_name": "User",
                 "role": User.Roles.FINANCE,
@@ -119,7 +119,7 @@ class Command(BaseCommand):
         finance_manager, created = User.objects.get_or_create(
             username="finance_manager",
             defaults={
-                "email": "manager@motofinai.demo",
+                "email": "manager@dcfinancing.demo",
                 "first_name": "Maria",
                 "last_name": "Santos",
                 "role": User.Roles.FINANCE,

@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -290,6 +291,78 @@ class LoanApplicationListView(LoginRequiredMixin, ListView):
     paginate_by = 20
     required_roles = ("admin", "finance")
 
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related("motor", "financing_term")
+
+        # Search functionality
+        search = self.request.GET.get("search", "").strip()
+        if search:
+            queryset = queryset.filter(
+                models.Q(applicant_first_name__icontains=search)
+                | models.Q(applicant_last_name__icontains=search)
+                | models.Q(applicant_email__icontains=search)
+                | models.Q(applicant_phone__icontains=search)
+                | models.Q(motor__brand__icontains=search)
+                | models.Q(motor__model__icontains=search)
+            )
+
+        # Sorting functionality
+        sort_by = self.request.GET.get("sort", "")
+        order = self.request.GET.get("order", "asc")
+
+        allowed_sorts = {
+            "name": "applicant_last_name",
+            "email": "applicant_email",
+            "motorcycle": "motor__model",
+            "amount": "loan_amount",
+            "monthly": "monthly_payment",
+            "status": "status",
+            "created": "submitted_at",
+        }
+
+        if sort_by in allowed_sorts:
+            field = allowed_sorts[sort_by]
+            if order == "desc":
+                field = f"-{field}"
+            queryset = queryset.order_by(field)
+        else:
+            # Default ordering
+            queryset = queryset.order_by("-submitted_at")
+
+        return queryset
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["search_query"] = self.request.GET.get("search", "")
+        context["current_sort"] = self.request.GET.get("sort", "")
+        context["current_order"] = self.request.GET.get("order", "asc")
+        return context
+
+
+class LoanApplicationExportView(LoginRequiredMixin, View):
+    """Export loan applications to CSV."""
+    required_roles = ("admin", "finance")
+
+    def get(self, request: HttpRequest) -> HttpResponse:
+        from .exports import export_loan_applications_csv
+
+        # Get queryset with same filters as list view
+        queryset = LoanApplication.objects.select_related("motor", "financing_term")
+
+        # Apply search if provided
+        search = request.GET.get("search", "").strip()
+        if search:
+            queryset = queryset.filter(
+                models.Q(applicant_first_name__icontains=search)
+                | models.Q(applicant_last_name__icontains=search)
+                | models.Q(applicant_email__icontains=search)
+                | models.Q(applicant_phone__icontains=search)
+                | models.Q(motor__brand__icontains=search)
+                | models.Q(motor__model__icontains=search)
+            )
+
+        return export_loan_applications_csv(queryset)
+
 
 class LoanApplicationDetailView(LoginRequiredMixin, DetailView):
     model = LoanApplication
@@ -315,6 +388,13 @@ class LoanApplicationDetailView(LoginRequiredMixin, DetailView):
         except RepossessionCase.DoesNotExist:
             repossession_case = None
         context["repossession_case"] = repossession_case
+
+        # Breadcrumbs
+        context["breadcrumbs"] = [
+            {"label": "Loans", "url": reverse("loans:list")},
+            {"label": "Applications", "url": reverse("loans:list")},
+            {"label": f"Application #{self.object.pk}"},
+        ]
         return context
 
 
@@ -336,6 +416,12 @@ class LoanApplicationDocumentsView(LoginRequiredMixin, TemplateView):
                 "application": self.application,
                 "documents": self.application.documents.all(),
                 "form": kwargs.get("form") or self.get_form(),
+                "breadcrumbs": [
+                    {"label": "Loans", "url": reverse("loans:list")},
+                    {"label": "Applications", "url": reverse("loans:list")},
+                    {"label": f"Application #{self.application.pk}", "url": reverse("loans:detail", kwargs={"pk": self.application.pk})},
+                    {"label": "Documents"},
+                ],
             }
         )
         return context

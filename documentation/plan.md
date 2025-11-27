@@ -1,4 +1,4 @@
-# 🏍️ MotofinAI – Financing & Inventory Management System (Django Edition)
+# 🏍️ DC Financing Corporation – Financing & Inventory Management System (Django Edition)
 
 > **Scope:** Internal management system for motorcycle dealership/KASA operations.
 > Roles: **Admin** and **Finance Officer**.
@@ -32,7 +32,7 @@
 
 ## 2) UX: Pages & Components
 
-MotofinAI UI follows **Atomic Design Principles**:
+DC Financing Corporation UI follows **Atomic Design Principles**:
 
 * **Atoms:** Buttons, inputs, badges, modals
 * **Molecules:** Form groups, cards, tables

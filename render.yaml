@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: dc-financing-web
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn motofinai.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: your-service.onrender.com
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: https://your-service.onrender.com
+      - key: DATABASE_URL
+        value: REPLACE_WITH_RENDER_DATABASE_URL
+      - key: DB_CONN_MAX_AGE
+        value: "60"
+      - key: DEFAULT_FROM_EMAIL
+        value: noreply@dcfinancingcorp.com
+      - key: USE_WHITENOISE
+        value: "true"

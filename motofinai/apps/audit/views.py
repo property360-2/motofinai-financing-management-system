@@ -61,3 +61,12 @@ class AuditLogDetailView(LoginRequiredMixin, DetailView):
     template_name = "pages/audit/audit_log_detail.html"
     context_object_name = "log"
     required_roles = ("admin", "finance")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["breadcrumbs"] = [
+            {"label": "Audit Logs", "url": reverse("audit:list")},
+            {"label": "Logs", "url": reverse("audit:list")},
+            {"label": f"{self.object.action}"},
+        ]
+        return context
