@@ -240,7 +240,7 @@ class ConsistencyChecker:
             issues["warnings"].extend(loan_issues["warnings"])
 
         # Check for orphaned payments
-        orphaned_payments = Payment.objects.filter(loan__isnull=True)
+        orphaned_payments = Payment.objects.filter(loan_application__isnull=True)
         if orphaned_payments.exists():
             issues["errors"].append(
                 f"Found {orphaned_payments.count()} orphaned payment(s) with no loan"

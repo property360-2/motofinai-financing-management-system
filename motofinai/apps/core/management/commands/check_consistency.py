@@ -97,8 +97,6 @@ class Command(BaseCommand):
                 )
             )
 
-        return 0 if total_errors == 0 else 1
-
     def check_loan(self, loan_id, verbose=False, fix=False):
         """Check specific loan consistency."""
         self.stdout.write(f"\nChecking loan {loan_id}...")
@@ -115,17 +113,17 @@ class Command(BaseCommand):
         warnings = len(issues["warnings"])
 
         if issues["errors"]:
-            self.stdout.write(self.style.ERROR(f"  ✗ {errors} error(s) found:"))
+            self.stdout.write(self.style.ERROR(f"  [ERROR] {errors} error(s) found:"))
             for error in issues["errors"]:
                 self.stdout.write(f"    - {error}")
 
         if issues["warnings"]:
-            self.stdout.write(self.style.WARNING(f"  ⚠ {warnings} warning(s) found:"))
+            self.stdout.write(self.style.WARNING(f"  [WARNING] {warnings} warning(s) found:"))
             for warning in issues["warnings"]:
                 self.stdout.write(f"    - {warning}")
 
         if not issues["errors"] and not issues["warnings"]:
-            self.stdout.write(self.style.SUCCESS("  ✓ No issues found"))
+            self.stdout.write(self.style.SUCCESS("  [PASS] No issues found"))
 
         return errors, warnings
 
@@ -145,17 +143,17 @@ class Command(BaseCommand):
         warnings = len(issues["warnings"])
 
         if issues["errors"]:
-            self.stdout.write(self.style.ERROR(f"  ✗ {errors} error(s) found:"))
+            self.stdout.write(self.style.ERROR(f"  [ERROR] {errors} error(s) found:"))
             for error in issues["errors"]:
                 self.stdout.write(f"    - {error}")
 
         if issues["warnings"]:
-            self.stdout.write(self.style.WARNING(f"  ⚠ {warnings} warning(s) found:"))
+            self.stdout.write(self.style.WARNING(f"  [WARNING] {warnings} warning(s) found:"))
             for warning in issues["warnings"]:
                 self.stdout.write(f"    - {warning}")
 
         if not issues["errors"] and not issues["warnings"]:
-            self.stdout.write(self.style.SUCCESS("  ✓ No issues found"))
+            self.stdout.write(self.style.SUCCESS("  [PASS] No issues found"))
 
         return errors, warnings
 
@@ -175,17 +173,17 @@ class Command(BaseCommand):
         warnings = len(issues["warnings"])
 
         if issues["errors"]:
-            self.stdout.write(self.style.ERROR(f"  ✗ {errors} error(s) found:"))
+            self.stdout.write(self.style.ERROR(f"  [ERROR] {errors} error(s) found:"))
             for error in issues["errors"]:
                 self.stdout.write(f"    - {error}")
 
         if issues["warnings"]:
-            self.stdout.write(self.style.WARNING(f"  ⚠ {warnings} warning(s) found:"))
+            self.stdout.write(self.style.WARNING(f"  [WARNING] {warnings} warning(s) found:"))
             for warning in issues["warnings"]:
                 self.stdout.write(f"    - {warning}")
 
         if not issues["errors"] and not issues["warnings"]:
-            self.stdout.write(self.style.SUCCESS("  ✓ No issues found"))
+            self.stdout.write(self.style.SUCCESS("  [PASS] No issues found"))
 
         return errors, warnings
 
@@ -197,42 +195,42 @@ class Command(BaseCommand):
         total_warnings = 0
 
         # Check for orphaned payments
-        orphaned_payments = Payment.objects.filter(loan__isnull=True)
+        orphaned_payments = Payment.objects.filter(loan_application__isnull=True)
         if orphaned_payments.exists():
             count = orphaned_payments.count()
             self.stdout.write(
-                self.style.ERROR(f"  ✗ Found {count} orphaned payment(s)")
+                self.style.ERROR(f"  [ERROR] Found {count} orphaned payment(s)")
             )
             total_errors += count
 
         # Check for loans without schedules
         loans_without_schedules = LoanApplication.objects.filter(
             status__in=["active", "approved"]
-        ).exclude(paymentschedule__isnull=False)
+        ).exclude(payment_schedules__isnull=False)
         if loans_without_schedules.exists():
             count = loans_without_schedules.count()
             self.stdout.write(
                 self.style.WARNING(
-                    f"  ⚠ Found {count} loan(s) without payment schedules"
+                    f"  [WARNING] Found {count} loan(s) without payment schedules"
                 )
             )
             total_warnings += count
 
-        # Check for duplicate VINs
+        # Check for duplicate chassis numbers
         from django.db.models import Count
 
-        duplicate_vins = Motor.objects.values("vin").annotate(
+        duplicate_chassis = Motor.objects.values("chassis_number").annotate(
             count=Count("id")
-        ).filter(count__gt=1)
-        if duplicate_vins.exists():
-            count = duplicate_vins.count()
+        ).filter(count__gt=1, chassis_number__isnull=False)
+        if duplicate_chassis.exists():
+            count = duplicate_chassis.count()
             self.stdout.write(
-                self.style.ERROR(f"  ✗ Found {count} duplicate VIN(s)")
+                self.style.ERROR(f"  [ERROR] Found {count} duplicate chassis number(s)")
             )
             total_errors += count
 
         if total_errors == 0 and total_warnings == 0:
-            self.stdout.write(self.style.SUCCESS("  ✓ Quick check passed"))
+            self.stdout.write(self.style.SUCCESS("  [PASS] Quick check passed"))
 
         return total_errors, total_warnings
 
@@ -247,7 +245,7 @@ class Command(BaseCommand):
 
         if issues["errors"]:
             self.stdout.write(
-                self.style.ERROR(f"\n✗ {total_errors} error(s) found:")
+                self.style.ERROR(f"\n[ERROR] {total_errors} error(s) found:")
             )
             for i, error in enumerate(issues["errors"][:20], 1):
                 self.stdout.write(f"  {i}. {error}")
@@ -258,7 +256,7 @@ class Command(BaseCommand):
 
         if issues["warnings"]:
             self.stdout.write(
-                self.style.WARNING(f"\n⚠ {total_warnings} warning(s) found:")
+                self.style.WARNING(f"\n[WARNING] {total_warnings} warning(s) found:")
             )
             for i, warning in enumerate(issues["warnings"][:20], 1):
                 self.stdout.write(f"  {i}. {warning}")
@@ -268,6 +266,6 @@ class Command(BaseCommand):
                 )
 
         if total_errors == 0 and total_warnings == 0:
-            self.stdout.write(self.style.SUCCESS("\n✓ All checks passed"))
+            self.stdout.write(self.style.SUCCESS("\n[PASS] All checks passed"))
 
         return total_errors, total_warnings
