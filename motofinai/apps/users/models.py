@@ -8,6 +8,7 @@ class User(AbstractUser):
     class Roles(models.TextChoices):
         ADMIN = "admin", "Admin"
         FINANCE = "finance", "Finance"
+        CREDIT_INVESTIGATOR = "credit_investigator", "Credit Investigator"
 
     role = models.CharField(
         max_length=20,
@@ -30,3 +31,7 @@ class User(AbstractUser):
     @property
     def is_finance(self) -> bool:
         return self.role == self.Roles.FINANCE
+
+    @property
+    def is_credit_investigator(self) -> bool:
+        return self.role == self.Roles.CREDIT_INVESTIGATOR

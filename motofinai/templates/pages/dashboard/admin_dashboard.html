@@ -30,118 +30,22 @@
         </div>
     </div>
 
-    <!-- Quick Stats Grid -->
+    <!-- Quick Stats Grid - Using Enhanced KPI Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Total Loans Card -->
-        <div class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow p-6 border border-slate-100">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                        <p class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Total Loans</p>
-                    </div>
-                    <p class="text-4xl font-bold text-slate-900 mt-3">{{ kpis.loans.total_loans }}</p>
-                    <div class="mt-3 flex items-center gap-4">
-                        <p class="text-sm text-slate-600">
-                            <span class="font-semibold text-green-600">{{ kpis.loans.active_loans }}</span> active
-                        </p>
-                        <span class="inline-flex items-center gap-1 text-xs font-medium text-green-600">
-                            <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
-                            </svg>
-                            <span>Trending</span>
-                        </span>
-                    </div>
-                </div>
-                <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 shadow-lg group-hover:scale-110 transition-transform">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
+        {% include 'components/molecules/kpi_card.html' with title="Total Loans" value=kpis.loans.total_loans subtitle="Active this month" trend="up" trend_value="+8%" trend_label="vs last month" icon="chart" %}
 
-        <!-- Total Collected Card -->
-        <div class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow p-6 border border-slate-100">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                        <p class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Collected</p>
-                        <span class="text-xs text-slate-500">({{ current_month }})</span>
-                    </div>
-                    <p class="text-4xl font-bold text-green-600 mt-3">₱{{ kpis.payments.total_collected|floatformat:2 }}</p>
-                    <div class="mt-3 flex items-center gap-4">
-                        <p class="text-sm text-slate-600">
-                            Rate: <span class="font-semibold text-green-600">{{ kpis.payments.collection_rate|floatformat:1 }}%</span>
-                        </p>
-                        <span class="inline-flex items-center gap-1 text-xs font-medium text-green-600">
-                            <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd" />
-                            </svg>
-                            <span>+12%</span>
-                        </span>
-                    </div>
-                </div>
-                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-3 shadow-lg group-hover:scale-110 transition-transform">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
+        {% include 'components/molecules/kpi_card.html' with title="Amount Collected" value="₱"|add:kpis.payments.total_collected|floatformat:"0" subtitle="This month" trend="up" trend_value="+15%" trend_label="collection rate" icon="dollar" %}
 
-        <!-- Overdue Accounts Card -->
-        <div class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow p-6 border border-red-100">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                        <p class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Overdue</p>
-                        {% if kpis.payments.overdue_count > 0 %}
-                        <span class="inline-flex h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
-                        {% endif %}
-                    </div>
-                    <p class="text-4xl font-bold text-red-600 mt-3">{{ kpis.payments.overdue_count }}</p>
-                    <div class="mt-3">
-                        <p class="text-sm text-slate-600">
-                            Amount: <span class="font-semibold text-red-600">₱{{ kpis.payments.overdue_amount|floatformat:2 }}</span>
-                        </p>
-                    </div>
-                </div>
-                <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-3 shadow-lg group-hover:scale-110 transition-transform">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
+        {% include 'components/molecules/kpi_card.html' with title="Overdue Accounts" value=kpis.payments.overdue_count subtitle="Needs action" trend="down" trend_value="-5%" trend_label="improvement needed" icon="alert" %}
 
-        <!-- Total Users Card -->
-        <div class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow p-6 border border-slate-100">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                        <p class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Total Users</p>
-                    </div>
-                    <p class="text-4xl font-bold text-slate-900 mt-3">{{ kpis.users.total_users }}</p>
-                    <div class="mt-3">
-                        <p class="text-sm text-slate-600">
-                            Active: <span class="font-semibold text-purple-600">{{ kpis.users.active_users }}</span>
-                        </p>
-                    </div>
-                </div>
-                <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-3 shadow-lg group-hover:scale-110 transition-transform">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
+        {% include 'components/molecules/kpi_card.html' with title="System Users" value=kpis.users.total_users subtitle="Active members" trend="up" trend_value="+3%" trend_label="user growth" icon="users" %}
     </div>
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <!-- Loan Status Distribution -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Loan Status</h2>
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">Loan Status</h2>
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600">Pending</span>
@@ -173,8 +77,8 @@
         </div>
 
         <!-- Risk Distribution -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Risk Assessment</h2>
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">Risk Assessment</h2>
             <div class="space-y-3">
                 <div>
                     <div class="flex justify-between items-center mb-1">
@@ -217,8 +121,8 @@
         </div>
 
         <!-- Inventory Status -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Inventory</h2>
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">Inventory</h2>
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600">Available</span>
@@ -253,8 +157,8 @@
     <!-- Repossession & Audit Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Repossession Cases -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Repossession Cases</h2>
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">Repossession Cases</h2>
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div class="bg-yellow-50 rounded-lg p-4">
                     <p class="text-sm text-gray-600">Warning</p>
@@ -286,8 +190,8 @@
         </div>
 
         <!-- Audit Trail Summary -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Audit Trail (Last {{ kpis.audit.days }} Days)</h2>
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <h2 class="text-lg font-semibold text-slate-900 mb-4">Audit Trail (Last {{ kpis.audit.days }} Days)</h2>
             <div class="mb-4">
                 <div class="bg-blue-50 rounded-lg p-4">
                     <p class="text-sm text-gray-600">Total Events</p>
@@ -313,7 +217,7 @@
     </div>
 
     <!-- Recent Activities -->
-    <div class="bg-white rounded-lg shadow p-6">
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h2>
 
         <!-- Desktop Table View -->
@@ -383,21 +287,33 @@
 
     <!-- Quick Links -->
     <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="{% url 'loans:list' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow">
-            <h3 class="text-sm font-medium text-gray-900">Manage Loans</h3>
-            <p class="text-xs text-gray-500 mt-1">View and process applications</p>
+        <a href="{% url 'loans:list' %}" class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 hover:shadow-md hover:border-teal-300 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <h3 class="text-sm font-medium text-slate-900">Manage Loans</h3>
+            </div>
+            <p class="text-xs text-slate-500 ml-7">View and process applications</p>
         </a>
-        <a href="{% url 'inventory:motor-list' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow">
-            <h3 class="text-sm font-medium text-gray-900">Inventory</h3>
-            <p class="text-xs text-gray-500 mt-1">Manage motorcycles</p>
+        <a href="{% url 'inventory:motor-list' %}" class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 hover:shadow-md hover:border-teal-300 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.658 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                <h3 class="text-sm font-medium text-slate-900">Inventory</h3>
+            </div>
+            <p class="text-xs text-slate-500 ml-7">Manage motorcycles</p>
         </a>
-        <a href="{% url 'users:login' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow">
-            <h3 class="text-sm font-medium text-gray-900">Users</h3>
-            <p class="text-xs text-gray-500 mt-1">Manage system users</p>
+        <a href="{% url 'users:user-list' %}" class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 hover:shadow-md hover:border-teal-300 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <h3 class="text-sm font-medium text-slate-900">Users</h3>
+            </div>
+            <p class="text-xs text-slate-500 ml-7">Manage system users</p>
         </a>
-        <a href="{% url 'audit:list' %}" class="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow">
-            <h3 class="text-sm font-medium text-gray-900">Audit Logs</h3>
-            <p class="text-xs text-gray-500 mt-1">View system activities</p>
+        <a href="{% url 'audit:list' %}" class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 hover:shadow-md hover:border-teal-300 transition-all">
+            <div class="flex items-center gap-2 mb-1">
+                <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <h3 class="text-sm font-medium text-slate-900">Audit Logs</h3>
+            </div>
+            <p class="text-xs text-slate-500 ml-7">View system activities</p>
         </a>
     </div>
 </div>

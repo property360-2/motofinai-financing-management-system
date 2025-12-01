@@ -1,0 +1,42 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Server Error · Error{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+  <div class="max-w-md w-full text-center">
+    <div class="mb-8">
+      <div class="mb-4 flex justify-center">
+        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 0v2m0-2h2m-4 0h2M7 15h10a2 2 0 100-4H7a2 2 0 100 4z"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="text-6xl font-bold text-red-600 mb-2">500</h1>
+      <p class="text-2xl font-semibold text-slate-900">Server Error</p>
+    </div>
+
+    <p class="text-slate-600 mb-8">
+      {{ message|default:"Something went wrong on our end. Our team has been notified and is working to fix it." }}
+    </p>
+
+    {% if is_development and error_code %}
+      <div class="text-left bg-red-50 border border-red-200 rounded-md p-4 mb-8">
+        <p class="text-xs font-mono text-red-700 break-words">
+          <strong>Error code:</strong> {{ error_code }}
+        </p>
+      </div>
+    {% endif %}
+
+    <div class="space-x-4">
+      <a href="/" class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+        Return to Home
+      </a>
+      <a href="javascript:history.back()" class="inline-block bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-6 rounded-lg transition">
+        Go Back
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

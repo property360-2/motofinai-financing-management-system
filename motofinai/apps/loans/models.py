@@ -75,6 +75,21 @@ class LoanApplicationQuerySet(models.QuerySet):
     def active(self):
         return self.filter(status=LoanApplication.Status.ACTIVE)
 
+    def pending_investigation(self):
+        """Approved loans awaiting credit investigation."""
+        return self.filter(
+            status=LoanApplication.Status.APPROVED,
+            credit_investigator_approval__isnull=True,
+        )
+
+    def ready_for_activation(self):
+        """Approved loans that have passed credit investigation."""
+        return self.filter(
+            status=LoanApplication.Status.APPROVED,
+            approved_by__isnull=False,
+            credit_investigator_approval__isnull=False,
+        )
+
 
 class LoanApplication(models.Model):
     """Represents a submitted request for financing a motorcycle purchase."""
@@ -171,6 +186,20 @@ class LoanApplication(models.Model):
         help_text="Finance officer who approved this loan",
     )
     approved_at = models.DateTimeField(blank=True, null=True)
+    # Credit investigation approval fields
+    credit_investigator_approval = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="credit_investigated_loan_applications",
+        help_text="Credit Investigator who approved this loan",
+    )
+    credit_investigation_at = models.DateTimeField(blank=True, null=True)
+    credit_investigation_notes = models.TextField(
+        blank=True,
+        help_text="Credit investigator's assessment and notes",
+    )
     custom_interest_rate = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -255,6 +284,8 @@ class LoanApplication(models.Model):
     def activate(self) -> None:
         if self.status != self.Status.APPROVED:
             raise ValidationError("Only approved applications can be activated.")
+        if not self.credit_investigator_approval:
+            raise ValidationError("Loan must be approved by credit investigator before activation.")
         # Decrease stock when activating loan (motor is being financed/sold)
         if self.motor and self.motor.stock:
             try:

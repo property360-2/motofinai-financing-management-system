@@ -221,3 +221,29 @@ class LoanApprovalForm(forms.Form):
             }
         ),
     )
+
+
+class CreditInvestigationForm(forms.Form):
+    """Form for credit investigator to approve or flag loan applications."""
+
+    approved = forms.BooleanField(
+        required=False,
+        label="Approve this loan",
+        widget=forms.CheckboxInput(
+            attrs={
+                "class": "h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+            }
+        ),
+    )
+    investigation_notes = forms.CharField(
+        required=True,
+        label="Investigation Notes",
+        help_text="Required: Document your assessment and reasoning",
+        widget=forms.Textarea(
+            attrs={
+                "class": INPUT_CLASSES,
+                "rows": "6",
+                "placeholder": "Document your credit investigation findings, risk factors, and final assessment...",
+            }
+        ),
+    )

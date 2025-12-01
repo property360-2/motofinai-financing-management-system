@@ -271,3 +271,130 @@ class Motor(models.Model):
         self.approved_at = timezone.now()
         self.approval_notes = notes
         self.save()
+
+
+
+class MotorReceiving(models.Model):
+    """Track incoming motorcycles in the inventory receiving process."""
+    
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending Receipt"
+        RECEIVED = "received", "Received"
+        INSPECTED = "inspected", "Inspected"
+        ACCEPTED = "accepted", "Accepted"
+        REJECTED = "rejected", "Rejected"
+    
+    brand = models.CharField(max_length=100)
+    model_name = models.CharField("model", max_length=120)
+    year = models.PositiveIntegerField(validators=[MinValueValidator(1900)])
+    vin_number = models.CharField(max_length=100, unique=True, help_text="Vehicle Identification Number (VIN/Chassis Number)")
+    engine_number = models.CharField(max_length=100, blank=True, help_text="Engine/Motor number for identification")
+    color = models.CharField(max_length=50, blank=True)
+    motorcycle_type = models.CharField(max_length=20, choices=Motor.Type.choices, default=Motor.Type.SCOOTER)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    purchase_price = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal("0.00"))], help_text="Cost price from supplier")
+    quantity = models.PositiveIntegerField(default=1)
+    supplier_name = models.CharField(max_length=200, blank=True)
+    purchase_order_number = models.CharField(max_length=100, blank=True)
+    invoice_number = models.CharField(max_length=100, blank=True)
+    inspection_status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING, help_text="Inspection status of the motor")
+    inspection_notes = models.TextField(blank=True)
+    inspected_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="inspected_motors", help_text="User who performed the inspection")
+    inspected_at = models.DateTimeField(null=True, blank=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    received_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="received_motors")
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    accepted_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="accepted_motors")
+    rejection_reason = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["vin_number"]), models.Index(fields=["status"]), models.Index(fields=["inspection_status"])]
+    
+    def __str__(self) -> str:
+        return f"{self.year} {self.brand} {self.model_name} (VIN: {self.vin_number})"
+    
+    def mark_inspected(self, inspected_by, notes: str = "", passed: bool = True) -> None:
+        from django.utils import timezone
+        self.inspected_by = inspected_by
+        self.inspected_at = timezone.now()
+        self.inspection_notes = notes
+        self.inspection_status = self.Status.INSPECTED if passed else self.Status.REJECTED
+        self.status = self.Status.INSPECTED if passed else self.Status.REJECTED
+        self.save()
+    
+    def mark_accepted(self, accepted_by, motor=None) -> None:
+        from django.utils import timezone
+        self.status = self.Status.ACCEPTED
+        self.accepted_by = accepted_by
+        self.accepted_at = timezone.now()
+        self.save()
+        if motor:
+            motor.chassis_number = self.vin_number
+            motor.save()
+
+
+
+class ReceivingInspection(models.Model):
+    """Quality inspection checklist for received motorcycles."""
+    
+    class Result(models.TextChoices):
+        PASS = "pass", "Pass"
+        FAIL = "fail", "Fail"
+        NEEDS_REPAIR = "needs_repair", "Needs Repair"
+    
+    motor_receiving = models.ForeignKey(MotorReceiving, on_delete=models.CASCADE, related_name="inspections")
+    engine_condition = models.CharField(max_length=20, choices=Result.choices, default=Result.PASS, help_text="Engine condition assessment")
+    frame_condition = models.CharField(max_length=20, choices=Result.choices, default=Result.PASS, help_text="Frame integrity assessment")
+    electrical_system = models.CharField(max_length=20, choices=Result.choices, default=Result.PASS, help_text="Electrical components assessment")
+    tires_condition = models.CharField(max_length=20, choices=Result.choices, default=Result.PASS, help_text="Tire condition assessment")
+    brakes_condition = models.CharField(max_length=20, choices=Result.choices, default=Result.PASS, help_text="Brake system assessment")
+    paint_condition = models.CharField(max_length=20, choices=Result.choices, default=Result.PASS, help_text="Paint and body condition")
+    overall_result = models.CharField(max_length=20, choices=Result.choices, default=Result.PASS)
+    issues_found = models.TextField(blank=True)
+    recommendations = models.TextField(blank=True)
+    inspector = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="conducted_inspections")
+    inspected_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ["-inspected_at"]
+    
+    def __str__(self) -> str:
+        return f"Inspection for {self.motor_receiving} - {self.overall_result}"
+    
+    @property
+    def passed(self) -> bool:
+        return self.overall_result == self.Result.PASS
+
+
+class ReceivingDocument(models.Model):
+    """Store documents related to motor receiving (invoices, certificates, etc)."""
+    
+    class DocumentType(models.TextChoices):
+        INVOICE = "invoice", "Invoice"
+        PURCHASE_ORDER = "purchase_order", "Purchase Order"
+        DELIVERY_NOTE = "delivery_note", "Delivery Note"
+        INSPECTION_REPORT = "inspection_report", "Inspection Report"
+        CERTIFICATE = "certificate", "Certificate/Title"
+        OTHER = "other", "Other"
+    
+    motor_receiving = models.ForeignKey(MotorReceiving, on_delete=models.CASCADE, related_name="documents")
+    document_type = models.CharField(max_length=30, choices=DocumentType.choices)
+    document_name = models.CharField(max_length=255)
+    file_path = models.FileField(upload_to="receiving_documents/%Y/%m/%d/", blank=True, null=True)
+    file_size = models.PositiveIntegerField(null=True, blank=True)
+    document_date = models.DateField(blank=True, null=True)
+    reference_number = models.CharField(max_length=100, blank=True)
+    description = models.TextField(blank=True)
+    uploaded_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="uploaded_receiving_documents")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ["-uploaded_at"]
+        unique_together = ("motor_receiving", "document_type", "reference_number")
+    
+    def __str__(self) -> str:
+        return f"{self.document_name} - {self.get_document_type_display()}"

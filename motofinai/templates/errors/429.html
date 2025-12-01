@@ -1,0 +1,35 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Rate Limited · Error{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+  <div class="max-w-md w-full text-center">
+    <div class="mb-8">
+      <div class="mb-4 flex justify-center">
+        <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center">
+          <svg class="w-10 h-10 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 15.572 5.013a6 6 0 01.897 9.878ZM9.08 4.97a.75.75 0 011.06.02l3.992 4.99a.75.75 0 11-1.141.998L9.1 6.009a.75.75 0 01.02-1.04z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="text-6xl font-bold text-orange-600 mb-2">429</h1>
+      <p class="text-2xl font-semibold text-slate-900">Rate Limited</p>
+    </div>
+
+    <p class="text-slate-600 mb-8">
+      {{ message|default:"You are making too many requests. Please slow down and try again in a few moments." }}
+    </p>
+
+    {% if error_code %}
+      <p class="text-xs font-mono text-slate-500 bg-slate-100 rounded-md p-3 mb-8">
+        Error code: {{ error_code }}
+      </p>
+    {% endif %}
+
+    <a href="/" class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+      Return to Home
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Access Denied · Error{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+  <div class="max-w-md w-full text-center">
+    <div class="mb-8">
+      <div class="mb-4 flex justify-center">
+        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-10 h-10 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M9 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+      </div>
+      <h1 class="text-6xl font-bold text-red-600 mb-2">403</h1>
+      <p class="text-2xl font-semibold text-slate-900">Access Denied</p>
+    </div>
+
+    <p class="text-slate-600 mb-8">
+      {{ message|default:"You do not have permission to access this resource." }}
+    </p>
+
+    {% if error_code %}
+      <p class="text-xs font-mono text-slate-500 bg-slate-100 rounded-md p-3 mb-8">
+        Error code: {{ error_code }}
+      </p>
+    {% endif %}
+
+    <a href="/" class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+      Return to Home
+    </a>
+  </div>
+</div>
+{% endblock %}

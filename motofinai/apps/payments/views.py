@@ -157,10 +157,6 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        # Convert chart data to JSON for template
-        chart_data = self.get_chart_data()
-        chart_data_json = mark_safe(json.dumps(chart_data))
-
         # Note: Summary uses all schedules, not just paginated ones
         context.update(
             {
@@ -170,7 +166,7 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
                 "paginator": paginator,
                 "summary": self.get_summary(schedules),
                 "loans": LoanApplication.objects.order_by("-submitted_at")[:20],
-                "chart_data": chart_data_json,
+                "chart_data": self.get_chart_data(),
                 "start_date": start_date,
                 "end_date": end_date,
                 "page_title": "Payment Tracking",

@@ -1,0 +1,274 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Credit Investigation · {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="mx-auto max-w-5xl px-4 py-10">
+    <!-- Breadcrumbs -->
+    {% if breadcrumbs %}
+      <nav class="mb-6 flex" aria-label="Breadcrumb">
+        <ol class="flex gap-2">
+          {% for crumb in breadcrumbs %}
+            {% if crumb.url %}
+              <li><a href="{{ crumb.url }}" class="text-sky-600 hover:text-sky-700">{{ crumb.label }}</a></li>
+            {% else %}
+              <li class="text-slate-600">{{ crumb.label }}</li>
+            {% endif %}
+            {% if not forloop.last %}
+              <li class="text-slate-400">/</li>
+            {% endif %}
+          {% endfor %}
+        </ol>
+      </nav>
+    {% endif %}
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-slate-900">Credit Investigation Review</h1>
+      <p class="mt-2 text-slate-600">Final approval required before loan activation</p>
+    </div>
+
+    <!-- Application Details -->
+    <div class="grid gap-6">
+      <!-- Applicant Information -->
+      <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+          <h2 class="font-semibold text-slate-900">Applicant Information</h2>
+        </div>
+        <dl class="divide-y divide-slate-200">
+          <div class="grid grid-cols-1 gap-4 px-6 py-4 sm:grid-cols-2 md:grid-cols-3">
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Full Name</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">{{ application.applicant_full_name }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Email</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">{{ application.applicant_email }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Phone</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">{{ application.applicant_phone }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Employment Status</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">{{ application.get_employment_status_display }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Monthly Income</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">₱{{ application.monthly_income|floatformat:2 }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Age</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">
+                {% if application.date_of_birth %}
+                  {{ application.date_of_birth }}
+                {% else %}
+                  Not provided
+                {% endif %}
+              </dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Motorcycle & Loan Details -->
+      <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+          <h2 class="font-semibold text-slate-900">Motorcycle & Loan Details</h2>
+        </div>
+        <dl class="divide-y divide-slate-200">
+          <div class="grid grid-cols-1 gap-4 px-6 py-4 sm:grid-cols-2 md:grid-cols-3">
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Motorcycle</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">
+                {{ application.motor.brand }} {{ application.motor.model_name }} ({{ application.motor.year }})
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Motorcycle Type</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">{{ application.motor.get_type_display }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Chassis</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">{{ application.motor.chassis_number }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Loan Amount</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">₱{{ application.loan_amount|floatformat:2 }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Principal</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">₱{{ application.principal_amount|floatformat:2 }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Monthly Payment</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">₱{{ application.monthly_payment|floatformat:2 }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Loan Term</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">
+                {% if application.custom_term_years %}
+                  {{ application.custom_term_years }} years @ {{ application.custom_interest_rate }}%
+                {% else %}
+                  {{ application.financing_term.term_years }} years @ {{ application.financing_term.interest_rate }}%
+                {% endif %}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Finance Approved By</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">{{ application.approved_by.get_full_name }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Approval Date</dt>
+              <dd class="mt-1 text-sm font-medium text-slate-900">{{ application.approved_at|date:"M d, Y" }}</dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Risk Assessment -->
+      {% if risk_assessment %}
+        <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+            <h2 class="font-semibold text-slate-900">Risk Assessment</h2>
+          </div>
+          <dl class="divide-y divide-slate-200">
+            <div class="grid grid-cols-1 gap-4 px-6 py-4 sm:grid-cols-2">
+              <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Risk Score</dt>
+                <dd class="mt-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg">{{ risk_assessment.score|default:"—" }}</span>
+                    <span class="text-xs font-semibold uppercase px-2 py-1 rounded-full
+                      {% if risk_assessment.risk_level == 'LOW' %}
+                        bg-green-50 text-green-700
+                      {% elif risk_assessment.risk_level == 'MEDIUM' %}
+                        bg-yellow-50 text-yellow-700
+                      {% else %}
+                        bg-red-50 text-red-700
+                      {% endif %}
+                    ">
+                      {{ risk_assessment.get_risk_level_display|default:"—" }}
+                    </span>
+                  </div>
+                </dd>
+              </div>
+              <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-600">Credit Score</dt>
+                <dd class="mt-1 text-sm font-medium text-slate-900">{{ risk_assessment.credit_score|default:"—" }}</dd>
+              </div>
+            </div>
+          </dl>
+        </div>
+      {% endif %}
+
+      <!-- Payment Schedule Preview -->
+      <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+          <h2 class="font-semibold text-slate-900">Payment Schedule Preview (First 5 Installments)</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-6 py-3 text-left font-semibold text-slate-600">#</th>
+                <th class="px-6 py-3 text-left font-semibold text-slate-600">Due Date</th>
+                <th class="px-6 py-3 text-right font-semibold text-slate-600">Principal</th>
+                <th class="px-6 py-3 text-right font-semibold text-slate-600">Interest</th>
+                <th class="px-6 py-3 text-right font-semibold text-slate-600">Total</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {% for schedule in application.payment_schedules.all|slice:":5" %}
+                <tr>
+                  <td class="px-6 py-3 text-slate-900">{{ schedule.sequence }}</td>
+                  <td class="px-6 py-3 text-slate-900">{{ schedule.due_date|date:"M d, Y" }}</td>
+                  <td class="px-6 py-3 text-right text-slate-900">₱{{ schedule.principal_amount|floatformat:2 }}</td>
+                  <td class="px-6 py-3 text-right text-slate-900">₱{{ schedule.interest_amount|floatformat:2 }}</td>
+                  <td class="px-6 py-3 text-right font-medium text-slate-900">₱{{ schedule.total_amount|floatformat:2 }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Investigation Form -->
+      <form method="post" class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        {% csrf_token %}
+        <div class="border-b border-slate-200 bg-slate-50 px-6 py-4">
+          <h2 class="font-semibold text-slate-900">Your Assessment</h2>
+        </div>
+
+        <div class="space-y-6 px-6 py-6">
+          <!-- Investigation Notes -->
+          <div>
+            <label for="investigation_notes" class="block text-sm font-semibold text-slate-900">
+              Investigation Notes
+              <span class="text-red-500">*</span>
+            </label>
+            <p class="mt-1 text-sm text-slate-600">Document your findings, risk assessment, and recommendation.</p>
+            {% if form.investigation_notes.errors %}
+              <div class="mt-2 text-sm text-red-600">
+                {{ form.investigation_notes.errors|first }}
+              </div>
+            {% endif %}
+            <textarea
+              name="investigation_notes"
+              id="investigation_notes"
+              rows="6"
+              placeholder="Document your credit investigation findings, risk factors, and final assessment..."
+              class="block w-full mt-2 rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            >{{ form.investigation_notes.value|default:"" }}</textarea>
+          </div>
+
+          <!-- Approval Checkbox -->
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              name="approved"
+              id="approved"
+              {% if form.approved.value %}checked{% endif %}
+              class="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+            />
+            <label for="approved" class="ml-3 text-sm font-medium text-slate-900">
+              Approve this loan for activation
+            </label>
+            <p class="ml-3 text-xs text-slate-500">(Leave unchecked to flag for review)</p>
+          </div>
+
+          <!-- Form Errors -->
+          {% if form.non_field_errors %}
+            <div class="rounded-md bg-red-50 p-4">
+              <p class="text-sm font-semibold text-red-900">Please correct the following errors:</p>
+              <ul class="mt-2 space-y-1 text-sm text-red-700">
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="border-t border-slate-200 bg-slate-50 px-6 py-4 flex gap-3">
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+          >
+            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Submit Investigation
+          </button>
+          <a
+            href="{% url 'loans:investigation_list' %}"
+            class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock content %}

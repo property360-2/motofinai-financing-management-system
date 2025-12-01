@@ -1,0 +1,28 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Bad Request · Error{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
+  <div class="max-w-md w-full text-center">
+    <div class="mb-8">
+      <h1 class="text-6xl font-bold text-teal-600 mb-2">400</h1>
+      <p class="text-2xl font-semibold text-slate-900">Bad Request</p>
+    </div>
+
+    <p class="text-slate-600 mb-8">
+      {{ message|default:"The request could not be understood by the server. Please check your input and try again." }}
+    </p>
+
+    {% if error_code %}
+      <p class="text-xs font-mono text-slate-500 bg-slate-100 rounded-md p-3 mb-8">
+        Error code: {{ error_code }}
+      </p>
+    {% endif %}
+
+    <a href="/" class="inline-block bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+      Return to Home
+    </a>
+  </div>
+</div>
+{% endblock %}

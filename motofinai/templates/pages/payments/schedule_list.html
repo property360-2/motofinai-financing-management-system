@@ -138,13 +138,13 @@
                                 <div class="flex justify-end gap-2">
                                     {% if schedule.status != 'paid' %}
                                     <button
-                                        onclick="markAsPaid({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name }}', '{{ schedule.total_amount }}')"
+                                        onclick="markAsPaid({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name|escapejs }}', '{{ schedule.total_amount }}')"
                                         class="text-emerald-600 hover:text-emerald-900 transition-colors font-medium">
                                         Mark as Paid
                                     </button>
                                     {% if schedule.loan_application.applicant_phone %}
                                     <button
-                                        onclick="sendReminder({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name }}', '{{ schedule.loan_application.applicant_phone }}')"
+                                        onclick="sendReminder({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name|escapejs }}', '{{ schedule.loan_application.applicant_phone|escapejs }}')"
                                         class="text-sky-600 hover:text-sky-900 transition-colors font-medium">
                                         Send Reminder
                                     </button>
@@ -223,13 +223,13 @@
                         {% if schedule.status != 'paid' %}
                         <div class="flex flex-col gap-2">
                             <button
-                                onclick="markAsPaid({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name }}', '{{ schedule.total_amount }}')"
+                                onclick="markAsPaid({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name|escapejs }}', '{{ schedule.total_amount }}')"
                                 class="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors">
                                 Mark as Paid
                             </button>
                             {% if schedule.loan_application.applicant_phone %}
                             <button
-                                onclick="sendReminder({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name }}', '{{ schedule.loan_application.applicant_phone }}')"
+                                onclick="sendReminder({{ schedule.id }}, '{{ schedule.loan_application.applicant_full_name|escapejs }}', '{{ schedule.loan_application.applicant_phone|escapejs }}')"
                                 class="w-full px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors">
                                 Send Reminder
                             </button>
@@ -256,159 +256,9 @@
 
 {# Include confirmation modal #}
 {% include 'components/organisms/confirmation_modal.html' %}
+{{ chart_data|json_script:"chart-data" }}
 
 <script>
-// Chart Data from Backend
-const chartData = {{ chart_data|safe }};
-
-// Initialize Charts
-document.addEventListener('DOMContentLoaded', function() {
-    // Bar Chart: Collected vs Pending
-    const collectedVsPendingCtx = document.getElementById('collectedVsPendingChart');
-    if (collectedVsPendingCtx) {
-        const labels = chartData.months_data.map(d => d.month);
-        const collectedData = chartData.months_data.map(d => d.collected);
-        const pendingData = chartData.months_data.map(d => d.pending);
-
-        new Chart(collectedVsPendingCtx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Collected',
-                        data: collectedData,
-                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                        borderColor: 'rgba(16, 185, 129, 1)',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                    },
-                    {
-                        label: 'Pending',
-                        data: pendingData,
-                        backgroundColor: 'rgba(251, 191, 36, 0.8)',
-                        borderColor: 'rgba(251, 191, 36, 1)',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 15,
-                            font: { size: 12, family: "'Inter', sans-serif" }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        padding: 12,
-                        borderRadius: 8,
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ₱' + context.parsed.y.toLocaleString();
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(226, 232, 240, 0.5)', drawBorder: false },
-                        ticks: {
-                            font: { size: 11 },
-                            callback: function(value) {
-                                return '₱' + value.toLocaleString();
-                            }
-                        }
-                    },
-                    x: {
-                        grid: { display: false, drawBorder: false },
-                        ticks: { font: { size: 11 } }
-                    }
-                }
-            }
-        });
-    }
-
-    // Line Chart: Collection Rate Trend
-    const collectionRateTrendCtx = document.getElementById('collectionRateTrendChart');
-    if (collectionRateTrendCtx) {
-        const labels = chartData.collection_rates.map(d => d.month);
-        const ratesData = chartData.collection_rates.map(d => d.rate);
-
-        new Chart(collectionRateTrendCtx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Collection Rate (%)',
-                    data: ratesData,
-                    borderColor: 'rgba(14, 165, 233, 1)',
-                    backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: 'rgba(14, 165, 233, 1)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 15,
-                            font: { size: 12, family: "'Inter', sans-serif" }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        padding: 12,
-                        borderRadius: 8,
-                        callbacks: {
-                            label: function(context) {
-                                return 'Collection Rate: ' + context.parsed.y.toFixed(2) + '%';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        grid: { color: 'rgba(226, 232, 240, 0.5)', drawBorder: false },
-                        ticks: {
-                            font: { size: 11 },
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    },
-                    x: {
-                        grid: { display: false, drawBorder: false },
-                        ticks: { font: { size: 11 } }
-                    }
-                }
-            }
-        });
-    }
-});
-
 // Date Filter
 function applyDateFilter() {
     const startDate = document.getElementById('start_date').value;
@@ -418,11 +268,15 @@ function applyDateFilter() {
 
 // Mark as Paid Action
 function markAsPaid(scheduleId, customerName, amount) {
+    if (typeof showConfirmationModal !== 'function') {
+        window.location.href = `/payments/schedules/${scheduleId}/record/`;
+        return;
+    }
+
     showConfirmationModal(
         'Confirm Payment',
         `Mark payment for ${customerName} (₱${amount}) as paid?`,
         function() {
-            // Redirect to record payment page
             window.location.href = `/payments/schedules/${scheduleId}/record/`;
         },
         'success'
@@ -431,20 +285,184 @@ function markAsPaid(scheduleId, customerName, amount) {
 
 // Send Reminder Action
 function sendReminder(scheduleId, customerName, phoneNumber) {
+    if (typeof showConfirmationModal !== 'function') {
+        alert(`Send payment reminder to ${customerName} at ${phoneNumber}`);
+        return;
+    }
+
     showConfirmationModal(
         'Send Reminder',
         `Send payment reminder to ${customerName} at ${phoneNumber}?`,
         function() {
-            // In a real application, this would make an API call
             alert(`Reminder sent to ${customerName}!`);
-            // TODO: Implement actual reminder sending logic
         },
         'info'
     );
 }
 
-// Status Filter
 document.addEventListener('DOMContentLoaded', function() {
+    // Chart Data from Backend
+    let chartData = { months_data: [], collection_rates: [] };
+    const chartDataEl = document.getElementById('chart-data');
+    if (chartDataEl) {
+        try {
+            chartData = JSON.parse(chartDataEl.textContent);
+        } catch (err) {
+            console.error('Failed to parse chart data', err);
+        }
+    }
+
+    // Initialize Charts (guard against missing Chart.js)
+    try {
+        if (window.Chart) {
+            const collectedVsPendingCtx = document.getElementById('collectedVsPendingChart');
+            if (collectedVsPendingCtx) {
+                const labels = chartData.months_data.map(d => d.month);
+                const collectedData = chartData.months_data.map(d => d.collected);
+                const pendingData = chartData.months_data.map(d => d.pending);
+
+                new Chart(collectedVsPendingCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Collected',
+                                data: collectedData,
+                                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                            },
+                            {
+                                label: 'Pending',
+                                data: pendingData,
+                                backgroundColor: 'rgba(251, 191, 36, 0.8)',
+                                borderColor: 'rgba(251, 191, 36, 1)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15,
+                                    font: { size: 12, family: "'Inter', sans-serif" }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                padding: 12,
+                                borderRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ₱' + context.parsed.y.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: 'rgba(226, 232, 240, 0.5)', drawBorder: false },
+                                ticks: {
+                                    font: { size: 11 },
+                                    callback: function(value) {
+                                        return '₱' + value.toLocaleString();
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: { display: false, drawBorder: false },
+                                ticks: { font: { size: 11 } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const collectionRateTrendCtx = document.getElementById('collectionRateTrendChart');
+            if (collectionRateTrendCtx) {
+                const labels = chartData.collection_rates.map(d => d.month);
+                const ratesData = chartData.collection_rates.map(d => d.rate);
+
+                new Chart(collectionRateTrendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Collection Rate (%)',
+                            data: ratesData,
+                            borderColor: 'rgba(14, 165, 233, 1)',
+                            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15,
+                                    font: { size: 12, family: "'Inter', sans-serif" }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                padding: 12,
+                                borderRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Collection Rate: ' + context.parsed.y.toFixed(2) + '%';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: { color: 'rgba(226, 232, 240, 0.5)', drawBorder: false },
+                                ticks: {
+                                    font: { size: 11 },
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: { display: false, drawBorder: false },
+                                ticks: { font: { size: 11 } }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.error('Chart rendering failed', err);
+    }
+
+    // Status Filter
     const statusFilter = document.getElementById('statusFilter');
     if (statusFilter) {
         statusFilter.addEventListener('change', function() {
@@ -457,7 +475,6 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.search = params.toString();
         });
 
-        // Set current filter from URL
         const params = new URLSearchParams(window.location.search);
         const currentStatus = params.get('status');
         if (currentStatus) {

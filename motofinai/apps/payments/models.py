@@ -12,6 +12,17 @@ from django.utils import timezone
 from motofinai.apps.loans.models import LoanApplication, PaymentSchedule
 
 
+class PaymentMethod(models.TextChoices):
+    """Available payment methods for installment collection."""
+
+    CASH = "cash", "Cash"
+    CHECK = "check", "Check"
+    BANK_TRANSFER = "bank_transfer", "Bank Transfer"
+    CREDIT_CARD = "credit_card", "Credit Card"
+    MOBILE_MONEY = "mobile_money", "Mobile Money"
+    OTHER = "other", "Other"
+
+
 class Payment(models.Model):
     """Represents a recorded payment against a scheduled installment."""
 
@@ -43,6 +54,53 @@ class Payment(models.Model):
     notes = models.TextField(
         blank=True,
         help_text="Additional context about the payment (mode, remarks, etc.).",
+    )
+    # Payment method tracking
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PaymentMethod.choices,
+        default=PaymentMethod.CASH,
+        help_text="How the payment was received.",
+    )
+    # For check payments
+    check_number = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Check number if payment method is check.",
+    )
+    check_date = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Date on the check if payment method is check.",
+    )
+    # For bank transfer payments
+    bank_name = models.CharField(
+        max_length=150,
+        blank=True,
+        help_text="Bank name if payment method is bank transfer.",
+    )
+    bank_reference = models.CharField(
+        max_length=150,
+        blank=True,
+        help_text="Bank transaction reference if payment method is bank transfer.",
+    )
+    # Reconciliation tracking
+    reconciled = models.BooleanField(
+        default=False,
+        help_text="Whether this payment has been reconciled with bank statements.",
+    )
+    reconciled_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text="When this payment was reconciled.",
+    )
+    reconciled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reconciled_payments",
+        help_text="Who reconciled this payment.",
     )
     recorded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

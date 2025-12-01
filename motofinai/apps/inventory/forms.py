@@ -113,3 +113,70 @@ class StockFilterForm(forms.Form):
             }
         ),
     )
+
+
+# Receiving workflow forms
+class MotorReceivingForm(forms.ModelForm):
+    """Form for registering incoming motorcycles."""
+    class Meta:
+        model_import_path = "motofinai.apps.inventory.models"
+        fields = [
+            "brand", "model_name", "year", "vin_number", "engine_number",
+            "color", "motorcycle_type", "purchase_price", "quantity",
+            "supplier_name", "purchase_order_number", "invoice_number", "notes"
+        ]
+        widgets = {
+            "brand": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Honda"}),
+            "model_name": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Click 125i"}),
+            "year": forms.NumberInput(attrs={"class": INPUT_CLASSES, "min": 1900}),
+            "vin_number": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "VIN/Chassis Number"}),
+            "engine_number": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Optional engine number"}),
+            "color": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Color"}),
+            "motorcycle_type": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "purchase_price": forms.NumberInput(attrs={"class": INPUT_CLASSES, "step": "0.01", "min": "0"}),
+            "quantity": forms.NumberInput(attrs={"class": INPUT_CLASSES, "min": 1}),
+            "supplier_name": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Supplier name"}),
+            "purchase_order_number": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "PO Number"}),
+            "invoice_number": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Invoice Number"}),
+            "notes": forms.Textarea(attrs={"class": INPUT_CLASSES, "rows": 3, "placeholder": "Additional notes"}),
+        }
+
+
+class ReceivingInspectionForm(forms.ModelForm):
+    """Form for motor inspection during receiving process."""
+    class Meta:
+        model_import_path = "motofinai.apps.inventory.models"
+        fields = [
+            "engine_condition", "frame_condition", "electrical_system",
+            "tires_condition", "brakes_condition", "paint_condition",
+            "overall_result", "issues_found", "recommendations"
+        ]
+        widgets = {
+            "engine_condition": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "frame_condition": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "electrical_system": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "tires_condition": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "brakes_condition": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "paint_condition": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "overall_result": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "issues_found": forms.Textarea(attrs={"class": INPUT_CLASSES, "rows": 3, "placeholder": "List any issues found"}),
+            "recommendations": forms.Textarea(attrs={"class": INPUT_CLASSES, "rows": 3, "placeholder": "Recommendations for repair or maintenance"}),
+        }
+
+
+class ReceivingDocumentForm(forms.ModelForm):
+    """Form for uploading receiving documents."""
+    class Meta:
+        model_import_path = "motofinai.apps.inventory.models"
+        fields = [
+            "document_type", "document_name", "file_path",
+            "document_date", "reference_number", "description"
+        ]
+        widgets = {
+            "document_type": forms.Select(attrs={"class": INPUT_CLASSES}),
+            "document_name": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Document name"}),
+            "file_path": forms.FileInput(attrs={"class": INPUT_CLASSES}),
+            "document_date": forms.DateInput(attrs={"class": INPUT_CLASSES, "type": "date"}),
+            "reference_number": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Reference number"}),
+            "description": forms.Textarea(attrs={"class": INPUT_CLASSES, "rows": 2, "placeholder": "Document description"}),
+        }

@@ -5,10 +5,23 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="DC Financing Corporation - Motorcycle Financing Management System" />
+    <meta name="theme-color" content="#0f766e" />
     <title>{% block title %}DC Financing Corporation{% endblock title %}</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏍️</text></svg>" />
     <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}" />
     {% block head_extras %}{% endblock head_extras %}
+    <style>
+      :root {
+        --color-primary: #0f766e;
+        --color-primary-light: #14b8a6;
+        --color-primary-dark: #0d5f5a;
+        --color-secondary: #06b6d4;
+        --color-success: #10b981;
+        --color-warning: #f59e0b;
+        --color-error: #ef4444;
+        --color-info: #3b82f6;
+      }
+    </style>
     <style>
       /* Custom animations and enhancements */
       @keyframes slideIn {
@@ -40,8 +53,34 @@
 
       /* Focus visible styles for accessibility */
       *:focus-visible {
-        outline: 2px solid #0ea5e9;
+        outline: 2px solid var(--color-primary-light);
         outline-offset: 2px;
+      }
+
+      /* Enterprise styling enhancements */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        letter-spacing: 0.3px;
+      }
+
+      h1, h2, h3, h4, h5, h6 {
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+
+      a {
+        color: var(--color-primary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      a:hover {
+        color: var(--color-primary-light);
+      }
+
+      button, [role="button"] {
+        font-weight: 500;
+        transition: all 0.2s ease;
       }
 
       /* Loading overlay */
@@ -174,10 +213,10 @@
               </div>
             </div>
             <div class="bg-slate-50 px-6 py-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              <button type="button" id="confirmModalCancel" class="inline-flex justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2">
+              <button type="button" id="confirmModalCancel" class="inline-flex justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
                 Cancel
               </button>
-              <button type="button" id="confirmModalConfirm" class="inline-flex justify-center rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2">
+              <button type="button" id="confirmModalConfirm" class="inline-flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                 Confirm
               </button>
             </div>
@@ -194,43 +233,46 @@
     <div class="min-h-screen flex flex-col">
       {% include 'components/atoms/skip_link.html' %}
       <header class="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm" role="banner">
-        <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 lg:px-6">
+        <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 lg:px-6">
           <div class="flex items-center gap-4">
-            <a href="{% url 'home' %}" class="flex items-center gap-2 text-lg font-bold text-slate-900 transition hover:text-sky-600" aria-label="DC Financing Corporation Home">
+            <a href="{% url 'home' %}" class="flex items-center gap-2 text-lg font-bold text-slate-900 transition hover:text-teal-600" aria-label="DC Financing Corporation Home">
               <span aria-hidden="true">🏍️</span>
-              <span>DC Financing Corporation</span>
+              <span class="hidden sm:inline">DC Financing</span>
             </a>
           </div>
 
           <!-- Desktop Navigation -->
-          <nav class="hidden lg:flex items-center gap-6 text-sm" role="navigation" aria-label="Main navigation">
+          <nav class="hidden lg:flex items-center gap-8 text-sm" role="navigation" aria-label="Main navigation">
             {% if request.user.is_authenticated %}
               {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "finance" %}
                 {% if request.user.is_admin %}
-                <a href="{% url 'dashboard:admin' %}" class="font-medium transition {% if request.resolver_match.namespace == 'dashboard' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" aria-label="Admin Dashboard" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+                <a href="{% url 'dashboard:admin' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'dashboard' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" aria-label="Admin Dashboard" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
                 {% elif request.user.is_finance %}
-                <a href="{% url 'dashboard:finance' %}" class="font-medium transition {% if request.resolver_match.namespace == 'dashboard' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" aria-label="Finance Dashboard" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+                <a href="{% url 'dashboard:finance' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'dashboard' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" aria-label="Finance Dashboard" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
                 {% endif %}
-                <a href="{% url 'inventory:motor-list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'inventory' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'inventory' %}aria-current="page"{% endif %}>Inventory</a>
-                <a href="{% url 'loans:list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'loans' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'loans' %}aria-current="page"{% endif %}>Loans</a>
-                <a href="{% url 'payments:schedule-list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'payments' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'payments' %}aria-current="page"{% endif %}>Payments</a>
-                <a href="{% url 'risk:dashboard' %}" class="font-medium transition {% if request.resolver_match.namespace == 'risk' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'risk' %}aria-current="page"{% endif %}>Risk</a>
-                <a href="{% url 'repossession:case-list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'repossession' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'repossession' %}aria-current="page"{% endif %}>Repossession</a>
-                <a href="{% url 'terms:list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'terms' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'terms' %}aria-current="page"{% endif %}>Terms</a>
+                <a href="{% url 'inventory:motor-list' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'inventory' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" {% if request.resolver_match.namespace == 'inventory' %}aria-current="page"{% endif %}>Inventory</a>
+                <a href="{% url 'loans:list' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'loans' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" {% if request.resolver_match.namespace == 'loans' %}aria-current="page"{% endif %}>Loans</a>
+                <a href="{% url 'payments:schedule-list' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'payments' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" {% if request.resolver_match.namespace == 'payments' %}aria-current="page"{% endif %}>Payments</a>
+                <a href="{% url 'risk:dashboard' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'risk' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" {% if request.resolver_match.namespace == 'risk' %}aria-current="page"{% endif %}>Risk</a>
+                <a href="{% url 'repossession:case-list' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'repossession' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" {% if request.resolver_match.namespace == 'repossession' %}aria-current="page"{% endif %}>Repossession</a>
+                <a href="{% url 'terms:list' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'terms' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" {% if request.resolver_match.namespace == 'terms' %}aria-current="page"{% endif %}>Terms</a>
                 {% if request.user.is_admin %}
-                <a href="{% url 'users:user-list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'users' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'users' %}aria-current="page"{% endif %}>Users</a>
-                <a href="{% url 'archive:list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'archive' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'archive' %}aria-current="page"{% endif %}>Archive</a>
-                <a href="{% url 'audit:list' %}" class="font-medium transition {% if request.resolver_match.namespace == 'audit' %}text-sky-700 border-b-2 border-sky-700{% else %}text-slate-600 hover:text-sky-700 focus:text-sky-700{% endif %}" {% if request.resolver_match.namespace == 'audit' %}aria-current="page"{% endif %}>Audit Log</a>
+                <a href="{% url 'users:user-list' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'users' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" {% if request.resolver_match.namespace == 'users' %}aria-current="page"{% endif %}>Users</a>
+                <a href="{% url 'archive:list' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'archive' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" {% if request.resolver_match.namespace == 'archive' %}aria-current="page"{% endif %}>Archive</a>
+                <a href="{% url 'audit:list' %}" class="font-medium text-slate-700 transition {% if request.resolver_match.namespace == 'audit' %}text-teal-700 border-b-2 border-teal-600{% else %}hover:text-teal-600{% endif %}" {% if request.resolver_match.namespace == 'audit' %}aria-current="page"{% endif %}>Audit Log</a>
                 {% endif %}
               {% endif %}
-              <div class="flex items-center gap-4 pl-4 border-l border-slate-200">
-                <span class="text-xs text-slate-500" aria-label="Current user">
-                  {{ request.user.get_full_name|default:request.user.username }}
-                </span>
-                <a href="{% url 'users:logout' %}" class="rounded-md bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 focus:bg-slate-200">Sign out</a>
+              <div class="flex items-center gap-4 pl-6 border-l border-slate-200">
+                <div class="flex flex-col items-end">
+                  <span class="text-xs font-medium text-slate-700" aria-label="Current user">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                  </span>
+                  <span class="text-xs text-slate-500">{{ request.user.get_role_display }}</span>
+                </div>
+                <a href="{% url 'users:logout' %}" class="rounded-md bg-teal-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-teal-700 focus:bg-teal-700">Sign out</a>
               </div>
             {% else %}
-              <a href="{% url 'users:login' %}" class="rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700 focus:bg-sky-700">Sign in</a>
+              <a href="{% url 'users:login' %}" class="rounded-md bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 focus:bg-teal-700">Sign in</a>
             {% endif %}
           </nav>
 
@@ -238,7 +280,7 @@
           <button
             type="button"
             id="mobileMenuButton"
-            class="lg:hidden inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-600"
+            class="lg:hidden inline-flex items-center justify-center rounded-md p-2 text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-600"
             aria-controls="mobileMenu"
             aria-expanded="false"
             aria-label="Toggle navigation menu"
@@ -259,28 +301,29 @@
               <div class="mb-3 pb-3 border-b border-slate-200">
                 <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Signed in as</p>
                 <p class="mt-1 text-sm font-semibold text-slate-900">{{ request.user.get_full_name|default:request.user.username }}</p>
+                <p class="text-xs text-slate-500 mt-1">{{ request.user.get_role_display }}</p>
               </div>
               {% if request.user.is_superuser or request.user.role == "admin" or request.user.role == "finance" %}
                 {% if request.user.is_admin %}
-                <a href="{% url 'dashboard:admin' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'dashboard' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+                <a href="{% url 'dashboard:admin' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'dashboard' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
                 {% elif request.user.is_finance %}
-                <a href="{% url 'dashboard:finance' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'dashboard' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+                <a href="{% url 'dashboard:finance' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'dashboard' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
                 {% endif %}
-                <a href="{% url 'inventory:motor-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'inventory' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'inventory' %}aria-current="page"{% endif %}>Inventory</a>
-                <a href="{% url 'loans:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'loans' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'loans' %}aria-current="page"{% endif %}>Loans</a>
-                <a href="{% url 'payments:schedule-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'payments' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'payments' %}aria-current="page"{% endif %}>Payments</a>
-                <a href="{% url 'risk:dashboard' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'risk' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'risk' %}aria-current="page"{% endif %}>Risk</a>
-                <a href="{% url 'repossession:case-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'repossession' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'repossession' %}aria-current="page"{% endif %}>Repossession</a>
-                <a href="{% url 'terms:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'terms' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'terms' %}aria-current="page"{% endif %}>Financing Terms</a>
+                <a href="{% url 'inventory:motor-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'inventory' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'inventory' %}aria-current="page"{% endif %}>Inventory</a>
+                <a href="{% url 'loans:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'loans' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'loans' %}aria-current="page"{% endif %}>Loans</a>
+                <a href="{% url 'payments:schedule-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'payments' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'payments' %}aria-current="page"{% endif %}>Payments</a>
+                <a href="{% url 'risk:dashboard' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'risk' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'risk' %}aria-current="page"{% endif %}>Risk</a>
+                <a href="{% url 'repossession:case-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'repossession' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'repossession' %}aria-current="page"{% endif %}>Repossession</a>
+                <a href="{% url 'terms:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'terms' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'terms' %}aria-current="page"{% endif %}>Financing Terms</a>
                 {% if request.user.is_admin %}
-                <a href="{% url 'users:user-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'users' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'users' %}aria-current="page"{% endif %}>User Management</a>
-                <a href="{% url 'archive:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'archive' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'archive' %}aria-current="page"{% endif %}>Archive</a>
-                <a href="{% url 'audit:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'audit' %}bg-sky-100 text-sky-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'audit' %}aria-current="page"{% endif %}>Audit Log</a>
+                <a href="{% url 'users:user-list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'users' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'users' %}aria-current="page"{% endif %}>User Management</a>
+                <a href="{% url 'archive:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'archive' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'archive' %}aria-current="page"{% endif %}>Archive</a>
+                <a href="{% url 'audit:list' %}" class="block rounded-md px-3 py-2 text-base font-medium {% if request.resolver_match.namespace == 'audit' %}bg-teal-100 text-teal-900{% else %}text-slate-700 hover:bg-slate-100 hover:text-slate-900{% endif %}" {% if request.resolver_match.namespace == 'audit' %}aria-current="page"{% endif %}>Audit Log</a>
                 {% endif %}
               {% endif %}
-              <a href="{% url 'users:logout' %}" class="block rounded-md px-3 py-2 mt-2 text-base font-medium text-white bg-sky-600 hover:bg-sky-700">Sign out</a>
+              <a href="{% url 'users:logout' %}" class="block rounded-md px-3 py-2 mt-2 text-base font-medium text-white bg-teal-600 hover:bg-teal-700">Sign out</a>
             {% else %}
-              <a href="{% url 'users:login' %}" class="block rounded-md px-3 py-2 text-base font-medium text-white bg-sky-600 hover:bg-sky-700">Sign in</a>
+              <a href="{% url 'users:login' %}" class="block rounded-md px-3 py-2 text-base font-medium text-white bg-teal-600 hover:bg-teal-700">Sign in</a>
             {% endif %}
           </div>
         </div>
@@ -333,8 +376,8 @@
             </div>
             <div class="flex items-center gap-6 text-sm text-slate-600">
               {% if request.user.is_authenticated and request.user.is_admin %}
-                <a href="{% url 'audit:list' %}" class="transition hover:text-sky-600">Audit Trail</a>
-                <a href="{% url 'archive:list' %}" class="transition hover:text-sky-600">Archive</a>
+                <a href="{% url 'audit:list' %}" class="transition hover:text-teal-600">Audit Trail</a>
+                <a href="{% url 'archive:list' %}" class="transition hover:text-teal-600">Archive</a>
               {% endif %}
               <span class="text-slate-400">v1.0.0</span>
             </div>
