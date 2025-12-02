@@ -181,7 +181,13 @@
               type="submit"
               class="flex-1 rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white transition hover:bg-sky-700"
             >
-              Approve & Generate Schedule
+              {% if user_role == 'admin' %}
+                Approve & Wait for CI Approval
+              {% elif user_role == 'finance' %}
+                Approve & Wait for Admin Approval
+              {% else %}
+                Approve
+              {% endif %}
             </button>
             <a
               href="{% url 'loans:detail' application.pk %}"

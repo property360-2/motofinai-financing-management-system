@@ -28,51 +28,29 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
     template_name = "pages/payments/schedule_list.html"
     required_roles = ("admin", "finance", "credit_investigator")
 
-    def get_date_range(self):
-        """Get date range from request or default to current month"""
-        now = timezone.now()
-
-        # Get start and end dates from GET parameters
-        start_date_str = self.request.GET.get('start_date')
-        end_date_str = self.request.GET.get('end_date')
-
-        if start_date_str and end_date_str:
-            try:
-                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
-            except ValueError:
-                # Fall back to current month if invalid dates
-                start_date = now.replace(day=1).date()
-                _, last_day = monthrange(now.year, now.month)
-                end_date = now.replace(day=last_day).date()
-        else:
-            # Default to current month
-            start_date = now.replace(day=1).date()
-            _, last_day = monthrange(now.year, now.month)
-            end_date = now.replace(day=last_day).date()
-
-        return start_date, end_date
-
     def get_queryset(self):
         reference_date = timezone.now().date()
         PaymentSchedule.objects.mark_overdue(reference_date)
 
-        start_date, end_date = self.get_date_range()
+        schedules = PaymentSchedule.objects.select_related(
+            "loan_application",
+            "loan_application__motor",
+        ).order_by("due_date", "sequence")
 
-        schedules = (
-            PaymentSchedule.objects.select_related(
-                "loan_application",
-                "loan_application__motor",
+        # Search by customer name (applicant name)
+        customer_search = self.request.GET.get("customer")
+        if customer_search:
+            schedules = schedules.filter(
+                Q(loan_application__applicant_first_name__icontains=customer_search) |
+                Q(loan_application__applicant_last_name__icontains=customer_search) |
+                Q(loan_application__applicant_email__icontains=customer_search)
             )
-            .filter(due_date__gte=start_date, due_date__lte=end_date)
-            .order_by("due_date", "sequence")
-        )
-        loan_id = self.request.GET.get("loan")
-        if loan_id:
-            schedules = schedules.filter(loan_application_id=loan_id)
+
+        # Filter by status
         status = self.request.GET.get("status")
         if status in dict(PaymentSchedule.Status.choices):
             schedules = schedules.filter(status=status)
+
         return schedules
 
     def get_summary(self, schedules):
@@ -150,7 +128,6 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         schedules = self.get_queryset()
-        start_date, end_date = self.get_date_range()
 
         # Add pagination
         paginator = Paginator(schedules, 25)  # 25 items per page
@@ -167,8 +144,6 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
                 "summary": self.get_summary(schedules),
                 "loans": LoanApplication.objects.order_by("-submitted_at")[:20],
                 "chart_data": self.get_chart_data(),
-                "start_date": start_date,
-                "end_date": end_date,
                 "page_title": "Payment Tracking",
             }
         )

@@ -19,22 +19,22 @@
                 </div>
             </div>
 
-            {# Date Filters - Stack on mobile #}
-            <div class="flex flex-col sm:flex-row gap-3">
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-white px-4 py-3 sm:py-2 rounded-lg border border-slate-200 shadow-sm">
-                    <label for="start_date" class="text-sm font-medium text-slate-700 whitespace-nowrap">From:</label>
-                    <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}"
-                        class="text-sm border border-slate-300 rounded px-2 py-1 sm:border-0 sm:p-0 focus:ring-0 focus:border-sky-500 sm:focus:border-0">
+            {# Customer Search Filter #}
+            <form method="get" class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-1 flex gap-2">
+                    <input type="text" name="customer" placeholder="Search by customer name or email"
+                        value="{{ request.GET.customer }}"
+                        class="flex-1 px-4 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent">
+                    <button type="submit" class="px-6 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors whitespace-nowrap">
+                        Search
+                    </button>
                 </div>
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-white px-4 py-3 sm:py-2 rounded-lg border border-slate-200 shadow-sm">
-                    <label for="end_date" class="text-sm font-medium text-slate-700 whitespace-nowrap">To:</label>
-                    <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}"
-                        class="text-sm border border-slate-300 rounded px-2 py-1 sm:border-0 sm:p-0 focus:ring-0 focus:border-sky-500 sm:focus:border-0">
-                </div>
-                <button onclick="applyDateFilter()" class="px-4 py-3 sm:py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors whitespace-nowrap">
-                    Apply Filter
-                </button>
-            </div>
+                {% if request.GET.customer %}
+                <a href="{% url 'payments:schedule-list' %}" class="px-4 py-2 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap text-center">
+                    Clear
+                </a>
+                {% endif %}
+            </form>
         </div>
 
         {# KPI Summary Cards #}
@@ -162,7 +162,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                                 <h3 class="mt-2 text-sm font-medium text-slate-900">No payment schedules found</h3>
-                                <p class="mt-1 text-sm text-slate-500">Try adjusting your date range or filters.</p>
+                                <p class="mt-1 text-sm text-slate-500">Try adjusting your search criteria or status filters.</p>
                             </td>
                         </tr>
                         {% endfor %}
@@ -246,7 +246,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <h3 class="mt-2 text-sm font-medium text-slate-900">No payment schedules found</h3>
-                    <p class="mt-1 text-sm text-slate-500">Try adjusting your date range or filters.</p>
+                    <p class="mt-1 text-sm text-slate-500">Try adjusting your search criteria or status filters.</p>
                 </div>
                 {% endfor %}
             </div>
@@ -259,13 +259,6 @@
 {{ chart_data|json_script:"chart-data" }}
 
 <script>
-// Date Filter
-function applyDateFilter() {
-    const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
-    window.location.href = `?start_date=${startDate}&end_date=${endDate}`;
-}
-
 // Mark as Paid Action
 function markAsPaid(scheduleId, customerName, amount) {
     if (typeof showConfirmationModal !== 'function') {
