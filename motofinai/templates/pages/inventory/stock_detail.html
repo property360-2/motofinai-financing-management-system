@@ -110,7 +110,6 @@
             <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
               <tr>
                 <th scope="col" class="px-6 py-3">Motor</th>
-                <th scope="col" class="px-6 py-3">Chassis</th>
                 <th scope="col" class="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -118,9 +117,6 @@
               {% for motor in motors %}
                 <tr class="hover:bg-slate-50 transition">
                   <td class="px-6 py-4 text-slate-900">{{ motor.display_name }}</td>
-                  <td class="px-6 py-4 text-slate-700">
-                    {% if motor.chassis_number %}{{ motor.chassis_number }}{% else %}<span class="text-slate-400">-</span>{% endif %}
-                  </td>
                   <td class="px-6 py-4 text-right">
                     <a href="{% url 'inventory:motor-detail' motor.pk %}" class="text-sm font-semibold text-sky-600 hover:text-sky-700">
                       View

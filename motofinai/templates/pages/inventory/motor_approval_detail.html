@@ -42,10 +42,6 @@
               <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Color</dt>
               <dd class="mt-2 font-medium text-slate-900">{{ motor.color|default:"Not specified" }}</dd>
             </div>
-            <div class="sm:col-span-2">
-              <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Chassis Number</dt>
-              <dd class="mt-2 font-medium text-slate-900">{{ motor.chassis_number|default:"Not provided" }}</dd>
-            </div>
             <div>
               <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Purchase Price</dt>
               <dd class="mt-2 font-medium text-slate-900">₱{{ motor.purchase_price|floatformat:2 }}</dd>

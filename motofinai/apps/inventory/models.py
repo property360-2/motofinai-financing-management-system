@@ -123,7 +123,6 @@ class Motor(models.Model):
     brand = models.CharField(max_length=100)
     model_name = models.CharField("model", max_length=120)
     year = models.PositiveIntegerField(validators=[MinValueValidator(1900)])
-    chassis_number = models.CharField(max_length=100, blank=True, null=True)
     color = models.CharField(max_length=50, blank=True)
     stock = models.ForeignKey(
         Stock,
@@ -171,7 +170,7 @@ class Motor(models.Model):
 
     class Meta:
         ordering = ["brand", "model_name", "year"]
-        unique_together = ("brand", "model_name", "year", "chassis_number")
+        unique_together = ("brand", "model_name", "year")
 
     def __str__(self) -> str:
         return self.display_name
@@ -332,9 +331,6 @@ class MotorReceiving(models.Model):
         self.accepted_by = accepted_by
         self.accepted_at = timezone.now()
         self.save()
-        if motor:
-            motor.chassis_number = self.vin_number
-            motor.save()
 
 
 

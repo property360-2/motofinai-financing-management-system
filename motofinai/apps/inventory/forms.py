@@ -22,7 +22,6 @@ class MotorForm(forms.ModelForm):
             "quantity",
             "color",
             "purchase_price",
-            "chassis_number",
             "stock",
             "notes",
         ]
@@ -35,9 +34,6 @@ class MotorForm(forms.ModelForm):
             "color": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Matte Black"}),
             "purchase_price": forms.NumberInput(
                 attrs={"class": INPUT_CLASSES, "step": "0.01", "min": "0"}
-            ),
-            "chassis_number": forms.TextInput(
-                attrs={"class": INPUT_CLASSES, "placeholder": "Optional chassis/VIN"}
             ),
             "stock": forms.Select(attrs={"class": INPUT_CLASSES}),
             "notes": forms.Textarea(
@@ -66,7 +62,7 @@ class MotorFilterForm(forms.Form):
         widget=forms.TextInput(
             attrs={
                 "class": INPUT_CLASSES,
-                "placeholder": "Search by keyword (brand, model, type, chassis)",
+                "placeholder": "Search by keyword (brand, model, type)",
             }
         ),
     )

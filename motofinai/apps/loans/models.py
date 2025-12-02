@@ -278,7 +278,6 @@ class LoanApplication(models.Model):
         self.approved_by = approved_by
         self.approved_at = timezone.now()
         self.save(update_fields=["status", "approved_at", "approved_by", "custom_interest_rate", "custom_term_years", "updated_at"])
-        self.generate_payment_schedule()
         self.evaluate_risk()
 
     def activate(self) -> None:

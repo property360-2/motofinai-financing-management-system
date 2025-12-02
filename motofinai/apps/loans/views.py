@@ -641,6 +641,9 @@ class LoanApplicationInvestigateView(LoginRequiredMixin, DetailView):
                     ]
                 )
 
+                # Generate payment schedule now that both approvals are complete
+                application.generate_payment_schedule()
+
                 if approved:
                     messages.success(
                         request,

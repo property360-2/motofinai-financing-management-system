@@ -50,7 +50,7 @@ class Command(BaseCommand):
         loans = self._seed_loan_applications(users, motors, financing_terms)
         self._seed_payments(loans, users)
 
-        self.stdout.write(self.style.SUCCESS("\n✓ Demo data seeding completed successfully!"))
+        self.stdout.write(self.style.SUCCESS("\n[OK] Demo data seeding completed successfully!"))
         self.stdout.write(self.style.SUCCESS("\nLogin credentials:"))
         self.stdout.write("  Admin User:")
         self.stdout.write("    Username: admin_demo | Password: Demo123456!")
@@ -58,16 +58,19 @@ class Command(BaseCommand):
         self.stdout.write("    Username: finance_demo | Password: Demo123456!")
         self.stdout.write("  Finance Manager:")
         self.stdout.write("    Username: finance_manager | Password: Demo123456!")
+        self.stdout.write("  Credit Investigator User:")
+        self.stdout.write("    Username: credit_investigator | Password: Demo123456!")
 
     def _clear_demo_data(self):
         """Clear demo data (keeping superusers)."""
         User.objects.filter(username__contains="demo").delete()
         User.objects.filter(username__contains="finance_").delete()
+        User.objects.filter(username__contains="credit_").delete()
         Payment.objects.all().delete()
         LoanApplication.objects.all().delete()
         Motor.objects.all().delete()
         FinancingTerm.objects.all().delete()
-        self.stdout.write(self.style.SUCCESS("  ✓ Demo data cleared"))
+        self.stdout.write(self.style.SUCCESS("  [OK] Demo data cleared"))
 
     def _seed_users(self):
         """Create test users with different roles."""
@@ -90,9 +93,9 @@ class Command(BaseCommand):
         if created:
             admin.set_password("Demo123456!")
             admin.save()
-            self.stdout.write(f"  ✓ Created admin user: {admin.username}")
+            self.stdout.write(f"  [OK] Created admin user: {admin.username}")
         else:
-            self.stdout.write(f"  → Admin user already exists: {admin.username}")
+            self.stdout.write(f"  -> Admin user already exists: {admin.username}")
         users["admin"] = admin
 
         # Finance users
@@ -110,9 +113,9 @@ class Command(BaseCommand):
         if created:
             finance_user.set_password("Demo123456!")
             finance_user.save()
-            self.stdout.write(f"  ✓ Created finance user: {finance_user.username}")
+            self.stdout.write(f"  [OK] Created finance user: {finance_user.username}")
         else:
-            self.stdout.write(f"  → Finance user already exists: {finance_user.username}")
+            self.stdout.write(f"  -> Finance user already exists: {finance_user.username}")
         users["finance"] = finance_user
 
         # Finance manager
@@ -130,10 +133,30 @@ class Command(BaseCommand):
         if created:
             finance_manager.set_password("Demo123456!")
             finance_manager.save()
-            self.stdout.write(f"  ✓ Created finance manager: {finance_manager.username}")
+            self.stdout.write(f"  [OK] Created finance manager: {finance_manager.username}")
         else:
-            self.stdout.write(f"  → Finance manager already exists: {finance_manager.username}")
+            self.stdout.write(f"  -> Finance manager already exists: {finance_manager.username}")
         users["finance_manager"] = finance_manager
+
+        # Credit Investigator user
+        credit_investigator, created = User.objects.get_or_create(
+            username="credit_investigator",
+            defaults={
+                "email": "ci@dcfinancing.demo",
+                "first_name": "Credit",
+                "last_name": "Investigator",
+                "role": User.Roles.CREDIT_INVESTIGATOR,
+                "is_staff": False,
+                "is_active": True,
+            },
+        )
+        if created:
+            credit_investigator.set_password("Demo123456!")
+            credit_investigator.save()
+            self.stdout.write(f"  [OK] Created credit investigator user: {credit_investigator.username}")
+        else:
+            self.stdout.write(f"  -> Credit investigator user already exists: {credit_investigator.username}")
+        users["credit_investigator"] = credit_investigator
 
         return users
 
@@ -157,9 +180,9 @@ class Command(BaseCommand):
                 defaults={"is_active": True},
             )
             if created:
-                self.stdout.write(f"  ✓ Created financing term: {term}")
+                self.stdout.write(f"  [OK] Created financing term: {term}")
             else:
-                self.stdout.write(f"  → Financing term already exists: {term}")
+                self.stdout.write(f"  -> Financing term already exists: {term}")
             terms.append(term)
 
         return terms
@@ -174,7 +197,6 @@ class Command(BaseCommand):
                 "brand": "Honda",
                 "model_name": "Click 160",
                 "year": 2024,
-                "chassis_number": "HND24CLK160001",
                 "color": "Red",
                 "purchase_price": Decimal("89000.00"),
             },
@@ -183,7 +205,6 @@ class Command(BaseCommand):
                 "brand": "Honda",
                 "model_name": "Wave 125",
                 "year": 2024,
-                "chassis_number": "HND24WV125001",
                 "color": "Black",
                 "purchase_price": Decimal("75000.00"),
             },
@@ -192,7 +213,6 @@ class Command(BaseCommand):
                 "brand": "Yamaha",
                 "model_name": "Sniper 155",
                 "year": 2024,
-                "chassis_number": "YMH24SNP155001",
                 "color": "Blue",
                 "purchase_price": Decimal("95000.00"),
             },
@@ -201,7 +221,6 @@ class Command(BaseCommand):
                 "brand": "Yamaha",
                 "model_name": "NMAX 155",
                 "year": 2024,
-                "chassis_number": "YMH24NMAX155001",
                 "color": "White",
                 "purchase_price": Decimal("125000.00"),
             },
@@ -210,7 +229,6 @@ class Command(BaseCommand):
                 "brand": "Suzuki",
                 "model_name": "Raider 150",
                 "year": 2023,
-                "chassis_number": "SZK23RDR150001",
                 "color": "Orange",
                 "purchase_price": Decimal("82000.00"),
             },
@@ -219,7 +237,6 @@ class Command(BaseCommand):
                 "brand": "Kawasaki",
                 "model_name": "Ninja 400",
                 "year": 2024,
-                "chassis_number": "KWS24NJA400001",
                 "color": "Green",
                 "purchase_price": Decimal("350000.00"),
             },
@@ -228,7 +245,6 @@ class Command(BaseCommand):
                 "brand": "Honda",
                 "model_name": "ADV 150",
                 "year": 2024,
-                "chassis_number": "HND24ADV150001",
                 "color": "Gray",
                 "purchase_price": Decimal("165000.00"),
             },
@@ -237,7 +253,6 @@ class Command(BaseCommand):
                 "brand": "Yamaha",
                 "model_name": "Mio i125",
                 "year": 2023,
-                "chassis_number": "YMH23MIO125001",
                 "color": "Pink",
                 "purchase_price": Decimal("78000.00"),
             },
@@ -246,7 +261,6 @@ class Command(BaseCommand):
                 "brand": "Honda",
                 "model_name": "CBR150R",
                 "year": 2024,
-                "chassis_number": "HND24CBR150001",
                 "color": "Red",
                 "purchase_price": Decimal("185000.00"),
             },
@@ -255,7 +269,6 @@ class Command(BaseCommand):
                 "brand": "Suzuki",
                 "model_name": "Burgman 125",
                 "year": 2024,
-                "chassis_number": "SZK24BRG125001",
                 "color": "Silver",
                 "purchase_price": Decimal("110000.00"),
             },
@@ -267,7 +280,6 @@ class Command(BaseCommand):
                 brand=motor_data["brand"],
                 model_name=motor_data["model_name"],
                 year=motor_data["year"],
-                chassis_number=motor_data["chassis_number"],
                 defaults={
                     "type": motor_data["type"],
                     "color": motor_data["color"],
@@ -275,9 +287,9 @@ class Command(BaseCommand):
                 },
             )
             if created:
-                self.stdout.write(f"  ✓ Created motor: {motor}")
+                self.stdout.write(f"  [OK] Created motor: {motor}")
             else:
-                self.stdout.write(f"  → Motor already exists: {motor}")
+                self.stdout.write(f"  -> Motor already exists: {motor}")
             motors.append(motor)
 
         return motors
@@ -382,15 +394,16 @@ class Command(BaseCommand):
                 "employment_status": LoanApplication.EmploymentStatus.EMPLOYED,
                 "employer_name": "GHI Services",
                 "monthly_income": Decimal("32000.00"),
-                "motor": Motor.objects.create(
-                    type="scooter",
+                "motor": Motor.objects.get_or_create(
                     brand="Honda",
                     model_name="Beat 110",
                     year=2022,
-                    chassis_number="HND22BEAT110001",
-                    color="White",
-                    purchase_price=Decimal("58000.00"),
-                ),
+                    defaults={
+                        "type": "scooter",
+                        "color": "White",
+                        "purchase_price": Decimal("58000.00"),
+                    }
+                )[0],
                 "financing_term": term_2yr,
                 "loan_amount": Decimal("58000.00"),
                 "down_payment": Decimal("8000.00"),
@@ -433,7 +446,7 @@ class Command(BaseCommand):
             ).first()
 
             if existing:
-                self.stdout.write(f"  → Loan already exists for {loan_data['applicant_first_name']} {loan_data['applicant_last_name']}")
+                self.stdout.write(f"  -> Loan already exists for {loan_data['applicant_first_name']} {loan_data['applicant_last_name']}")
                 loans.append(existing)
                 continue
 
@@ -442,6 +455,11 @@ class Command(BaseCommand):
 
             # Update status through proper workflow
             if status in [LoanApplication.Status.APPROVED, LoanApplication.Status.ACTIVE, LoanApplication.Status.COMPLETED]:
+                # Get a credit investigator for approval
+                credit_investigator = users.get("finance_manager") or users.get("finance") or users.get("admin")
+                loan.credit_investigator_approval = credit_investigator
+                loan.credit_investigation_notes = "Demo data - approved for testing"
+                loan.credit_investigation_at = loan.submitted_at + timedelta(days=1)
                 loan.approve()
                 loan.approved_at = loan.submitted_at + timedelta(days=2)
                 loan.save()
@@ -456,7 +474,7 @@ class Command(BaseCommand):
                 loan.completed_at = loan.submitted_at + timedelta(days=730)  # 2 years later
                 loan.save()
 
-            self.stdout.write(f"  ✓ Created loan application: {loan.applicant_full_name} - {loan.motor}")
+            self.stdout.write(f"  [OK] Created loan application: {loan.applicant_full_name} - {loan.motor}")
             loans.append(loan)
 
         return loans
@@ -491,7 +509,7 @@ class Command(BaseCommand):
                         recorded_by=users["finance"],
                     )
                     payment_count += 1
-                    self.stdout.write(f"  ✓ Created payment: {payment.reference}")
+                    self.stdout.write(f"  [OK] Created payment: {payment.reference}")
 
             # For completed loans, mark all as paid
             elif loan.status == LoanApplication.Status.COMPLETED:
@@ -510,6 +528,6 @@ class Command(BaseCommand):
                     payment_count += 1
 
         if payment_count > 0:
-            self.stdout.write(f"  ✓ Created {payment_count} payment(s)")
+            self.stdout.write(f"  [OK] Created {payment_count} payment(s)")
         else:
-            self.stdout.write("  → No payments needed")
+            self.stdout.write("  -> No payments needed")

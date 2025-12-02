@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python:*)",
-      "Bash(ls -la \"c:\\Users\\Administrator\\Desktop\\projects\\motofinai-financing-management-system\\motofinai\\apps\\core\"\" 2>/dev/null || ls -la \"c:UsersAdministratorDesktopprojectsmotofinai-financing-management-systemmotofinaiapps\"\")"
+      "Bash(ls -la \"c:\\Users\\Administrator\\Desktop\\projects\\motofinai-financing-management-system\\motofinai\\apps\\core\"\" 2>/dev/null || ls -la \"c:UsersAdministratorDesktopprojectsmotofinai-financing-management-systemmotofinaiapps\"\")",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
