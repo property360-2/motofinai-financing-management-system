@@ -34,6 +34,9 @@
                     Clear
                 </a>
                 {% endif %}
+                {% if request.GET.status %}
+                <input type="hidden" name="status" value="{{ request.GET.status }}">
+                {% endif %}
             </form>
         </div>
 
