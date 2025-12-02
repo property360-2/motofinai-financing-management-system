@@ -109,14 +109,18 @@
         </dl>
 
         <div class="mt-6 flex flex-wrap gap-2 text-sm">
-          {% if application.status == 'pending' %}
+          {% if application.status == 'pending' or application.status == 'approved' and not application.second_approval_by %}
             <a href="{% url 'loans:approve' application.pk %}" class="rounded-md bg-sky-600 px-3 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-700">
               <svg class="inline mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Approve &amp; build schedule
+              {% if application.status == 'pending' %}
+                Approve (1st of 2)
+              {% else %}
+                Approve (2nd of 2)
+              {% endif %}
             </a>
-          {% elif application.status == 'approved' %}
+          {% elif application.status == 'approved' and application.second_approval_by %}
             <form method="post" action="{% url 'loans:activate' application.pk %}" style="display:inline;">
         {% csrf_token %}
 
