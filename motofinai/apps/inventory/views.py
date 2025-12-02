@@ -53,7 +53,6 @@ class MotorListView(InventoryContextMixin, LoginRequiredMixin, ListView):
                     models.Q(brand__icontains=query)
                     | models.Q(model_name__icontains=query)
                     | models.Q(type__icontains=query)
-                    | models.Q(chassis_number__icontains=query)
                 )
         return queryset
 

@@ -7,7 +7,7 @@ from .models import Motor, Stock, MotorReceiving, ReceivingInspection, Receiving
 class MotorAdmin(admin.ModelAdmin):
     list_display = ("display_name", "type", "quantity", "purchase_price", "motor_status", "stock", "created_at")
     list_filter = ("type", "brand", "year", "stock")
-    search_fields = ("brand", "model_name", "type", "chassis_number")
+    search_fields = ("brand", "model_name", "type")
     readonly_fields = ("created_at", "updated_at", "motor_status")
     fieldsets = (
         (None, {"fields": ("type", "brand", "model_name", "year")}),
@@ -18,7 +18,6 @@ class MotorAdmin(admin.ModelAdmin):
                     "color",
                     "purchase_price",
                     "quantity",
-                    "chassis_number",
                     "stock",
                     "notes",
                 )

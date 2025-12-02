@@ -64,18 +64,19 @@
         {% endfor %}
       </div>
 
-      <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-200">
+      <div class="pt-8 mt-4 flex flex-col sm:flex-row items-center justify-end gap-3 border-t border-slate-200">
         <a
           href="{% if object %}{% url 'inventory:motor-detail' object.pk %}{% else %}{% url 'inventory:motor-list' %}{% endif %}"
-          class="rounded-lg px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+          class="order-2 sm:order-1 w-full sm:w-auto rounded-lg px-6 py-3 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors text-center border border-slate-300"
         >
           Cancel
         </a>
         <button
           type="submit"
-          class="rounded-lg bg-teal-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+          id="submit-button"
+          class="order-1 sm:order-2 w-full sm:w-auto rounded-lg bg-green-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-md hover:shadow-lg"
         >
-          {% if object %}Save changes{% else %}Add motor{% endif %}
+          {% if object %}Save Changes{% else %}Add Motor{% endif %}
         </button>
       </div>
     </form>
