@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django.views import View
 from django.views.generic import FormView, TemplateView
 
 from motofinai.apps.loans.models import LoanApplication, PaymentSchedule
@@ -209,3 +210,60 @@ class RecordPaymentView(LoginRequiredMixin, FormView):
             }
         )
         return context
+
+
+class PaymentScheduleSearchView(LoginRequiredMixin, View):
+    """API endpoint for async payment schedule search."""
+    required_roles = ("admin", "finance")
+
+    def get(self, request: HttpRequest) -> JsonResponse:
+        try:
+            customer_search = request.GET.get("customer", "").strip()
+            status = request.GET.get("status", "").strip()
+
+            # Mark overdue schedules
+            reference_date = timezone.now().date()
+            PaymentSchedule.objects.mark_overdue(reference_date)
+
+            # Get filtered schedules
+            schedules = PaymentSchedule.objects.select_related(
+                "loan_application",
+                "loan_application__motor",
+            ).order_by("due_date", "sequence")
+
+            # Filter by customer name
+            if customer_search:
+                schedules = schedules.filter(
+                    Q(loan_application__applicant_first_name__icontains=customer_search) |
+                    Q(loan_application__applicant_last_name__icontains=customer_search) |
+                    Q(loan_application__applicant_email__icontains=customer_search)
+                )
+
+            # Filter by status
+            if status and status in dict(PaymentSchedule.Status.choices):
+                schedules = schedules.filter(status=status)
+
+            # Build response data
+            data = []
+            for schedule in schedules[:50]:  # Limit to 50 results
+                try:
+                    data.append({
+                        "id": schedule.id,
+                        "schedule_id": f"SCH-{schedule.id:06d}",
+                        "customer": f"{schedule.loan_application.applicant_first_name} {schedule.loan_application.applicant_last_name}",
+                        "email": schedule.loan_application.applicant_email,
+                        "motor": schedule.loan_application.motor.display_name,
+                        "due_date": schedule.due_date.strftime("%Y-%m-%d"),
+                        "amount": str(schedule.total_amount),
+                        "status": schedule.status,
+                        "status_display": schedule.get_status_display(),
+                    })
+                except (AttributeError, TypeError):
+                    # Skip schedules with missing relationships
+                    continue
+
+            return JsonResponse({"results": data, "count": len(data)})
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({"error": str(e), "results": [], "count": 0}, status=400)
