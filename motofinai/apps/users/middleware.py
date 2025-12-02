@@ -11,21 +11,10 @@ class RoleRequiredMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Call process_view to check roles before the view executes
-        response = self.process_view(request)
-        if response is not None:
-            return response
         return self.get_response(request)
 
-    def process_view(self, request):
+    def process_view(self, request, view_func, view_args, view_kwargs):
         """Check role-based access control for the current request."""
-        # Get the view function from the resolver
-        resolver_match = request.resolver_match
-        if not resolver_match:
-            return None
-
-        view_func = resolver_match.func
-
         # Try to get required_roles from the view function
         required_roles = getattr(view_func, "required_roles", None)
 
