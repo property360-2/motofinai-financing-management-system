@@ -58,18 +58,18 @@ class Command(BaseCommand):
         self.stdout.write("    Username: finance_demo | Password: Demo123456!")
         self.stdout.write("  Finance Manager:")
         self.stdout.write("    Username: finance_manager | Password: Demo123456!")
-        self.stdout.write("  Credit Investigator User:")
-        self.stdout.write("    Username: credit_investigator | Password: Demo123456!")
 
     def _clear_demo_data(self):
         """Clear demo data (keeping superusers)."""
-        User.objects.filter(username__contains="demo").delete()
-        User.objects.filter(username__contains="finance_").delete()
-        User.objects.filter(username__contains="credit_").delete()
+        # Delete dependent data first to avoid protected foreign key errors
         Payment.objects.all().delete()
         LoanApplication.objects.all().delete()
         Motor.objects.all().delete()
         FinancingTerm.objects.all().delete()
+        # Now delete users
+        User.objects.filter(username__contains="demo").delete()
+        User.objects.filter(username__contains="finance_").delete()
+        User.objects.filter(username__contains="credit_").delete()
         self.stdout.write(self.style.SUCCESS("  [OK] Demo data cleared"))
 
     def _seed_users(self):
@@ -137,26 +137,6 @@ class Command(BaseCommand):
         else:
             self.stdout.write(f"  -> Finance manager already exists: {finance_manager.username}")
         users["finance_manager"] = finance_manager
-
-        # Credit Investigator user
-        credit_investigator, created = User.objects.get_or_create(
-            username="credit_investigator",
-            defaults={
-                "email": "ci@dcfinancing.demo",
-                "first_name": "Credit",
-                "last_name": "Investigator",
-                "role": User.Roles.CREDIT_INVESTIGATOR,
-                "is_staff": False,
-                "is_active": True,
-            },
-        )
-        if created:
-            credit_investigator.set_password("Demo123456!")
-            credit_investigator.save()
-            self.stdout.write(f"  [OK] Created credit investigator user: {credit_investigator.username}")
-        else:
-            self.stdout.write(f"  -> Credit investigator user already exists: {credit_investigator.username}")
-        users["credit_investigator"] = credit_investigator
 
         return users
 
@@ -455,13 +435,14 @@ class Command(BaseCommand):
 
             # Update status through proper workflow
             if status in [LoanApplication.Status.APPROVED, LoanApplication.Status.ACTIVE, LoanApplication.Status.COMPLETED]:
-                # Get a credit investigator for approval
-                credit_investigator = users.get("finance_manager") or users.get("finance") or users.get("admin")
-                loan.credit_investigator_approval = credit_investigator
-                loan.credit_investigation_notes = "Demo data - approved for testing"
-                loan.credit_investigation_at = loan.submitted_at + timedelta(days=1)
-                loan.approve()
-                loan.approved_at = loan.submitted_at + timedelta(days=2)
+                # First approval
+                loan.approve(approved_by=users.get("finance"))
+                loan.approved_at = loan.submitted_at + timedelta(days=1)
+
+                # Second approval (for testing, set both approvals)
+                second_approver = users.get("admin")
+                loan.second_approval_by = second_approver
+                loan.second_approval_at = loan.submitted_at + timedelta(days=2)
                 loan.save()
 
             if status in [LoanApplication.Status.ACTIVE, LoanApplication.Status.COMPLETED]:

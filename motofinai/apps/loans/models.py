@@ -76,18 +76,18 @@ class LoanApplicationQuerySet(models.QuerySet):
         return self.filter(status=LoanApplication.Status.ACTIVE)
 
     def pending_investigation(self):
-        """Approved loans awaiting credit investigation."""
+        """Approved loans awaiting second approval."""
         return self.filter(
             status=LoanApplication.Status.APPROVED,
-            credit_investigator_approval__isnull=True,
+            second_approval_by__isnull=True,
         )
 
     def ready_for_activation(self):
-        """Approved loans that have passed credit investigation."""
+        """Approved loans that have both approvals complete."""
         return self.filter(
             status=LoanApplication.Status.APPROVED,
             approved_by__isnull=False,
-            credit_investigator_approval__isnull=False,
+            second_approval_by__isnull=False,
         )
 
 
@@ -186,20 +186,16 @@ class LoanApplication(models.Model):
         help_text="Finance officer who approved this loan",
     )
     approved_at = models.DateTimeField(blank=True, null=True)
-    # Credit investigation approval fields
-    credit_investigator_approval = models.ForeignKey(
+    # Second approval (Finance Manager or Admin)
+    second_approval_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="credit_investigated_loan_applications",
-        help_text="Credit Investigator who approved this loan",
+        related_name="second_approved_loan_applications",
+        help_text="Second approver (Finance Manager or Admin) who approved this loan",
     )
-    credit_investigation_at = models.DateTimeField(blank=True, null=True)
-    credit_investigation_notes = models.TextField(
-        blank=True,
-        help_text="Credit investigator's assessment and notes",
-    )
+    second_approval_at = models.DateTimeField(blank=True, null=True)
     custom_interest_rate = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -283,8 +279,8 @@ class LoanApplication(models.Model):
     def activate(self) -> None:
         if self.status != self.Status.APPROVED:
             raise ValidationError("Only approved applications can be activated.")
-        if not self.credit_investigator_approval:
-            raise ValidationError("Loan must be approved by credit investigator before activation.")
+        if not self.second_approval_by:
+            raise ValidationError("Loan must have both approvals before activation.")
         # Decrease stock when activating loan (motor is being financed/sold)
         if self.motor and self.motor.stock:
             try:
@@ -301,6 +297,36 @@ class LoanApplication(models.Model):
         self.status = self.Status.COMPLETED
         self.completed_at = timezone.now()
         self.save(update_fields=["status", "completed_at", "updated_at"])
+
+    def get_approval_status(self) -> dict:
+        """Return approval status information for template display."""
+        if self.status == self.Status.PENDING:
+            return {
+                "stage": "pending",
+                "waiting_for": "Finance Officer or Admin approval",
+                "first_approved": False,
+                "second_approved": False,
+            }
+        elif self.approved_by and not self.second_approval_by:
+            return {
+                "stage": "first_approved",
+                "waiting_for": "Second approval from another approver",
+                "first_approved": True,
+                "second_approved": False,
+            }
+        elif self.approved_by and self.second_approval_by:
+            return {
+                "stage": "fully_approved",
+                "waiting_for": None,
+                "first_approved": True,
+                "second_approved": True,
+            }
+        return {
+            "stage": "unknown",
+            "waiting_for": None,
+            "first_approved": False,
+            "second_approved": False,
+        }
 
     def refresh_overdue_schedules(self, *, reference_date: date | None = None) -> int:
         return self.payment_schedules.mark_overdue(reference_date)

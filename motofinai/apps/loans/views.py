@@ -450,7 +450,7 @@ class LoanApplicationDocumentsView(LoginRequiredMixin, TemplateView):
 
 
 class LoanApplicationApproveView(LoginRequiredMixin, DetailView):
-    """Approve a loan application with optional custom terms."""
+    """Approve a loan application with optional custom terms (first or second approval)."""
 
     model = LoanApplication
     template_name = "pages/loans/application_approve.html"
@@ -458,7 +458,14 @@ class LoanApplicationApproveView(LoginRequiredMixin, DetailView):
     required_roles = ("admin", "finance")
 
     def get_queryset(self):
-        return super().get_queryset().filter(status=LoanApplication.Status.PENDING)
+        """Show pending loans (first approval) or approved loans awaiting second approval."""
+        return super().get_queryset().filter(
+            models.Q(status=LoanApplication.Status.PENDING)
+            | models.Q(
+                status=LoanApplication.Status.APPROVED,
+                second_approval_by__isnull=True,
+            )
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -474,8 +481,18 @@ class LoanApplicationApproveView(LoginRequiredMixin, DetailView):
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         application = get_object_or_404(LoanApplication, pk=pk)
 
-        if application.status != LoanApplication.Status.PENDING:
-            messages.error(request, "Only pending applications can be approved.")
+        # Check if application can be approved
+        if application.status == LoanApplication.Status.PENDING:
+            is_second_approval = False
+        elif (
+            application.status == LoanApplication.Status.APPROVED
+            and not application.second_approval_by
+        ):
+            is_second_approval = True
+        else:
+            messages.error(
+                request, "This application cannot be approved at this stage."
+            )
             return redirect("loans:detail", pk=pk)
 
         form = LoanApprovalForm(request.POST)
@@ -484,14 +501,32 @@ class LoanApplicationApproveView(LoginRequiredMixin, DetailView):
             custom_term_years = form.cleaned_data.get("custom_term_years")
 
             try:
-                application.approve(
-                    approved_by=request.user,
-                    custom_interest_rate=custom_interest_rate,
-                    custom_term_years=custom_term_years,
-                )
-                messages.success(
-                    request, "Loan application approved and payment schedule generated."
-                )
+                if is_second_approval:
+                    # Second approval: set second_approval_by and generate payment schedule
+                    application.second_approval_by = request.user
+                    application.second_approval_at = timezone.now()
+                    application.save(
+                        update_fields=[
+                            "second_approval_by",
+                            "second_approval_at",
+                            "updated_at",
+                        ]
+                    )
+                    application.generate_payment_schedule()
+                    messages.success(
+                        request,
+                        "Loan approved by second approver. Payment schedule generated.",
+                    )
+                else:
+                    # First approval
+                    application.approve(
+                        approved_by=request.user,
+                        custom_interest_rate=custom_interest_rate,
+                        custom_term_years=custom_term_years,
+                    )
+                    messages.success(
+                        request, "Loan application approved. Awaiting second approval."
+                    )
                 return redirect("loans:detail", pk=pk)
             except ValidationError as exc:
                 messages.error(request, "; ".join(exc.messages))
@@ -546,121 +581,3 @@ class LoanDocumentDeleteView(LoginRequiredMixin, View):
         messages.success(request, "Document removed.")
         return redirect("loans:documents", pk=pk)
 
-
-class LoanApplicationInvestigationListView(LoginRequiredMixin, ListView):
-    """Display list of loans pending credit investigation."""
-
-    model = LoanApplication
-    template_name = "pages/loans/investigation_list.html"
-    context_object_name = "applications"
-    paginate_by = 20
-    required_roles = ("admin", "credit_investigator")
-
-    def get_queryset(self):
-        """Show only loans pending investigation, with related objects."""
-        return LoanApplication.objects.pending_investigation().select_related(
-            "motor",
-            "financing_term",
-            "submitted_by",
-            "approved_by",
-        ).prefetch_related("payment_schedules")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Add statistics
-        context["total_pending"] = LoanApplication.objects.pending_investigation().count()
-        context["breadcrumbs"] = [
-            {"label": "Loans", "url": reverse("loans:list")},
-            {"label": "Pending Investigations"},
-        ]
-        return context
-
-
-class LoanApplicationInvestigateView(LoginRequiredMixin, DetailView):
-    """Approve or reject a loan application as credit investigator."""
-
-    model = LoanApplication
-    template_name = "pages/loans/investigate_form.html"
-    context_object_name = "application"
-    required_roles = ("admin", "credit_investigator")
-
-    def get_queryset(self):
-        """Only show loans awaiting investigation."""
-        return LoanApplication.objects.pending_investigation().select_related(
-            "motor",
-            "financing_term",
-            "submitted_by",
-            "approved_by",
-        ).prefetch_related("payment_schedules")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["form"] = self.get_form()
-        # Include risk assessment if available
-        try:
-            from motofinai.apps.risk.models import RiskAssessment
-            context["risk_assessment"] = self.object.risk_assessment
-        except Exception:
-            context["risk_assessment"] = None
-
-        context["breadcrumbs"] = [
-            {"label": "Loans", "url": reverse("loans:list")},
-            {"label": "Investigations", "url": reverse("loans:investigation_list")},
-            {"label": f"Application #{self.object.pk}"},
-        ]
-        return context
-
-    def get_form(self):
-        if self.request.method == "POST":
-            return CreditInvestigationForm(self.request.POST)
-        return CreditInvestigationForm()
-
-    def post(self, request: HttpRequest, pk: int) -> HttpResponse:
-        application = get_object_or_404(LoanApplication, pk=pk)
-
-        # Verify application is pending investigation
-        if application.status != LoanApplication.Status.APPROVED or application.credit_investigator_approval:
-            messages.error(request, "This loan is not pending investigation.")
-            return redirect("loans:detail", pk=pk)
-
-        form = CreditInvestigationForm(request.POST)
-        if form.is_valid():
-            approved = form.cleaned_data.get("approved", False)
-            investigation_notes = form.cleaned_data.get("investigation_notes", "")
-
-            try:
-                # Record the credit investigation
-                application.credit_investigator_approval = request.user
-                application.credit_investigation_at = timezone.now()
-                application.credit_investigation_notes = investigation_notes
-                application.save(
-                    update_fields=[
-                        "credit_investigator_approval",
-                        "credit_investigation_at",
-                        "credit_investigation_notes",
-                        "updated_at",
-                    ]
-                )
-
-                # Generate payment schedule now that both approvals are complete
-                application.generate_payment_schedule()
-
-                if approved:
-                    messages.success(
-                        request,
-                        "Loan approved by credit investigator. Ready for activation.",
-                    )
-                else:
-                    messages.warning(
-                        request,
-                        "Loan flagged for review. Finance officer has been notified.",
-                    )
-                return redirect("loans:detail", pk=pk)
-            except ValidationError as exc:
-                messages.error(request, "; ".join(exc.messages))
-                return self.get(request, pk=pk)
-        else:
-            # Form has errors, re-render with errors
-            context = self.get_context_data(object=application)
-            context["form"] = form
-            return self.render_to_response(context)

@@ -26,7 +26,7 @@ from .models import Payment
 
 class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
     template_name = "pages/payments/schedule_list.html"
-    required_roles = ("admin", "finance", "credit_investigator")
+    required_roles = ("admin", "finance")
 
     def get_queryset(self):
         reference_date = timezone.now().date()
@@ -153,7 +153,7 @@ class PaymentScheduleListView(LoginRequiredMixin, TemplateView):
 class RecordPaymentView(LoginRequiredMixin, FormView):
     template_name = "pages/payments/record_payment.html"
     form_class = PaymentRecordForm
-    required_roles = ("admin", "finance", "credit_investigator")
+    required_roles = ("admin", "finance")
 
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         self.schedule = get_object_or_404(

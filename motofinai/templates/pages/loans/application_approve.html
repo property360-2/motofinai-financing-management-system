@@ -181,10 +181,10 @@
               type="submit"
               class="flex-1 rounded-lg bg-sky-600 px-4 py-2 font-semibold text-white transition hover:bg-sky-700"
             >
-              {% if user_role == 'admin' %}
-                Approve & Wait for CI Approval
-              {% elif user_role == 'finance' %}
-                Approve & Wait for Admin Approval
+              {% if not application.approved_by %}
+                Approve (1st of 2 Approvals)
+              {% elif not application.second_approval_by %}
+                Approve & Generate Schedule (2nd Approval)
               {% else %}
                 Approve
               {% endif %}

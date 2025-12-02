@@ -27,7 +27,7 @@ from .models import RiskAssessment
 class RiskAssessmentDashboardView(LoginRequiredMixin, TemplateView):
     template_name = "pages/risk/dashboard.html"
     context_object_name = "assessments"
-    required_roles = ("admin", "finance", "credit_investigator")
+    required_roles = ("admin", "finance")
 
     def get_date_range(self):
         """Get date range from request or default to current month"""
@@ -170,7 +170,7 @@ class RiskAssessmentDetailView(LoginRequiredMixin, DetailView):
     model = RiskAssessment
     template_name = "pages/risk/assessment_detail.html"
     context_object_name = "assessment"
-    required_roles = ("admin", "finance", "credit_investigator")
+    required_roles = ("admin", "finance")
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -194,7 +194,7 @@ class RiskAssessmentDetailView(LoginRequiredMixin, DetailView):
 
 
 class RiskAssessmentRecalculateView(LoginRequiredMixin, View):
-    required_roles = ("admin", "finance", "credit_investigator")
+    required_roles = ("admin", "finance")
 
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         assessment = get_object_or_404(RiskAssessment, pk=pk)
@@ -214,7 +214,7 @@ class RiskAssessmentRecalculateView(LoginRequiredMixin, View):
 
 
 class LoanRiskEvaluateView(LoginRequiredMixin, View):
-    required_roles = ("admin", "finance", "credit_investigator")
+    required_roles = ("admin", "finance")
 
     def post(self, request: HttpRequest, loan_pk: int) -> HttpResponse:
         loan = get_object_or_404(LoanApplication, pk=loan_pk)

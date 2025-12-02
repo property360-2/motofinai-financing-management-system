@@ -15,6 +15,33 @@
       </span>
     </div>
 
+    {% with approval_status=application.get_approval_status %}
+      {% if approval_status.waiting_for %}
+        <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+          <h3 class="text-sm font-semibold text-blue-900">Approval Status</h3>
+          <div class="mt-2 text-sm text-blue-800">
+            {% if approval_status.stage == "pending" %}
+              Waiting for: <strong>Finance Officer or Admin approval</strong>
+            {% elif approval_status.stage == "first_approved" %}
+              <div class="space-y-1">
+                <p>First approval: <strong>{{ application.approved_by.get_full_name }}</strong> on {{ application.approved_at|date:"M d, Y" }}</p>
+                <p>Waiting for: <strong>Second approval from another user</strong></p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% elif approval_status.stage == "fully_approved" %}
+        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+          <h3 class="text-sm font-semibold text-emerald-900">Approval Status</h3>
+          <div class="mt-2 text-sm text-emerald-800 space-y-1">
+            <p>First approval: <strong>{{ application.approved_by.get_full_name }}</strong> on {{ application.approved_at|date:"M d, Y" }}</p>
+            <p>Second approval: <strong>{{ application.second_approval_by.get_full_name }}</strong> on {{ application.second_approval_at|date:"M d, Y" }}</p>
+            <p class="font-semibold">Payment schedule is ready for activation.</p>
+          </div>
+        </div>
+      {% endif %}
+    {% endwith %}
+
     <div class="grid gap-6 lg:grid-cols-2">
       <section class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h2 class="text-lg font-semibold text-slate-900">Applicant details</h2>
