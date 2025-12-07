@@ -1,0 +1,191 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Statement of Account - Loan #{{ loan.id }}{% endblock title %}
+
+{% block content %}
+<section class="mx-auto max-w-5xl px-6 py-12">
+  {% if not is_pdf %}
+  {% include 'components/breadcrumb.html' %}
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-semibold text-slate-900">Statement of Account</h1>
+      <p class="mt-2 text-sm text-slate-700">Loan #{{ loan.id }} - {{ customer.name }}</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'loans:soa-pdf' loan.id %}" class="inline-flex items-center rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700">
+        <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Download PDF
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Customer & Loan Header -->
+  <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm mb-8">
+    <div class="grid gap-6 md:grid-cols-2">
+      <div>
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">Customer Information</h2>
+        <p class="text-lg font-semibold text-slate-900">{{ customer.name }}</p>
+        <p class="text-sm text-slate-600 mt-1">{{ customer.email }}</p>
+        <p class="text-sm text-slate-600">{{ customer.phone }}</p>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">Loan Information</h2>
+        <p class="text-sm text-slate-700"><span class="font-medium">Loan ID:</span> #{{ loan.id }}</p>
+        <p class="text-sm text-slate-700"><span class="font-medium">Motorcycle:</span> {{ loan.motorcycle }}</p>
+        <p class="text-sm text-slate-700"><span class="font-medium">Status:</span> <span class="font-semibold text-teal-700">{{ loan.status }}</span></p>
+        <p class="text-sm text-slate-700"><span class="font-medium">Generated:</span> {{ "now"|date:"F j, Y" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loan Summary -->
+  <div class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm mb-8">
+    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+      <h2 class="text-lg font-semibold text-slate-900">Loan Summary</h2>
+    </div>
+    <div class="p-6">
+      <table class="w-full">
+        <tr class="border-b border-slate-200">
+          <td class="py-3 text-sm text-slate-600">Motorcycle Price</td>
+          <td class="py-3 text-sm font-semibold text-right text-slate-900">₱{{ loan.loan_amount|floatformat:2 }}</td>
+        </tr>
+        <tr class="border-b border-slate-200 bg-emerald-50">
+          <td class="py-3 text-sm text-slate-600">Down Payment Paid</td>
+          <td class="py-3 text-sm font-semibold text-right text-emerald-700">-₱{{ loan.down_payment|floatformat:2 }}</td>
+        </tr>
+        <tr class="border-b border-slate-200">
+          <td class="py-3 text-sm text-slate-600">Principal (Amount Financed)</td>
+          <td class="py-3 text-sm font-semibold text-right text-slate-900">₱{{ loan.principal_amount|floatformat:2 }}</td>
+        </tr>
+        <tr class="border-b border-slate-200">
+          <td class="py-3 text-sm text-slate-600">Interest Rate</td>
+          <td class="py-3 text-sm font-semibold text-right text-slate-900">{{ loan.interest_rate }}% per year</td>
+        </tr>
+        <tr class="border-b border-slate-200">
+          <td class="py-3 text-sm text-slate-600">Financing Term</td>
+          <td class="py-3 text-sm font-semibold text-right text-slate-900">{{ loan.term_years }} year{{ loan.term_years|pluralize }} ({{ loan.total_months }} months)</td>
+        </tr>
+        <tr class="border-b border-slate-200">
+          <td class="py-3 text-sm text-slate-600">Monthly Payment</td>
+          <td class="py-3 text-sm font-semibold text-right text-teal-700">₱{{ loan.monthly_payment|floatformat:2 }}</td>
+        </tr>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <td class="py-3 text-sm font-medium text-slate-700">Total Interest</td>
+          <td class="py-3 text-sm font-bold text-right text-slate-900">₱{{ loan.total_interest|floatformat:2 }}</td>
+        </tr>
+        <tr class="bg-teal-50">
+          <td class="py-3 text-base font-bold text-slate-900">Total Amount to Pay</td>
+          <td class="py-3 text-base font-bold text-right text-teal-700">₱{{ summary.total_expected|floatformat:2 }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Payment Status Summary -->
+  <div class="grid gap-6 sm:grid-cols-3 mb-8">
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
+      <p class="text-sm font-medium text-emerald-700">Total Paid</p>
+      <p class="mt-2 text-2xl font-bold text-emerald-900">₱{{ summary.paid_total|floatformat:2 }}</p>
+    </div>
+    <div class="rounded-xl border border-rose-200 bg-rose-50 p-6">
+      <p class="text-sm font-medium text-rose-700">Outstanding Balance</p>
+      <p class="mt-2 text-2xl font-bold text-rose-900">₱{{ summary.balance|floatformat:2 }}</p>
+    </div>
+    <div class="rounded-xl border border-blue-200 bg-blue-50 p-6">
+      <p class="text-sm font-medium text-blue-700">Collection Rate</p>
+      <p class="mt-2 text-2xl font-bold text-blue-900">{{ summary.collection_rate }}%</p>
+    </div>
+  </div>
+
+  <!-- Payment Schedule -->
+  <div class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm mb-8">
+    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+      <h2 class="text-lg font-semibold text-slate-900">Payment Schedule</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-slate-100 border-b border-slate-200">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">#</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Due Date</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">Principal</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">Interest</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">Total</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Status</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">Payment Details</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-200">
+          {% for schedule in schedules %}
+          <tr class="{% if schedule.status == 'Paid' %}bg-emerald-50{% elif schedule.status == 'Overdue' %}bg-rose-50{% endif %}">
+            <td class="px-4 py-3 text-sm text-slate-700">{{ schedule.sequence }}</td>
+            <td class="px-4 py-3 text-sm text-slate-700">{{ schedule.due_date|date:"M d, Y" }}</td>
+            <td class="px-4 py-3 text-sm text-right text-slate-700">₱{{ schedule.principal_amount|floatformat:2 }}</td>
+            <td class="px-4 py-3 text-sm text-right text-slate-700">₱{{ schedule.interest_amount|floatformat:2 }}</td>
+            <td class="px-4 py-3 text-sm text-right font-semibold text-slate-900">₱{{ schedule.total_amount|floatformat:2 }}</td>
+            <td class="px-4 py-3 text-sm">
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                {% if schedule.status == 'Paid' %}bg-emerald-100 text-emerald-800
+                {% elif schedule.status == 'Overdue' %}bg-rose-100 text-rose-800
+                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                {{ schedule.status }}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-xs text-slate-600">
+              {% if schedule.payment %}
+                <p><strong>Date:</strong> {{ schedule.payment.date|date:"M d, Y" }}</p>
+                <p><strong>Method:</strong> {{ schedule.payment.method }}</p>
+                {% if schedule.payment.reference %}<p><strong>Ref:</strong> {{ schedule.payment.reference }}</p>{% endif %}
+              {% else %}
+                <span class="text-slate-400">Not paid</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Final Summary -->
+  <div class="rounded-xl border-2 border-teal-200 bg-teal-50 p-6">
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <p class="text-sm font-medium text-teal-700">Expected Total to Pay</p>
+        <p class="mt-1 text-xl font-bold text-teal-900">₱{{ summary.total_expected|floatformat:2 }}</p>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-teal-700">Already Paid</p>
+        <p class="mt-1 text-xl font-bold text-emerald-700">₱{{ summary.paid_total|floatformat:2 }}</p>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-teal-700">Amount Outstanding</p>
+        <p class="mt-1 text-xl font-bold text-rose-700">₱{{ summary.balance|floatformat:2 }}</p>
+      </div>
+    </div>
+  </div>
+
+  {% if not is_pdf %}
+  <div class="mt-8 text-center">
+    <p class="text-sm text-slate-600">This statement was generated on {{ "now"|date:"F j, Y \a\\t g:i A" }}</p>
+    <p class="text-xs text-slate-500 mt-1">For questions or concerns, please contact DC Financing Corporation</p>
+  </div>
+  {% endif %}
+</section>
+
+{% if is_pdf %}
+<style>
+  @page {
+    size: A4;
+    margin: 1cm;
+  }
+  body {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+  }
+</style>
+{% endif %}
+{% endblock content %}

@@ -10,6 +10,8 @@ from .views import (
     LoanApplicationListView,
     LoanApplicationWizard,
     LoanDocumentDeleteView,
+    SOADetailView,
+    SOAPDFView,
 )
 
 app_name = "loans"
@@ -23,6 +25,8 @@ urlpatterns = [
     path("<int:pk>/approve/", LoanApplicationApproveView.as_view(), name="approve"),
     path("<int:pk>/activate/", LoanApplicationActivateView.as_view(), name="activate"),
     path("<int:pk>/complete/", LoanApplicationCompleteView.as_view(), name="complete"),
+    path("<int:pk>/soa/", SOADetailView.as_view(), name="soa-detail"),
+    path("<int:pk>/soa/pdf/", SOAPDFView.as_view(), name="soa-pdf"),
     path(
         "<int:pk>/documents/<int:document_pk>/delete/",
         LoanDocumentDeleteView.as_view(),

@@ -1,14 +1,20 @@
 from decimal import Decimal
 from typing import Any, Dict
+from datetime import timedelta
+from dateutil.relativedelta import relativedelta
+import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Q, Sum
 from django.urls import reverse
 from django.views.generic import FormView, TemplateView
+from django.utils import timezone
 
+from motofinai.apps.inventory.models import Motor
 from motofinai.apps.loans.models import LoanApplication, PaymentSchedule
 from motofinai.apps.payments.models import Payment
 from motofinai.apps.pos.models import POSSession
+from motofinai.apps.repossession.models import RepossessionCase
 from motofinai.apps.reports.forms import (
     ApplicantsReportForm,
     ApprovedLoansReportForm,
@@ -16,6 +22,7 @@ from motofinai.apps.reports.forms import (
     PaymentReconciliationReportForm,
     ReleasedMotorsReportForm,
     MotorcycleStatusReportForm,
+    ComprehensiveReportsFilterForm,
 )
 from motofinai.apps.reports.models import ReportSchedule
 
@@ -214,3 +221,140 @@ class ReportListView(LoginRequiredMixin, TemplateView):
         ]
         context["breadcrumbs"] = [{"label": "Reports"}]
         return context
+
+
+class ComprehensiveReportsDashboardView(LoginRequiredMixin, FormView):
+    """Comprehensive reports dashboard with charts and analytics."""
+    
+    template_name = "pages/reports/comprehensive_dashboard.html"
+    form_class = ComprehensiveReportsFilterForm
+    required_roles = ("admin", "finance")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = context.get('form') or self.get_form()
+        
+        # Get date filters
+        start_date = form.initial.get('start_date') if hasattr(form, 'initial') else timezone.now().date() - timedelta(days=30)
+        end_date = form.initial.get('end_date') if hasattr(form, 'initial') else timezone.now().date()
+        
+        if form.is_bound and form.is_valid():
+            start_date = form.cleaned_data.get('start_date') or start_date
+            end_date = form.cleaned_data.get('end_date') or end_date
+        
+        # KPI Cards Data
+        total_loans = LoanApplication.objects.count()
+        active_loans = LoanApplication.objects.filter(status='active').count()
+        completed_loans = LoanApplication.objects.filter(status='completed').count()
+        
+        # Collection rate
+        schedules_agg = PaymentSchedule.objects.aggregate(
+            due_total=Sum('total_amount', filter=Q(status='due')),
+            overdue_total=Sum('total_amount', filter=Q(status='overdue')),
+            paid_total=Sum('total_amount', filter=Q(status='paid')),
+        )
+        total_expected = (schedules_agg['due_total'] or Decimal('0')) + \
+                        (schedules_agg['overdue_total'] or Decimal('0')) + \
+                        (schedules_agg['paid_total'] or Decimal('0'))
+        paid_total = schedules_agg['paid_total'] or Decimal('0')
+        collection_rate = (paid_total / total_expected * 100) if total_expected > 0 else 0
+        
+        # Repossession rate
+        total_repossessions = RepossessionCase.objects.count()
+        repossession_rate = (total_repossessions / total_loans * 100) if total_loans > 0 else 0
+        
+        # Motors loaned
+        motors_loaned_count = Motor.objects.filter(loan_applications__status='active').distinct().count()
+        
+        # Motors loaned by brand
+        motors_by_brand = Motor.objects.filter(
+            loan_applications__status='active'
+        ).values('brand').annotate(
+            count=Count('id', distinct=True)
+        ).order_by('-count')[:10]
+        
+        motors_brand_labels = [item['brand'] for item in motors_by_brand]
+        motors_brand_data = [item['count'] for item in motors_by_brand]
+        
+        # Payment status distribution
+        payment_status = PaymentSchedule.objects.aggregate(
+            due_count=Count('id', filter=Q(status='due')),
+            overdue_count=Count('id', filter=Q(status='overdue')),
+            paid_count=Count('id', filter=Q(status='paid')),
+        )
+        
+        # Loan status distribution
+        loan_status = LoanApplication.objects.aggregate(
+            pending_count=Count('id', filter=Q(status='pending')),
+            approved_count=Count('id', filter=Q(status='approved')),
+            active_count=Count('id', filter=Q(status='active')),
+            completed_count=Count('id', filter=Q(status='completed')),
+        )
+        
+        # Monthly collection trends (last 12 months)
+        monthly_trends = []
+        monthly_labels = []
+        current_date = timezone.now().date()
+
+        for i in range(11, -1, -1):
+            target_month = current_date - relativedelta(months=i)
+            month_start = target_month.replace(day=1)
+            next_month = month_start + relativedelta(months=1)
+            month_end = next_month - timedelta(days=1)
+
+            month_total = Payment.objects.filter(
+                payment_date__gte=month_start,
+                payment_date__lte=month_end
+            ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+            monthly_trends.append(float(month_total))
+            monthly_labels.append(month_start.strftime('%b %Y'))
+        
+        # Repossession cases by status
+        repossession_by_status = RepossessionCase.objects.values('status').annotate(
+            count=Count('id')
+        ).order_by('status')
+        
+        repo_status_labels = [item['status'].title() for item in repossession_by_status]
+        repo_status_data = [item['count'] for item in repossession_by_status]
+        
+        context.update({
+            'start_date': start_date,
+            'end_date': end_date,
+            # KPIs
+            'total_loans': total_loans,
+            'collection_rate': round(collection_rate, 2),
+            'repossession_rate': round(repossession_rate, 2),
+            'motors_loaned_count': motors_loaned_count,
+            # Chart data (JSON serialized)
+            'motors_brand_labels_json': json.dumps(motors_brand_labels),
+            'motors_brand_data_json': json.dumps(motors_brand_data),
+            'payment_status_labels_json': json.dumps(['Due', 'Overdue', 'Paid']),
+            'payment_status_data_json': json.dumps([
+                payment_status['due_count'],
+                payment_status['overdue_count'],
+                payment_status['paid_count'],
+            ]),
+            'loan_status_labels_json': json.dumps(['Pending', 'Approved', 'Active', 'Completed']),
+            'loan_status_data_json': json.dumps([
+                loan_status['pending_count'],
+                loan_status['approved_count'],
+                loan_status['active_count'],
+                loan_status['completed_count'],
+            ]),
+            'monthly_labels_json': json.dumps(monthly_labels),
+            'monthly_data_json': json.dumps(monthly_trends),
+            'repo_status_labels_json': json.dumps(repo_status_labels),
+            'repo_status_data_json': json.dumps(repo_status_data),
+            # Breadcrumbs
+            'breadcrumbs': [
+                {"label": "Reports", "url": reverse("reports:list")},
+                {"label": "Comprehensive Dashboard"},
+            ],
+        })
+        
+        return context
+
+    def form_valid(self, form):
+        # Just refresh the page with filtered data
+        return self.render_to_response(self.get_context_data(form=form))

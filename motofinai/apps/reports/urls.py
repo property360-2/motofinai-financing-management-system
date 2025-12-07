@@ -8,6 +8,7 @@ app_name = "reports"
 
 urlpatterns = [
     path("", views.ReportListView.as_view(), name="list"),
+    path("dashboard/", views.ComprehensiveReportsDashboardView.as_view(), name="comprehensive-dashboard"),
     path("applicants/", views.ApplicantsReportView.as_view(), name="applicants"),
     path("approved-loans/", views.ApprovedLoansReportView.as_view(), name="approved_loans"),
     path("released-motors/", views.ReleasedMotorsReportView.as_view(), name="released_motors"),

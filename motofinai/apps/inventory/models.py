@@ -123,6 +123,11 @@ class Motor(models.Model):
     brand = models.CharField(max_length=100)
     model_name = models.CharField("model", max_length=120)
     year = models.PositiveIntegerField(validators=[MinValueValidator(1900)])
+    chassis_number = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Vehicle Identification Number (VIN/Chassis Number)",
+    )
     color = models.CharField(max_length=50, blank=True)
     stock = models.ForeignKey(
         Stock,

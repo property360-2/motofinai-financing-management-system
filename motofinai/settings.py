@@ -232,8 +232,6 @@ STORAGES = {
     },
 }
 
-STATICFILES_STORAGE = STORAGES["staticfiles"]["BACKEND"]
-
 default_storage_backend = STORAGES["default"]["BACKEND"]
 if default_storage_backend.endswith("FileSystemStorage"):
     MEDIA_ROOT = BASE_DIR / "motofinai" / "media"

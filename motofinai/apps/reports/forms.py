@@ -216,3 +216,32 @@ class PaymentReconciliationReportForm(BaseReportFilterForm):
         ],
         widget=forms.Select(attrs={"class": INPUT_CLASSES}),
     )
+
+
+class ComprehensiveReportsFilterForm(forms.Form):
+    """Filter form for comprehensive reports dashboard."""
+
+    start_date = forms.DateField(
+        label="Start Date",
+        required=False,
+        widget=forms.DateInput(
+            attrs={"class": INPUT_CLASSES, "type": "date"}
+        ),
+        help_text="Filter data from this date",
+    )
+    end_date = forms.DateField(
+        label="End Date",
+        required=False,
+        widget=forms.DateInput(
+            attrs={"class": INPUT_CLASSES, "type": "date"}
+        ),
+        help_text="Filter data up to this date",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set default dates: last 30 days
+        if not self.is_bound or not self.data.get('start_date'):
+            self.fields['start_date'].initial = date.today() - timedelta(days=30)
+        if not self.is_bound or not self.data.get('end_date'):
+            self.fields['end_date'].initial = date.today()

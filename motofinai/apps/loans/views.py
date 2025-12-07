@@ -582,3 +582,66 @@ class LoanDocumentDeleteView(LoginRequiredMixin, View):
         messages.success(request, "Document removed.")
         return redirect("loans:documents", pk=pk)
 
+
+
+class SOADetailView(LoginRequiredMixin, TemplateView):
+    """View for displaying Statement of Accounts (SOA) in HTML."""
+    
+    template_name = "pages/loans/soa_detail.html"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        loan_id = self.kwargs['pk']
+        
+        # Import here to avoid circular imports
+        from motofinai.apps.loans.soa_service import SOAService
+        
+        # Generate SOA data
+        soa_data = SOAService.generate_soa_data(loan_id)
+        context.update(soa_data)
+        
+        context['breadcrumbs'] = [
+            {"label": "Loans", "url": reverse("loans:list")},
+            {"label": f"Loan #{loan_id}", "url": reverse("loans:detail", kwargs={"pk": loan_id})},
+            {"label": "Statement of Account"},
+        ]
+        
+        return context
+
+
+class SOAPDFView(LoginRequiredMixin, View):
+    """View for generating and downloading SOA as PDF."""
+    
+    def get(self, request, pk):
+        from django_weasyprint import WeasyTemplateResponseMixin
+        from django_weasyprint.views import CONTENT_TYPE_PNG
+        from motofinai.apps.loans.soa_service import SOAService
+        from django.template.response import TemplateResponse
+        import weasyprint
+        from django.http import HttpResponse
+        from datetime import date
+        
+        # Generate SOA data
+        soa_data = SOAService.generate_soa_data(pk)
+        
+        # Render template to HTML
+        template_name = "pages/loans/soa_detail.html"
+        context = soa_data.copy()
+        context['is_pdf'] = True  # Flag for PDF-specific styling
+        
+        # Create filename
+        customer_name = soa_data['customer']['name'].replace(' ', '_')
+        filename = f"SOA_{pk}_{customer_name}_{date.today().strftime('%Y%m%d')}.pdf"
+        
+        # Render HTML
+        from django.template.loader import render_to_string
+        html_string = render_to_string(template_name, context, request=request)
+        
+        # Generate PDF
+        pdf_file = weasyprint.HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
+        
+        # Create response
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response

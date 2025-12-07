@@ -19,6 +19,7 @@ class MotorForm(forms.ModelForm):
             "brand",
             "model_name",
             "year",
+            "chassis_number",
             "quantity",
             "color",
             "purchase_price",
@@ -30,6 +31,9 @@ class MotorForm(forms.ModelForm):
             "brand": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Honda"}),
             "model_name": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Click 125i"}),
             "year": forms.NumberInput(attrs={"class": INPUT_CLASSES, "min": 1900}),
+            "chassis_number": forms.TextInput(
+                attrs={"class": INPUT_CLASSES, "placeholder": "VIN/Chassis Number (optional)"}
+            ),
             "quantity": forms.NumberInput(attrs={"class": INPUT_CLASSES, "min": 1}),
             "color": forms.TextInput(attrs={"class": INPUT_CLASSES, "placeholder": "Matte Black"}),
             "purchase_price": forms.NumberInput(
