@@ -6,7 +6,12 @@
       "Bash(echo:*)",
       "Bash(pip install:*)",
       "Bash(python manage.py makemigrations:*)",
-      "Bash(python manage.py migrate:*)"
+      "Bash(python manage.py migrate:*)",
+      "Bash(iconv:*)",
+      "Bash(mv:*)",
+      "Bash(python -c:*)",
+      "Bash(powershell -Command \"Get-Content requirements.txt -Encoding Unicode | Set-Content requirements_utf8.txt -Encoding UTF8\")",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
